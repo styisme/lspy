@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lspy"
+version = "1.19.0"
+description = "LocalSend-compatible Python CLI for LAN and cross-network file transfer"
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["localsend", "file-transfer", "lan", "cli"]
+classifiers = [
+    "Environment :: Console",
+    "Programming Language :: Python :: 3",
+    "Topic :: Utilities",
+]
+dependencies = []
+
+[project.scripts]
+lspy = "lspy:main"
+
+[tool.setuptools]
+py-modules = ["lspy"]

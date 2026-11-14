@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# lspy runtime data
+.lspy/
+downloads/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
