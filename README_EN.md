@@ -5,7 +5,7 @@
 > A command-line implementation of the LocalSend protocol. One file, zero third-party dependencies: LocalSend on your phone, one command on your desktop. Cross-network relay over ntfy.sh included.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.19.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.20.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-brightgreen)]()
@@ -22,7 +22,7 @@
 
 ## 📦 Version & Origin
 
-Current version: **v1.19.2** (single source of truth is [CHANGELOG.md](CHANGELOG.md), verified and injected by CI).
+Current version: **v1.20.0** (single source of truth is [CHANGELOG.md](CHANGELOG.md), verified and injected by CI).
 
 lspy is an **independent command-line implementation** of the LocalSend protocol, written from scratch. It does not copy the official app (Apache-2.0) sources and only interoperates at the protocol level — see [LICENSE-LocalSend](LICENSE-LocalSend). Sibling GUI implementations: [OldSend](https://github.com/styisme/oldsend) and [WatchSend](https://github.com/styisme/watchsend); they share protocol ideas but no code.
 
@@ -63,6 +63,8 @@ pip install .                  # or install the `lspy` command
 ```
 
 Python 3.8+, no third-party dependencies. Without `tkinter`, the file picker falls back to typed paths.
+
+No Python at hand? Grab the standalone build from [Releases](https://github.com/styisme/lspy/releases): `lspy-<version>-windows-x64.exe` on Windows, `lspy-<version>-linux-x86_64` on Linux — download and run.
 
 ### 2. Receive
 
@@ -110,18 +112,22 @@ Protocol endpoints (`/api/localsend/{v1,v2}/…`): `info`, `register`, `prepare-
 
 ## 🛠️ Build & Test
 
-A single-file Python project; packaging uses the standard `pyproject.toml`:
+A single-file Python project with no third-party dependencies; packaging uses the standard `pyproject.toml`, executables use PyInstaller:
 
 ```bash
 pip install .
-python -m unittest discover -s tests -v
-python scripts/sync_version.py --check
+python -m unittest discover -s tests -v       # 29 cases: unit + end-to-end
+python scripts/sync_version.py --check         # version matches CHANGELOG.md
+pip install pyinstaller && python scripts/build_binary.py   # standalone executable
 ```
+
+`build_binary.py` reads the version from `CHANGELOG.md` and writes a platform-named artifact into `dist/`:
+`lspy-<version>-windows-x64.exe`, `lspy-<version>-linux-x86_64`, `lspy-<version>-linux-arm64`, `lspy-<version>-macos-arm64`, `lspy-<version>-macos-x64`. Pass `--clean` to wipe `build/` and `dist/` first.
 
 ### 🤖 Automation
 
 - **CI**: `ci.yml` runs the full suite on Windows and Linux plus a version-consistency check.
-- **Release**: pushing a `CHANGELOG.md` change to `main` triggers `release.yml` to build the wheel, tag, and publish a GitHub Release.
+- **Release**: pushing a `CHANGELOG.md` change to `main` triggers `release.yml`, which builds a standalone executable on Windows and on Linux, builds the wheel and sdist, then tags and publishes a GitHub Release with all four artifacts.
 - **Versioning**: `CHANGELOG.md` is the only source; `scripts/sync_version.py` injects it into `lspy.py` and `pyproject.toml`, and CI verifies only.
 
 ---

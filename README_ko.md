@@ -5,7 +5,7 @@
 > LocalSend 프로토콜의 CLI 구현. 단일 파일, 서드파티 의존성 없음. 휴대폰은 LocalSend, PC는 명령 한 줄로 파일 송수신. ntfy.sh를 통한 크로스 네트워크 중계 지원.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.19.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.20.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -54,7 +54,13 @@ Python 3.8+, 외부 의존성 없음. TCP/UDP `53317` 포트를 열어 두세요
 pip install .
 python -m unittest discover -s tests -v
 python scripts/sync_version.py --check
+pip install pyinstaller && python scripts/build_binary.py
 ```
+
+Python 없이 [Release](https://github.com/styisme/lspy/releases)의 단일 실행 파일을 사용할 수 있습니다: Windows `lspy-<버전>-windows-x64.exe`, Linux `lspy-<버전>-linux-x86_64`.
+
+`CHANGELOG.md` 변경을 `main`에 푸시하면 Windows / Linux에서 실행 파일을 빌드하고 wheel, sdist와 함께 자동으로 태그와 Release를 생성합니다.
+
 
 ---
 

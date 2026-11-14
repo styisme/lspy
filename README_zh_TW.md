@@ -5,7 +5,7 @@
 > LocalSend 協定的命令列實作。單檔、零第三方依賴：手機跑 LocalSend，電腦一行指令收發檔案；另可透過 ntfy.sh 做跨網中繼。
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.19.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.20.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -19,7 +19,7 @@
 
 ## 📦 版本與來源
 
-目前版本：**v1.19.2**（版本號唯一來源為 [CHANGELOG.md](CHANGELOG.md)，由 CI 驗證並注入）。
+目前版本：**v1.20.0**（版本號唯一來源為 [CHANGELOG.md](CHANGELOG.md)，由 CI 驗證並注入）。
 
 本專案為 LocalSend 協定的獨立命令列實作，自零撰寫，未複製官方 App 原始碼，僅於協定層互通。
 
@@ -65,7 +65,13 @@ lspy cross-recv 123456 -d ./incoming
 pip install .
 python -m unittest discover -s tests -v
 python scripts/sync_version.py --check
+pip install pyinstaller && python scripts/build_binary.py
 ```
+
+也可直接下載 [Release](https://github.com/styisme/lspy/releases) 的單檔執行檔：Windows `lspy-<版本>-windows-x64.exe`、Linux `lspy-<版本>-linux-x86_64`，免安裝 Python。
+
+`release.yml` 會在 Windows 與 Linux 上分別打包，並於 `CHANGELOG.md` 變更推送後自動打 Tag、發佈 Release（含執行檔、wheel、sdist）。
+
 
 CI 於 Windows / Linux 執行全量測試與版本一致性檢查；`CHANGELOG.md` 變更推送至 `main` 後自動建置 wheel、打 Tag 並發佈 Release。
 

@@ -5,7 +5,7 @@
 > LocalSend プロトコルの CLI 実装。単一ファイル・サードパーティ依存ゼロ。スマホは LocalSend、PC はコマンド 1 本でファイル送受信。ntfy.sh 経由のクロスネットワーク中継にも対応。
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.19.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.20.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -54,7 +54,13 @@ Python 3.8+、依存パッケージなし。TCP/UDP `53317` を開放してく�
 pip install .
 python -m unittest discover -s tests -v
 python scripts/sync_version.py --check
+pip install pyinstaller && python scripts/build_binary.py
 ```
+
+Python 不要でも [Release](https://github.com/styisme/lspy/releases) の単一ファイル版を使えます：Windows `lspy-<版>-windows-x64.exe`、Linux `lspy-<版>-linux-x86_64`。
+
+`CHANGELOG.md` の変更を `main` にプッシュすると、Windows / Linux で実行ファイルをビルドし、wheel・sdist と合わせて自動でタグ付け・Release 公開します。
+
 
 ---
 

@@ -4,6 +4,7 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+*.spec
 .release_version
 .release_notes.md
 .venv/

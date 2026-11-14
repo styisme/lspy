@@ -4,6 +4,18 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.20.0] - 2026-11-15
+
+### 新增
+
+- 单文件可执行程序：`scripts/build_binary.py` 从 `CHANGELOG.md` 读版本号，用 PyInstaller 打包 `lspy.py`，产物按平台命名（`windows-x64.exe` / `linux-x86_64` / `linux-arm64` / `macos-arm64` / `macos-x64`），支持 `--clean`；`tkinter` 存在时才加入 `--hidden-import`，缺失平台自动降级为手输路径。
+- 发版流水线同时出二进制与包：`release.yml` 拆为 `binaries`（`windows-latest` + `ubuntu-latest` 矩阵）、`package`（wheel + sdist）、`release`（汇总全部产物 → 打 Tag → 发布 Release）三个 job。Linux runner 先尝试 `apt-get install python3-tk`。
+- `pyproject.toml` 增加 `binary` 可选依赖（`pyinstaller>=6.0`）。
+
+### 变更
+
+- README（10 语言）与 CONTRIBUTING（中英）补充"直接下载预编译程序"与本地打包命令；Release 产物说明更新为"Windows exe + Linux 可执行文件 + wheel + sdist"。
+
 ## [1.19.2] - 2026-11-15
 
 ### 修复
@@ -59,6 +71,7 @@
 
 - 初版：LocalSend v1/v2 收发、组播扫描、HTTP 深度扫描、ntfy.sh 跨网、多语言菜单。
 
+[1.20.0]: https://github.com/styisme/lspy/compare/v1.19.2...v1.20.0
 [1.19.2]: https://github.com/styisme/lspy/compare/v1.19.1...v1.19.2
 [1.19.1]: https://github.com/styisme/lspy/compare/v1.19.0...v1.19.1
 [1.19.0]: https://github.com/styisme/lspy/compare/v1.18.2...v1.19.0

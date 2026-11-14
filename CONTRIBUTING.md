@@ -40,8 +40,9 @@ cd lspy
 
 python lspy.py --help                     # 免安装运行
 pip install .                             # 安装为 lspy 命令
-python -m unittest discover -s tests -v   # 全量测试（25 例）
+python -m unittest discover -s tests -v   # 全量测试（29 例）
 python scripts/sync_version.py --check    # 校验版本号与 CHANGELOG 一致
+pip install pyinstaller && python scripts/build_binary.py --clean   # 打包单文件可执行程序
 ```
 
 本地联调最省事的方式是起两个进程互相收发：
@@ -56,14 +57,18 @@ python lspy.py send ./some.bin --ip 127.0.0.1:53501
 ### 云端构建与自动发版
 
 - **CI**（`.github/workflows/ci.yml`）：push / PR 触发，在 Windows 与 Linux 上跑全量测试 + `sync_version.py --check` + 语法编译检查。
-- **Release**（`.github/workflows/release.yml`）：`CHANGELOG.md` 变更推送到 `main` 后触发，提取版本号 → 校验注入 → 构建 sdist/wheel → 打 Tag → 发布 GitHub Release。
+- **Release**（`.github/workflows/release.yml`）：`CHANGELOG.md` 变更推送到 `main` 后触发 —— 先在 `windows-latest` 与 `ubuntu-latest` 上分别用 PyInstaller 打出单文件可执行程序（`lspy-<版本>-windows-x64.exe` / `lspy-<版本>-linux-x86_64`），再构建 wheel 与 sdist，最后汇总全部产物、打 Tag 并发布 GitHub Release。
+- **二进制命名**：由 `scripts/build_binary.py` 统一决定，版本号取自 `CHANGELOG.md`，无需手工改文件名。
 
 本地一键构建与版本同步也可手跑：
 
 ```bash
 python scripts/sync_version.py            # 把 CHANGELOG 顶部版本写入 lspy.py 与 pyproject.toml
 python -m build                           # 需要 build 包；CI 内完成
+python scripts/build_binary.py --clean    # 需要 pyinstaller；产物在 dist/
 ```
+
+> Linux 上打包若要保留 tkinter 文件选择器，需先 `sudo apt-get install -y python3-tk`；缺失时脚本自动跳过 `--hidden-import tkinter`，二进制里降级为手输路径。
 
 ---
 
@@ -75,7 +80,9 @@ lspy/
 ├── tests/
 │   └── test_lspy.py            # unittest：单元 + 端到端收发
 ├── scripts/
-│   └── sync_version.py         # 从 CHANGELOG 提取版本并注入（唯一版本来源）
+│   ├── sync_version.py         # 从 CHANGELOG 提取版本并注入（唯一版本来源）
+│   ├── extract_release_notes.py # 生成发版用的版本号与 Release Notes
+│   └── build_binary.py         # 用 PyInstaller 打包单文件可执行程序
 ├── docs/
 │   ├── AI_DISCLOSURE.md        # AI 生成声明
 │   ├── DEVELOPMENT_CONSTRAINTS.md  # 开发环境约束

@@ -5,7 +5,7 @@
 > Une implémentation en ligne de commande du protocole LocalSend. Un seul fichier, aucune dépendance tierce : LocalSend sur le téléphone, une commande sur l'ordinateur. Relais inter-réseaux via ntfy.sh inclus.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.19.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.20.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -54,7 +54,13 @@ Python 3.8+, aucune dépendance. Autorisez TCP/UDP `53317`.
 pip install .
 python -m unittest discover -s tests -v
 python scripts/sync_version.py --check
+pip install pyinstaller && python scripts/build_binary.py
 ```
+
+Sans Python : le binaire autonome des [Releases](https://github.com/styisme/lspy/releases) — Windows `lspy-<version>-windows-x64.exe`, Linux `lspy-<version>-linux-x86_64`.
+
+Un push de `CHANGELOG.md` sur `main` compile les binaires sous Windows et Linux, puis tague et publie automatiquement avec le wheel et le sdist.
+
 
 ---
 

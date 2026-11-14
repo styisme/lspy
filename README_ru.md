@@ -5,7 +5,7 @@
 > Реализация протокола LocalSend в командной строке. Один файл, без сторонних зависимостей: LocalSend на телефоне, одна команда на компьютере. Есть ретрансляция между сетями через ntfy.sh.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.19.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.20.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -54,7 +54,13 @@ Python 3.8+, без зависимостей. Откройте TCP/UDP `53317`.
 pip install .
 python -m unittest discover -s tests -v
 python scripts/sync_version.py --check
+pip install pyinstaller && python scripts/build_binary.py
 ```
+
+Без Python: автономный файл из [Releases](https://github.com/styisme/lspy/releases) — Windows `lspy-<версия>-windows-x64.exe`, Linux `lspy-<версия>-linux-x86_64`.
+
+Пуш изменения `CHANGELOG.md` в `main` собирает бинарники под Windows и Linux и автоматически создаёт тег и Release вместе с wheel и sdist.
+
 
 ---
 

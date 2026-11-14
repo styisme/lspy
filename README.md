@@ -5,7 +5,7 @@
 > LocalSend 协议的命令行实现。单文件、零第三方依赖，手机上跑 LocalSend，电脑上一条命令收发文件；也能借 ntfy.sh 做跨网中继。
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.19.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.20.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-brightgreen)]()
@@ -22,7 +22,7 @@
 
 ## 📦 版本与来源
 
-当前版本：**v1.19.2**（版本号唯一来源为 [CHANGELOG.md](CHANGELOG.md)，由 CI 校验并注入）。
+当前版本：**v1.20.0**（版本号唯一来源为 [CHANGELOG.md](CHANGELOG.md)，由 CI 校验并注入）。
 
 本项目是 LocalSend 协议的**独立命令行实现**，从零编写，不复制官方 App（Apache-2.0）源码，仅在协议层与其互通，详见 [LICENSE-LocalSend](LICENSE-LocalSend)。同族的图形端实现见 [OldSend](https://github.com/styisme/oldsend) 与 [WatchSend](https://github.com/styisme/watchsend)，lspy 与其共享协议思路，代码互不依赖。
 
@@ -63,6 +63,8 @@ pip install .                  # 或安装为 lspy 命令
 ```
 
 要求 Python 3.8+，无第三方依赖；`tkinter` 缺失时文件选择自动降级为手输路径。
+
+不想装 Python 也可以：直接下载 [Release](https://github.com/styisme/lspy/releases) 里的单文件程序 —— Windows `lspy-<版本>-windows-x64.exe`、Linux `lspy-<版本>-linux-x86_64`，下载即可运行。
 
 ### 2. 接收
 
@@ -110,18 +112,22 @@ lspy cross-recv 123456 -d ./incoming         # 另一端凭 PIN 接收
 
 ## 🛠️ 构建与测试
 
-单文件 Python 项目，无构建产物直接运行；打包走标准 `pyproject.toml`：
+单文件 Python 项目，无第三方依赖；打包走标准 `pyproject.toml`，可执行程序走 PyInstaller：
 
 ```bash
 pip install .                                  # 安装为 lspy
-python -m unittest discover -s tests -v        # 25 个用例：单元 + 端到端
+python -m unittest discover -s tests -v        # 29 个用例：单元 + 端到端
 python scripts/sync_version.py --check         # 校验版本号与 CHANGELOG 一致
+pip install pyinstaller && python scripts/build_binary.py   # 打包单文件可执行程序
 ```
+
+`build_binary.py` 从 `CHANGELOG.md` 读版本号，产物落在 `dist/` 并按平台命名：
+`lspy-<版本>-windows-x64.exe`、`lspy-<版本>-linux-x86_64`、`lspy-<版本>-linux-arm64`、`lspy-<版本>-macos-arm64`、`lspy-<版本>-macos-x64`（Windows 带 `.exe` 后缀）。`--clean` 可先清空 `build/` 与 `dist/`。
 
 ### 🤖 自动化
 
 - **CI**：`ci.yml` 在 Windows / Linux 上跑全量测试与版本一致性检查。
-- **Release**：`CHANGELOG.md` 变更推送到 `main` 后，`release.yml` 构建 wheel 并自动打 Tag、发布 GitHub Release。
+- **Release**：`CHANGELOG.md` 变更推送到 `main` 后，`release.yml` 在 Windows 与 Linux runner 上分别用 PyInstaller 打出单文件可执行程序，同时构建 wheel 与 sdist；四类产物汇总后自动打 Tag、发布 GitHub Release。
 - **版本号**：唯一来源为 `CHANGELOG.md`，由 `scripts/sync_version.py` 注入 `lspy.py` 与 `pyproject.toml`；CI 只校验不写入。
 
 ---

@@ -40,8 +40,9 @@ cd lspy
 
 python lspy.py --help                     # run without installing
 pip install .                             # install the `lspy` command
-python -m unittest discover -s tests -v   # full suite (25 tests)
+python -m unittest discover -s tests -v   # full suite (29 tests)
 python scripts/sync_version.py --check    # version consistency with CHANGELOG
+pip install pyinstaller && python scripts/build_binary.py --clean   # standalone executable
 ```
 
 The fastest local smoke test is two processes:
@@ -56,13 +57,18 @@ python lspy.py send ./some.bin --ip 127.0.0.1:53501
 ### Cloud Build & Auto Release
 
 - **CI** (`.github/workflows/ci.yml`): on push/PR, runs the full suite on Windows and Linux plus `sync_version.py --check` and a compile check.
-- **Release** (`.github/workflows/release.yml`): a `CHANGELOG.md` change pushed to `main` extracts the version, verifies injection, builds sdist/wheel, tags, and publishes a GitHub Release.
+- **Release** (`.github/workflows/release.yml`): a `CHANGELOG.md` change pushed to `main` first builds a standalone executable on `windows-latest` and on `ubuntu-latest` (`lspy-<version>-windows-x64.exe` / `lspy-<version>-linux-x86_64`), then builds the wheel and sdist, and finally publishes a GitHub Release carrying all four artifacts.
+- **Naming**: `scripts/build_binary.py` owns the artifact names and takes the version from `CHANGELOG.md` — nothing is renamed by hand.
 
 Version injection is local-friendly too:
 
 ```bash
-python scripts/sync_version.py   # writes the top CHANGELOG version into lspy.py and pyproject.toml
+python scripts/sync_version.py            # writes the top CHANGELOG version into lspy.py and pyproject.toml
+python -m build                           # needs the build package; CI does this
+python scripts/build_binary.py --clean    # needs pyinstaller; artifacts land in dist/
 ```
+
+> On Linux, `sudo apt-get install -y python3-tk` keeps the tkinter file picker in the binary. Without it the script skips `--hidden-import tkinter` and the binary falls back to typed paths.
 
 ---
 
@@ -74,7 +80,9 @@ lspy/
 ├── tests/
 │   └── test_lspy.py            # unittest: units + end-to-end transfer
 ├── scripts/
-│   └── sync_version.py         # single-source version extraction & injection
+│   ├── sync_version.py         # single-source version extraction & injection
+│   ├── extract_release_notes.py # version + release notes for publishing
+│   └── build_binary.py         # PyInstaller single-file executable
 ├── docs/
 │   ├── AI_DISCLOSURE.md
 │   ├── DEVELOPMENT_CONSTRAINTS.md
