@@ -154,6 +154,45 @@ class TestInfoAndWeb(unittest.TestCase):
             self.assertEqual(ctx.exception.code, 404)
 
 
+class TestPortConflict(unittest.TestCase):
+    """Windows 把端口占用报成 WinError 10013，必须仍能识别为冲突并给出回退。"""
+
+    def test_wsaacces_10013_is_conflict(self):
+        e = OSError(13, "access denied")
+        e.winerror = 10013
+        self.assertTrue(lspy.LspyServer._is_port_conflict(e))
+
+    def test_eaddrinuse_is_conflict(self):
+        self.assertTrue(lspy.LspyServer._is_port_conflict(OSError(lspy.errno.EADDRINUSE, "in use")))
+
+    def test_other_oserror_is_not_conflict(self):
+        self.assertFalse(lspy.LspyServer._is_port_conflict(OSError(lspy.errno.EADDRNOTAVAIL, "bad addr")))
+
+    def test_busy_default_port_falls_back_to_ephemeral(self):
+        class FakeHttpd:
+            server_address = ("0.0.0.0", 55555)
+            def serve_forever(self): pass
+            def shutdown(self): pass
+            def server_close(self): pass
+
+        srv = lspy.LspyServer(save_dir=tempfile.mkdtemp(), multicast=False, web_enable=False,
+                              auto_accept=True)
+        srv.port = lspy.DEFAULT_PORT
+        tried = []
+
+        def fake_bind(port):
+            tried.append(port)
+            if port == lspy.DEFAULT_PORT:
+                raise OSError(lspy.errno.EADDRINUSE, "in use")
+            srv.httpd = FakeHttpd()
+
+        srv._bind_httpd = fake_bind
+        srv.start(blocking=True)
+
+        self.assertEqual(tried, [lspy.DEFAULT_PORT, 0])
+        self.assertEqual(srv.port, 55555)
+
+
 class TestEndToEnd(unittest.TestCase):
     def setUp(self):
         lspy.reset_config()

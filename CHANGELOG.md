@@ -4,6 +4,16 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.19.1] - 2026-11-15
+
+### 修复
+
+- 端口被占用时给出可读诊断：识别 `WinError 10013` / `WSAEACCES` 与 `EADDRINUSE`，明确提示"本机可能已有 LocalSend 桌面版或另一个 lspy 实例占用该端口"，不再误报为"连接失败"。
+- 默认端口 `53317` 被占用时自动回退到系统分配的空闲端口，并打印实际绑定端口；`-p` 显式指定的端口仍严格失败，不做隐式替换。
+- 组播端口 `53317` 被占用时提示与 LocalSend 桌面版共存的处理方式（可加 `--no-multicast`），而不是笼统的"组播监听失败"。
+- 交互菜单「切换为前台服务」不再吞掉绑定错误。
+- 新增 `TestPortConflict` 四个用例（10013 / EADDRINUSE 识别、非冲突错误不误判、默认端口回退）。
+
 ## [1.19.0] - 2026-11-15
 
 ### 修复
@@ -42,5 +52,6 @@
 
 - 初版：LocalSend v1/v2 收发、组播扫描、HTTP 深度扫描、ntfy.sh 跨网、多语言菜单。
 
+[1.19.1]: https://github.com/styisme/lspy/compare/v1.19.0...v1.19.1
 [1.19.0]: https://github.com/styisme/lspy/compare/v1.18.2...v1.19.0
 [1.18.2]: https://github.com/styisme/lspy/releases/tag/v1.18.2

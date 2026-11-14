@@ -4,7 +4,7 @@
 
 相关文档：[README](../README.md) | [AI 生成声明](AI_DISCLOSURE.md) | [贡献指南](../CONTRIBUTING.md) | [AI 开发规范](AI-DEVELOPMENT-GUIDELINES.md)。
 
-**最后更新：2026-11-15（v1.19.0）**
+**最后更新：2026-11-15（v1.19.1）**
 
 ---
 

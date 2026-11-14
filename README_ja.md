@@ -5,7 +5,7 @@
 > LocalSend プロトコルの CLI 実装。単一ファイル・サードパーティ依存ゼロ。スマホは LocalSend、PC はコマンド 1 本でファイル送受信。ntfy.sh 経由のクロスネットワーク中継にも対応。
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.19.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.19.1-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 

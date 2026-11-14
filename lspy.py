@@ -12,6 +12,7 @@ HTTP 深度扫描、断点续传、Web 状态页、TLS。
 import argparse
 import base64
 import concurrent.futures
+import errno
 import hashlib
 import http.client
 import http.server
@@ -40,7 +41,7 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.19.0"
+VERSION = "1.19.1"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
@@ -164,6 +165,10 @@ I18N = {
         "version": "Version", "web_alone": "Web page available at {u}",
         "menu_serve_fg": "Switch to foreground service (verbose progress)",
         "auto_start": "Starting background receiver...", "auto_start_fail": "Auto-start failed: {e}",
+        "port_in_use": "Port {p} is unavailable: {e}",
+        "port_in_use_tip": "Another LocalSend desktop app or a second lspy instance is probably holding this port. Close it, or pick another port with -p 0 / -p 53318.",
+        "port_fallback": "Port {p} is taken, switched to the OS-assigned port {q} (use -p to pin one).",
+        "mc_port_busy": "Multicast port 53317 is taken (usually LocalSend desktop running alongside); multicast listening skipped, HTTP discovery still works. Add --no-multicast to silence this.",
         "fg_hint": "Foreground receiver running, Ctrl+C stops it and returns to the menu",
         "send_how": "1. Auto-scan nearby devices\n2. Enter IP manually", "send_choose": "Select [1-2]: ",
         "prompt_ip": "Target IP (e.g. 192.168.1.10): ", "input_error": "Input error: {e}",
@@ -233,6 +238,10 @@ I18N = {
         "version": "版本", "web_alone": "网页界面：{u}",
         "menu_serve_fg": "切换为前台服务（详细进度）",
         "auto_start": "正在自动启动后台接收服务...", "auto_start_fail": "自动启动失败：{e}",
+        "port_in_use": "端口 {p} 不可用：{e}",
+        "port_in_use_tip": "通常是本机已有 LocalSend 桌面版或另一个 lspy 实例占用了该端口。请关掉它，或用 -p 0 / -p 53318 换一个端口。",
+        "port_fallback": "端口 {p} 已被占用，已改用系统分配的端口 {q}（如需固定请用 -p 指定）。",
+        "mc_port_busy": "组播端口 53317 已被占用（通常是与 LocalSend 桌面版共存）；已跳过组播监听，HTTP 扫描发现仍可用。加 --no-multicast 可关闭该提示。",
         "fg_hint": "前台接收已启动，按 Ctrl+C 停止并返回菜单",
         "send_how": "1. 自动扫描附近设备\n2. 手动输入 IP 地址", "send_choose": "请选择 [1-2]: ",
         "prompt_ip": "目标 IP（如 192.168.1.10）：", "input_error": "输入错误：{e}",
@@ -899,12 +908,33 @@ code{{color:#4b5563;font-size:12px}} .muted{{color:#6b7280;font-size:12px}}
                 self._json(404, {"error": "not found"})
         return Handler
 
+    @staticmethod
+    def _is_port_conflict(e):
+        """端口被占用的判定：Windows 常报 WSAEACCES(10013)，POSIX 报 EADDRINUSE(98)。"""
+        if getattr(e, "winerror", None) in (10013, 10048): return True
+        return e.errno in (errno.EADDRINUSE, errno.EACCES)
+
+    def _bind_httpd(self, port):
+        self.httpd = _ThreadingTCPServer((self.host, port), self._make_handler())
+
     def start(self, blocking=True):
+        requested = self.port
         try:
-            self.httpd = _ThreadingTCPServer((self.host, self.port), self._make_handler())
+            self._bind_httpd(requested)
         except OSError as e:
-            print(f"\n❌ {t('conn_fail', e=e)}")
-            raise
+            if self._is_port_conflict(e) and requested == DEFAULT_PORT:
+                # 默认端口被别的 LocalSend 占用（很常见：官方桌面版同时在跑）：自动改用系统端口
+                try:
+                    self._bind_httpd(0)
+                except OSError as e2:
+                    print("\n❌ " + t("port_in_use", p=requested, e=e2))
+                    print("   " + t("port_in_use_tip"))
+                    raise
+                print("⚠️  " + t("port_fallback", p=requested, q=self.httpd.server_address[1]))
+            else:
+                print("\n❌ " + t("port_in_use", p=requested, e=e))
+                print("   " + t("port_in_use_tip"))
+                raise
         self.bound_port = self.httpd.server_address[1]
         self.port = self.bound_port
 
@@ -945,6 +975,9 @@ code{{color:#4b5563;font-size:12px}} .muted{{color:#6b7280;font-size:12px}}
             sock.bind(("", DEFAULT_PORT))
             mreq = struct.pack("4sl", socket.inet_aton(MULTICAST_GROUP), socket.INADDR_ANY)
             sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+        except OSError as e:
+            key = "mc_port_busy" if self._is_port_conflict(e) else "multicast_listen_fail"
+            print("⚠️  " + t(key, e=e)); return
         except Exception as e:
             print("⚠️  " + t("multicast_listen_fail", e=e)); return
         try:
@@ -1449,7 +1482,7 @@ def interactive_menu():
             if bg_server: bg_server.stop(); bg_server = None
             print("🚀 " + t("fg_hint"))
             try: LspyServer().start(blocking=True)
-            except OSError: pass
+            except OSError as e: print("❌ " + t("port_in_use", p=DEFAULT_PORT, e=e))
             try:
                 bg_server = LspyServer(auto_accept=get_config("auto_accept"), pin=get_config("pin"))
                 bg_server.start(blocking=False)

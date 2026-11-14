@@ -44,7 +44,11 @@ def current_in_pyproject():
 
 def replace_version(path, pattern, version):
     text = path.read_text(encoding="utf-8")
-    new, count = re.subn(pattern, lambda m: m.group(1) + version + m.group(2), text, count=1, flags=re.MULTILINE)
+
+    def _sub(m):
+        return m.group(1) + version + m.group(3)
+
+    new, count = re.subn(pattern, _sub, text, count=1, flags=re.MULTILINE)
     if count != 1:
         raise SystemExit(f"error: could not rewrite version in {path.name}")
     path.write_text(new, encoding="utf-8", newline="\n")
@@ -69,6 +73,9 @@ def main(argv):
 
     replace_version(MAIN, '^(VERSION\\s*=\\s*")(\\d+\\.\\d+\\.\\d+)(")', wanted)
     replace_version(PYPROJECT, '^(version\\s*=\\s*")(\\d+\\.\\d+\\.\\d+)(")', wanted)
+    if current_in_main() != wanted or current_in_pyproject() != wanted:
+        print("error: version rewrite did not take effect", file=sys.stderr)
+        return 1
     print(f"version synced: {main_ver}/{proj_ver} -> {wanted}")
     return 0
 
