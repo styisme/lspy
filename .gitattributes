@@ -1,0 +1,8 @@
+# Keep the working tree byte-identical to the index for text files.
+* text=auto eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.toml text eol=lf
+LICENSE text eol=lf
+LICENSE-LocalSend text eol=lf

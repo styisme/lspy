@@ -1,0 +1,30 @@
+=======================================================================
+              lspy (Protocol Compatibility Notice)
+=======================================================================
+
+This project is protocol-compatible with LocalSend (https://github.com/localsend/localsend).
+The LocalSend project is licensed under the Apache License, Version 2.0.
+
+You may obtain a copy of the Apache License, Version 2.0 at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
+Note: lspy is an independent, from-scratch command-line implementation of the
+LocalSend protocol written in Python, using the standard library only. It
+implements the same HTTP endpoints and discovery mechanism described by the
+public LocalSend protocol documentation in order to interoperate with official
+clients. It does not copy, link against, or modify the source code of the
+official LocalSend app.
+
+Sibling implementations maintained by the same author:
+  - OldSend   (https://github.com/styisme/oldsend)
+  - WatchSend (https://github.com/styisme/watchsend)
+
+Those projects share protocol ideas with lspy but no code; lspy is not a fork
+of either of them.
+
+lspy itself is licensed under the MIT License; see LICENSE.
+=======================================================================

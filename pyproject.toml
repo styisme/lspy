@@ -8,13 +8,24 @@ version = "1.19.0"
 description = "LocalSend-compatible Python CLI for LAN and cross-network file transfer"
 readme = "README.md"
 requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "styisme" }]
 keywords = ["localsend", "file-transfer", "lan", "cli"]
 classifiers = [
     "Environment :: Console",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Topic :: Utilities",
 ]
 dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/styisme/lspy"
+Repository = "https://github.com/styisme/lspy"
+Issues = "https://github.com/styisme/lspy/issues"
+Changelog = "https://github.com/styisme/lspy/blob/main/CHANGELOG.md"
+AI-Disclosure = "https://github.com/styisme/lspy/blob/main/docs/AI_DISCLOSURE.md"
 
 [project.scripts]
 lspy = "lspy:main"
