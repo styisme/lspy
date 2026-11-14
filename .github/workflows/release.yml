@@ -12,13 +12,15 @@ permissions:
 
 jobs:
   # 1. 每个平台构建一个单文件可执行程序（Windows exe / Linux ELF）
+  # Linux 固定用 22.04（glibc 2.35）以兼容更老的发行版；ubuntu-latest 是 24.04，
+  # 打出来的包要求 GLIBC_2.38，在 22.04 上直接启动失败。
   binaries:
     name: binary (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ windows-latest, ubuntu-latest ]
+        os: [ windows-latest, ubuntu-22.04 ]
     steps:
       - uses: actions/checkout@v4
 

@@ -4,6 +4,12 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.20.1] - 2026-11-15
+
+### 修复
+
+- Linux 二进制在旧发行版上无法启动：`ubuntu-latest`（24.04）打出的 PyInstaller 包要求 `GLIBC_2.38`，在 Ubuntu 22.04（glibc 2.35）上报 `libm.so.6: version 'GLIBC_2.38' not found` 直接退出。发版矩阵的 Linux 构建改到 `ubuntu-22.04`，产物兼容 glibc ≥ 2.35 的发行版。
+
 ## [1.20.0] - 2026-11-15
 
 ### 新增
@@ -71,6 +77,7 @@
 
 - 初版：LocalSend v1/v2 收发、组播扫描、HTTP 深度扫描、ntfy.sh 跨网、多语言菜单。
 
+[1.20.1]: https://github.com/styisme/lspy/compare/v1.20.0...v1.20.1
 [1.20.0]: https://github.com/styisme/lspy/compare/v1.19.2...v1.20.0
 [1.19.2]: https://github.com/styisme/lspy/compare/v1.19.1...v1.19.2
 [1.19.1]: https://github.com/styisme/lspy/compare/v1.19.0...v1.19.1

@@ -5,7 +5,7 @@
 > Una implementación de línea de comandos del protocolo LocalSend. Un solo archivo, sin dependencias de terceros: LocalSend en el móvil, una orden en el ordenador. Incluye retransmisión entre redes mediante ntfy.sh.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.20.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.20.1-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
