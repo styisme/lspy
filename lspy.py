@@ -41,7 +41,7 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.19.1"
+VERSION = "1.19.2"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
@@ -87,13 +87,20 @@ def setup_logging():
 
 
 def _configure_stdio():
-    """输出被重定向时改用 UTF-8，避免 Windows 代码页把非 ASCII 字符（含图标）编坏。"""
+    """把 stdout/stderr 统一切到 UTF-8。
+
+    Windows 默认代码页（cp936/cp1252）遇到 emoji 会直接抛 UnicodeEncodeError，
+    重定向到文件时还会把中文与图标编坏；因此不区分 TTY，统一 reconfigure。
+    """
+    if IS_IDLE: return
     for stream in (sys.stdout, sys.stderr):
         try:
             if stream is None or not hasattr(stream, "reconfigure"): continue
-            stream.reconfigure(errors="replace")
-            if not stream.isatty(): stream.reconfigure(encoding="utf-8")
+            stream.reconfigure(encoding="utf-8", errors="replace")
         except Exception: pass
+
+# 导入即生效：CI / 测试直接实例化 LspyServer（绕过 main）时也要能安全打印图标
+_configure_stdio()
 
 # ================== i18n ==================
 I18N = {

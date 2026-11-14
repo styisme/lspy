@@ -4,6 +4,13 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.19.2] - 2026-11-15
+
+### 修复
+
+- Windows 旧代码页（cp936 / cp1252）下打印 emoji 会抛 `UnicodeEncodeError`，导致 `LspyServer.start()` 在启动阶段直接失败（GitHub Actions 的 Windows runner 即此场景）：`_configure_stdio()` 现在**无条件**把 stdout/stderr 切到 UTF-8（`errors="replace"`），并在模块导入时即生效，作为库调用或被测试导入时同样安全。
+- 修复 `scripts/sync_version.py` 的替换缺陷：旧实现把原版本号又拼回字符串（写出 `VERSION = "1.19.11.19.0` 这类坏内容），现按正确分组替换并增加写后自校验。
+
 ## [1.19.1] - 2026-11-15
 
 ### 修复
@@ -52,6 +59,7 @@
 
 - 初版：LocalSend v1/v2 收发、组播扫描、HTTP 深度扫描、ntfy.sh 跨网、多语言菜单。
 
+[1.19.2]: https://github.com/styisme/lspy/compare/v1.19.1...v1.19.2
 [1.19.1]: https://github.com/styisme/lspy/compare/v1.19.0...v1.19.1
 [1.19.0]: https://github.com/styisme/lspy/compare/v1.18.2...v1.19.0
 [1.18.2]: https://github.com/styisme/lspy/releases/tag/v1.18.2

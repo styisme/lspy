@@ -4,7 +4,7 @@
 
 本说明严格遵循 [AI 开发规范](https://github.com/styisme/ai-development-guidelines)（仓库内副本：[AI-DEVELOPMENT-GUIDELINES.md](AI-DEVELOPMENT-GUIDELINES.md)），在此透明界定 AI 与人类在项目中的实际分工与责任边界。
 
-**最后更新：2026-11-15（v1.19.1）**
+**最后更新：2026-11-15（v1.19.2）**
 
 相关文档导航：[README](../README.md) | [CHANGELOG](../CHANGELOG.md) | [贡献指南](../CONTRIBUTING.md) | [开发约束](DEVELOPMENT_CONSTRAINTS.md)。
 
