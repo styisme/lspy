@@ -42,7 +42,7 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.28.2"
+VERSION = "1.28.3"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
@@ -56,8 +56,24 @@ LOG_FILE = CONFIG_DIR / "lspy.log"
 CERT_FILE = CONFIG_DIR / "cert.pem"
 KEY_FILE = CONFIG_DIR / "key.pem"
 
+def default_save_dir() -> str:
+    r"""默认接收目录：用户主目录下的 Downloads，与启动时的工作目录无关。
+
+    早期版本把默认值写成相对路径 "./downloads"，一旦从 C:\Windows\System32 这类
+    没有写权限的目录启动（例如从虚拟桌面里直接双击 exe），mkdir 就会抛 WinError 5，
+    自动接收服务随之起不来，用户看到的只是两条堆栈式 ❌。
+    """
+    try:
+        home = Path.home()
+        if home and home.is_dir():
+            return str(home / "Downloads")
+    except (OSError, RuntimeError):
+        pass
+    return str(Path.cwd() / "downloads")
+
+
 CONFIG_DEFAULTS = {
-    "alias": None, "port": DEFAULT_PORT, "save_dir": "./downloads",
+    "alias": None, "port": DEFAULT_PORT, "save_dir": default_save_dir(),
     "pin": None, "auto_accept": True, "ntfy_topic": "oldsend_cross_",
     "lang": "auto", "filter_ext": "exe,bat,cmd,vbs,sh",
     "whitelist": [], "blacklist": [], "auto_accept_whitelist": False,
@@ -230,6 +246,7 @@ I18N = {
         "web_up_ok": "Uploaded", "web_text_ok": "Text sent", "web_pin_bad": "PIN required",
         "web_uploaded": "Uploaded {f}",
         "menu_serve_fg": "Switch to foreground service (verbose progress)",
+        "save_dir_hint": "Hint: receive dir {d} is not writable. Change it in Settings (8) or pass -d DIR at startup",
         "auto_start": "Starting background receiver...", "auto_start_fail": "Auto-start failed: {e}",
         "port_in_use": "Port {p} is unavailable: {e}",
         "port_in_use_tip": "Another LocalSend desktop app or a second lspy instance is probably holding this port. Close it, or pick another port with -p 0 / -p 53318.",
@@ -344,6 +361,7 @@ I18N = {
         "web_up_ok": "已上传", "web_text_ok": "已发送", "web_pin_bad": "需要 PIN",
         "web_uploaded": "已上传 {f}",
         "menu_serve_fg": "切换为前台服务（详细进度）",
+        "save_dir_hint": "提示：接收目录 {d} 不可写，可在设置（8）里修改，或启动时用 -d DIR 指定",
         "auto_start": "正在自动启动后台接收服务...", "auto_start_fail": "自动启动失败：{e}",
         "port_in_use": "端口 {p} 不可用：{e}",
         "port_in_use_tip": "通常是本机已有 LocalSend 桌面版或另一个 lspy 实例占用了该端口。请关掉它，或用 -p 0 / -p 53318 换一个端口。",
@@ -463,6 +481,7 @@ I18N = {
         "web_up_ok": "Hochgeladen", "web_text_ok": "Text gesendet", "web_pin_bad": "PIN erforderlich",
         "web_uploaded": "Hochgeladen: {f}",
         "menu_serve_fg": "In den Vordergrunddienst wechseln (ausführlicher Verlauf)",
+        "save_dir_hint": "Hinweis: Empfangsordner {d} ist nicht beschreibbar. Ändern in Einstellungen (8) oder beim Start -d DIR angeben",
         "auto_start": "Hintergrund-Empfänger wird gestartet...", "auto_start_fail": "Autostart fehlgeschlagen: {e}",
         "port_in_use": "Port {p} nicht verfügbar: {e}",
         "port_in_use_tip": "Wahrscheinlich hält die LocalSend-Desktop-App oder eine zweite lspy-Instanz diesen Port. Schließen, oder einen anderen Port mit -p 0 / -p 53318 wählen.",
@@ -582,6 +601,7 @@ I18N = {
         "web_up_ok": "Envoyé", "web_text_ok": "Texte envoyé", "web_pin_bad": "PIN requis",
         "web_uploaded": "Envoyé : {f}",
         "menu_serve_fg": "Passer au service au premier plan (progression détaillée)",
+        "save_dir_hint": "Conseil : le dossier de réception {d} n'est pas accessible en écriture. Modifiez-le dans Réglages (8) ou passez -d DIR au démarrage",
         "auto_start": "Démarrage du récepteur en arrière-plan...", "auto_start_fail": "Échec du démarrage automatique : {e}",
         "port_in_use": "Port {p} indisponible : {e}",
         "port_in_use_tip": "L'application LocalSend ou une seconde instance de lspy occupe probablement ce port. Fermez-la, ou choisissez un autre port avec -p 0 / -p 53318.",
@@ -701,6 +721,7 @@ I18N = {
         "web_up_ok": "アップロード済み", "web_text_ok": "送信済み", "web_pin_bad": "PIN が必要",
         "web_uploaded": "アップロード済み {f}",
         "menu_serve_fg": "前面サービスに切り替え（詳細な進捗）",
+        "save_dir_hint": "ヒント: 受信先 {d} に書き込みできません。設定(8)で変更するか、起動時に -d DIR を指定してください",
         "auto_start": "バックグラウンド受信サービスを起動中...", "auto_start_fail": "自動起動に失敗: {e}",
         "port_in_use": "ポート {p} が使用できません: {e}",
         "port_in_use_tip": "LocalSend デスクトップ版や別の lspy がこのポートを使っている可能性があります。終了するか、-p 0 / -p 53318 で別ポートを指定してください。",
@@ -820,6 +841,7 @@ I18N = {
         "web_up_ok": "업로드됨", "web_text_ok": "전송됨", "web_pin_bad": "PIN 필요",
         "web_uploaded": "업로드됨 {f}",
         "menu_serve_fg": "포그라운드 서비스로 전환 (상세 진행)",
+        "save_dir_hint": "안내: 받기 폴더 {d}에 쓸 수 없습니다. 설정(8)에서 바꾸거나 시작할 때 -d DIR을 지정하세요",
         "auto_start": "백그라운드 수신 서비스 시작 중...", "auto_start_fail": "자동 시작 실패: {e}",
         "port_in_use": "포트 {p} 사용 불가: {e}",
         "port_in_use_tip": "LocalSend 데스크톱 앱이나 다른 lspy 인스턴스가 이 포트를 점유하고 있을 수 있습니다. 종료하거나 -p 0 / -p 53318 로 다른 포트를 지정하세요.",
@@ -934,6 +956,7 @@ I18N = {
         "web_up_ok": "已上傳", "web_text_ok": "已傳送", "web_pin_bad": "需要 PIN",
         "web_uploaded": "已上傳 {f}",
         "menu_serve_fg": "切換為前景服務（詳細進度）",
+        "save_dir_hint": "提示：接收目錄 {d} 無法寫入，可在設定（8）裡修改，或啟動時用 -d DIR 指定",
         "auto_start": "正在自動啟動背景接收服務...", "auto_start_fail": "自動啟動失敗：{e}",
         "port_in_use": "連接埠 {p} 無法使用：{e}",
         "port_in_use_tip": "通常是本機已有 LocalSend 桌面版或另一個 lspy 實例佔用了該連接埠。請關掉它，或用 -p 0 / -p 53318 換一個連接埠。",
@@ -1053,6 +1076,7 @@ I18N = {
         "web_up_ok": "Subido", "web_text_ok": "Texto enviado", "web_pin_bad": "Se requiere PIN",
         "web_uploaded": "Subido: {f}",
         "menu_serve_fg": "Pasar al servicio en primer plano (progreso detallado)",
+        "save_dir_hint": "Consejo: la carpeta de destino {d} no se puede escribir. Cámbiala en Ajustes (8) o pasa -d DIR al iniciar",
         "auto_start": "Iniciando receptor en segundo plano...", "auto_start_fail": "Fallo del inicio automático: {e}",
         "port_in_use": "Puerto {p} no disponible: {e}",
         "port_in_use_tip": "Probablemente la app LocalSend o una segunda instancia de lspy ocupa este puerto. Ciérrala o elige otro con -p 0 / -p 53318.",
@@ -1172,6 +1196,7 @@ I18N = {
         "web_up_ok": "Загружено", "web_text_ok": "Текст отправлен", "web_pin_bad": "Требуется PIN",
         "web_uploaded": "Загружено: {f}",
         "menu_serve_fg": "Перейти в службу переднего плана (подробный прогресс)",
+        "save_dir_hint": "Подсказка: папка приёма {d} недоступна для записи. Измените её в настройках (8) или укажите -d DIR при запуске",
         "auto_start": "Запуск фонового приёмника...", "auto_start_fail": "Ошибка автозапуска: {e}",
         "port_in_use": "Порт {p} недоступен: {e}",
         "port_in_use_tip": "Скорее всего порт занят приложением LocalSend или другим экземпляром lspy. Закройте его или выберите другой порт: -p 0 / -p 53318.",
@@ -1291,6 +1316,7 @@ I18N = {
         "web_up_ok": "Enviado", "web_text_ok": "Texto enviado", "web_pin_bad": "PIN necessário",
         "web_uploaded": "Enviado: {f}",
         "menu_serve_fg": "Passar ao serviço em primeiro plano (progresso detalhado)",
+        "save_dir_hint": "Dica: a pasta de destino {d} não pode ser gravada. Altere em Configurações (8) ou passe -d DIR na inicialização",
         "auto_start": "A iniciar o recetor em segundo plano...", "auto_start_fail": "Falha no arranque automático: {e}",
         "port_in_use": "Porta {p} indisponível: {e}",
         "port_in_use_tip": "Provavelmente a app LocalSend ou uma segunda instância do lspy ocupa esta porta. Feche-a ou escolha outra com -p 0 / -p 53318.",
@@ -2299,7 +2325,7 @@ class LspyServer:
         self.host = host
         self.port = int(port if port is not None else get_config("port"))
         self.bound_port = self.port
-        self.save_dir = Path(save_dir if save_dir else get_config("save_dir")).expanduser()
+        self.save_dir = Path(save_dir or get_config("save_dir") or default_save_dir()).expanduser()
         try:
             self.save_dir.mkdir(parents=True, exist_ok=True)
         except OSError as e:
@@ -3410,7 +3436,7 @@ def _apply_server_config(server):
     cfg = load_config()
     server.pin = cfg.get("pin") or None
     server.auto_accept = bool(cfg.get("auto_accept", True))
-    save_dir = cfg.get("save_dir") or "./downloads"
+    save_dir = cfg.get("save_dir") or default_save_dir()
     try: server.save_dir = Path(save_dir).expanduser()
     except (OSError, ValueError): pass
 
@@ -3420,7 +3446,7 @@ def interactive_config(server=None):
         _apply_server_config(server)
         cfg = load_config()
         alias = get_alias()
-        port = cfg.get("port", DEFAULT_PORT); save_dir = cfg.get("save_dir", "./downloads")
+        port = cfg.get("port", DEFAULT_PORT); save_dir = cfg.get("save_dir") or default_save_dir()
         pin = cfg.get("pin") or t("cfg_none"); auto = cfg.get("auto_accept", True)
         fp = cfg.get("fingerprint", "?"); topic = cfg.get("ntfy_topic", CONFIG_DEFAULTS["ntfy_topic"])
         lang = I18N[_current_lang].get("lang_name", _current_lang)
@@ -3779,6 +3805,13 @@ def interactive_menu():
     print("\n" + "=" * 20 + " " + t("menu_banner") + " " + "=" * 20)
 
     bg_server = None
+    # 先把接收目录准备好再起服务：目录不可写时要给一句人话提示，
+    # 而不是让用户对着两条 WinError 5 猜是端口问题还是路径问题
+    _save_dir = Path(get_config("save_dir") or default_save_dir()).expanduser()
+    try:
+        _save_dir.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        print("💡 " + t("save_dir_hint", d=_save_dir))
     print("🔄 " + t("auto_start"))
     try:
         bg_server = LspyServer(auto_accept=get_config("auto_accept"), pin=get_config("pin"))

@@ -4,6 +4,21 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.28.3] - 2026-11-15
+
+### 修复
+
+- **默认接收目录是相对路径，跟着启动时的工作目录跑**：`save_dir` 的默认值写的是 `./downloads`。只要不是从用户目录启动（虚拟桌面会话里双击 exe 时 cwd 是 `C:\Windows\System32`，任务计划、快捷方式同理），`mkdir` 就会抛 `WinError 5 拒绝访问`，自动接收服务随之启动失败 —— 用户看到的是两条堆栈式 `❌ 无法写入 downloads` / `❌ 自动启动失败`，完全猜不出是路径问题。现在默认值改为 `default_save_dir()`：用户主目录下的 `Downloads`，绝对路径，与 cwd 无关；配置里 `save_dir` 为空或缺失时同样回退到它。
+- **接收目录不可写时给一句人话**：启动后台服务前先尝试 `mkdir`，失败时打印新增的 `save_dir_hint`（×10 语言）——「接收目录 {d} 不可写，可在设置（8）里修改，或启动时用 -d DIR 指定」，不再让人对着 `WinError 5` 猜是端口还是路径冲突。
+- `LspyServer` 构造时对 `save_dir` 补了 `or default_save_dir()` 兜底：配置文件里把 `save_dir` 显式写成 `null` 也不会再 `Path(None)` 崩。
+
+### 验证
+
+- 在虚拟桌面（PiP）会话里实跑 `lspy-1.28.2-windows-x64.exe` 复现：cwd 为 `C:\WINDOWS\System32`，菜单一启动即报两条 `WinError 5`。修复后同一场景下 `save_dir` 落到 `C:\Users\Administrator\Downloads`，后台接收服务正常起来。
+- 从 `C:\Windows\System32` 直接构造 `LspyServer`：`save_dir = C:\Users\Administrator\Downloads`、目录存在，进程 cwd 仍为 System32。
+- 同一 PiP 会话里复测菜单 `1`（本机信息：version / alias / fingerprint / port 全对）与 `9`（网络排查四段正常，无 `UnicodeDecodeError`）。
+- 测试 118 → 123（新增默认目录绝对性、与 cwd 无关、配置缺省回退、`CONFIG_DEFAULTS` 绝对性、`save_dir_hint` 十语种覆盖五例）。
+
 ## [1.28.2] - 2026-11-15
 
 ### 修复

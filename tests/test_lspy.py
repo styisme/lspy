@@ -1492,5 +1492,59 @@ class TestCertCommand(unittest.TestCase):
             self.assertIn("cert_no_openssl", table, lang)
 
 
+class TestDefaultSaveDir(unittest.TestCase):
+    """默认接收目录曾写成相对路径 ./downloads。
+
+    从 C:\\Windows\\System32 这类不可写目录启动（例如从虚拟桌面里双击 exe）时，
+    mkdir 抛 WinError 5，自动接收服务直接起不来——在没有 -d 参数的默认启动路径上必现。
+    """
+
+    def test_default_is_absolute_and_home_based(self):
+        d = lspy.default_save_dir()
+        self.assertTrue(os.path.isabs(d), d)
+        self.assertEqual(Path(d), Path.home() / "Downloads")
+
+    def test_default_does_not_follow_cwd(self):
+        old = os.getcwd()
+        with tempfile.TemporaryDirectory() as td:
+            os.chdir(td)
+            try:
+                d = lspy.default_save_dir()
+            finally:
+                os.chdir(old)
+        self.assertTrue(os.path.isabs(d), d)
+        self.assertEqual(Path(d), Path.home() / "Downloads")
+
+    def test_config_default_is_absolute(self):
+        self.assertTrue(os.path.isabs(lspy.CONFIG_DEFAULTS["save_dir"]))
+
+    def test_server_without_save_dir_uses_home_not_cwd(self):
+        """配置里没有 save_dir 时，服务必须落在主目录下的 Downloads，而不是当前工作目录。"""
+        from unittest import mock
+
+        def _fake_config(key, default=None):
+            # 模拟「配置里没有 save_dir」时 get_config 的真实回退：落到 CONFIG_DEFAULTS
+            if key == "save_dir":
+                return lspy.CONFIG_DEFAULTS["save_dir"]
+            return default if default is not None else lspy.CONFIG_DEFAULTS.get(key)
+
+        old = os.getcwd()
+        with tempfile.TemporaryDirectory() as td:
+            os.chdir(td)
+            try:
+                with mock.patch.object(lspy, "get_config", side_effect=_fake_config):
+                    srv = lspy.LspyServer(save_dir=None, auto_accept=True,
+                                          multicast=False, web_enable=False)
+                self.assertTrue(os.path.isabs(str(srv.save_dir)))
+                self.assertEqual(Path(srv.save_dir), Path.home() / "Downloads")
+                self.assertNotEqual(Path(srv.save_dir).resolve(), (Path(td) / "downloads").resolve())
+            finally:
+                os.chdir(old)
+
+    def test_every_language_has_save_dir_hint(self):
+        for lang, table in lspy.I18N.items():
+            self.assertIn("save_dir_hint", table, lang)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
