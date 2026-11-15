@@ -4,6 +4,16 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.23.2] - 2026-11-15
+
+### 修复
+
+- 剪贴板命令行工具（`pbcopy` / `wl-copy` / `xclip` / `xsel`）原先只看进程有没有跑起来就算成功，不看退出码：`xclip` 装在机器上却拿不到 X display 时会返回 1，此时仍被当成「已写入剪贴板」，`/web/text` 因此跳过落盘，用户粘进来的文本既没进剪贴板也没存文件。现在统一走 `_run_clipboard_cmd`，退出码非 0 一律算失败并继续降级（`wl-copy`→`xclip`→`xsel`→`tkinter`）。
+
+### 测试
+
+- 新增 2 个用例：命令不存在或退出码非 0 都返回失败、真实 POSIX 命令零退出码才算成功。测试总数 75 → 77。
+
 ## [1.23.1] - 2026-11-15
 
 ### 新增

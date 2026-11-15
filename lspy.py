@@ -41,7 +41,7 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.23.1"
+VERSION = "1.23.2"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
@@ -1462,6 +1462,25 @@ def _clipboard_cmd(candidates):
     return None
 
 
+def _run_clipboard_cmd(tool, text=None, capture=False):
+    """跑剪贴板命令行工具，返回 (是否成功, 输出)。
+
+    退出码非 0 一律算失败：`xclip` 装在机器上但拿不到 X display 时就是这种情形，
+    不能因为进程跑起来了就当成写入成功（否则 /web/text 会跳过落盘，文本直接丢）。
+    """
+    try:
+        args = [tool[0]] + list(tool[1])
+        if capture:
+            r = subprocess.run(args, capture_output=True, timeout=5)
+        else:
+            r = subprocess.run(args, input=(text or "").encode("utf-8"), capture_output=True, timeout=5)
+        ok = r.returncode == 0
+        return (ok, r.stdout.decode("utf-8", "replace") if capture and ok else "")
+    except Exception as e:
+        _log.debug("clipboard cmd %s: %s", tool[0], e)
+        return (False, "")
+
+
 def _clipboard_get():
     """读取本机剪贴板；优先系统原生通道，最后才退回 tkinter，失败返回空串。"""
     try:
@@ -1470,13 +1489,14 @@ def _clipboard_get():
             if text: return text
         elif sys.platform == "darwin":
             if shutil.which("pbpaste"):
-                return subprocess.run(["pbpaste"], capture_output=True, timeout=5).stdout.decode("utf-8", "replace")
+                ok, out = _run_clipboard_cmd(("pbpaste", []), capture=True)
+                if ok: return out
         else:
             tool = _clipboard_cmd([("wl-paste", []), ("xclip", ["-selection", "clipboard", "-o"]),
                                    ("xsel", ["--clipboard", "--output"])])
             if tool:
-                out = subprocess.run([tool[0]] + tool[1], capture_output=True, timeout=5).stdout
-                return out.decode("utf-8", "replace")
+                ok, out = _run_clipboard_cmd(tool, capture=True)
+                if ok: return out
     except Exception as e:
         _log.debug("native clipboard get: %s", e)
     try:
@@ -1498,14 +1518,14 @@ def _clipboard_set(text):
             if _win32_clipboard_set(text): return True
         elif sys.platform == "darwin":
             if shutil.which("pbcopy"):
-                subprocess.run(["pbcopy"], input=text.encode("utf-8"), timeout=5)
-                return True
+                ok, _ = _run_clipboard_cmd(("pbcopy", []), text=text)
+                if ok: return True
         else:
             tool = _clipboard_cmd([("wl-copy", []), ("xclip", ["-selection", "clipboard"]),
                                    ("xsel", ["--clipboard", "--input"])])
             if tool:
-                subprocess.run([tool[0]] + tool[1], input=text.encode("utf-8"), timeout=5)
-                return True
+                ok, _ = _run_clipboard_cmd(tool, text=text)
+                if ok: return True
     except Exception as e:
         _log.debug("native clipboard set: %s", e)
     try:

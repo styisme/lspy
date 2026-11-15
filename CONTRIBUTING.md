@@ -40,7 +40,7 @@ cd lspy
 
 python lspy.py --help                     # 免安装运行
 pip install .                             # 安装为 lspy 命令
-python -m unittest discover -s tests -v   # 全量测试（75 例）
+python -m unittest discover -s tests -v   # 全量测试（77 例）
 python scripts/sync_version.py --check    # 校验版本号与 CHANGELOG 一致
 pip install pyinstaller && python scripts/build_binary.py --clean   # 打包单文件可执行程序
 ```

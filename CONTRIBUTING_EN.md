@@ -40,7 +40,7 @@ cd lspy
 
 python lspy.py --help                     # run without installing
 pip install .                             # install the `lspy` command
-python -m unittest discover -s tests -v   # full suite (75 tests)
+python -m unittest discover -s tests -v   # full suite (77 tests)
 python scripts/sync_version.py --check    # version consistency with CHANGELOG
 pip install pyinstaller && python scripts/build_binary.py --clean   # standalone executable
 ```

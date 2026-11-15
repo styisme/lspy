@@ -773,6 +773,17 @@ class TestReceiveClipboard(unittest.TestCase):
         self.assertTrue(lspy._win32_clipboard_set(probe))
         self.assertEqual(lspy._win32_clipboard_get(), probe)
 
+    def test_clipboard_cmd_failure_is_not_success(self):
+        """回归：命令存在但退出码非 0（如 xclip 拿不到 X display）必须算失败。"""
+        ok, out = lspy._run_clipboard_cmd(("definitely-not-a-clipboard-tool", []), text="x")
+        self.assertFalse(ok)
+        self.assertEqual(out, "")
+
+    @unittest.skipIf(sys.platform == "win32", "用一个真实 POSIX 命令验证成功路径")
+    def test_clipboard_cmd_success_needs_zero_exit_code(self):
+        ok, _ = lspy._run_clipboard_cmd(("cat", []), text="abc")
+        self.assertTrue(ok)
+
 
 class TestHistoryTrim(unittest.TestCase):
     """历史条数上限（watchsend HistoryStore 只留最新 100 条）。"""
