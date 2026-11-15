@@ -491,6 +491,46 @@ class TestProtocol(unittest.TestCase):
             self.assertEqual(status, 200)
             self.assertIn("sessionId", resp)
 
+    def test_pin_change_applies_to_running_server(self):
+        """设置面板改了 PIN 要立刻生效，不能等下一次重启服务。"""
+        with ServerPair(pin=None) as sp:
+            status, _ = self._post(f"{sp.base}/api/localsend/v2/prepare-upload",
+                                   self._files_body("a.txt", 3))
+            self.assertEqual(status, 200)          # 改之前不设防
+            lspy.set_config("pin", "5678")
+            lspy._apply_server_config(sp.server)
+            self.assertEqual(sp.server.pin, "5678")
+            status, _ = self._post(f"{sp.base}/api/localsend/v2/prepare-upload",
+                                   self._files_body("b.txt", 3))
+            self.assertEqual(status, 401)
+            status, resp = self._post(f"{sp.base}/api/localsend/v2/prepare-upload?pin=5678",
+                                      self._files_body("c.txt", 3))
+            self.assertEqual(status, 200)
+            self.assertIn("sessionId", resp)
+
+    def test_pin_accepts_header_form(self):
+        """v1 时代的老客户端只发 X-LocalSend-Pin 头，这条通道也要认。"""
+        with ServerPair(pin="1357") as sp:
+            req = urllib.request.Request(
+                f"{sp.base}/api/localsend/v2/prepare-upload",
+                data=json.dumps(self._files_body("h.txt", 2)).encode(), method="POST")
+            req.add_header("Content-Type", "application/json")
+            req.add_header("X-LocalSend-Pin", "1357")
+            with urllib.request.urlopen(req, timeout=5) as r:
+                self.assertEqual(r.status, 200)
+
+    def test_pin_rejection_reads_body_first(self):
+        """PIN 不对也要先读完请求体再回 401。
+
+        直接关连接的话，对端还在写 body，拿到的会是连接重置而不是 401，
+        官方客户端就不会弹 PIN 输入框。
+        """
+        with ServerPair(pin="9999") as sp:
+            body = self._files_body("big.txt", 3)
+            body["pad"] = "z" * 200000        # 把请求体撑到比内核缓冲大
+            status, _ = self._post(f"{sp.base}/api/localsend/v2/prepare-upload", body)
+            self.assertEqual(status, 401)
+
     def test_blacklist_rejects(self):
         lspy.set_config("blacklist", ["fp-bad"])
         with ServerPair() as sp:

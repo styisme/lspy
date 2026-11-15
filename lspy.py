@@ -42,7 +42,7 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.27.1"
+VERSION = "1.27.2"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
@@ -2260,9 +2260,11 @@ class LspyServer:
                 # v2.1 的 send-request 与旧版 prepare-upload 语义一致，共用处理逻辑
                 if path in (f"{V2_PREFIX}/prepare-upload", f"{V1_PREFIX}/prepare-upload",
                             f"{V2_PREFIX}/send-request", f"{V1_PREFIX}/send-request"):
-                    if not self._pin_ok(qs): self._unauthorized(); return
+                    # 先把请求体读完再判 PIN：没读就 401 会直接关连接，对端这时候可能
+                    # 还在写 body，收到的是连接重置而不是 401，于是连 PIN 输入框都不弹。
                     try: o = json.loads(self._read_body().decode("utf-8") or "{}")
-                    except Exception: self._json(400, {"error": "bad request"}); return
+                    except Exception: o = None
+                    if not self._pin_ok(qs): self._unauthorized(); return
                     if not isinstance(o, dict): self._json(400, {"error": "bad request"}); return
 
                     files = o.get("files") or {}; info = o.get("info") or {}
@@ -2881,8 +2883,25 @@ def cmd_config(args):
     interactive_config()
 
 # ================== 交互菜单 ==================
-def interactive_config():
+def _apply_server_config(server):
+    """把设置面板里的改动立刻作用到正在运行的接收服务。
+
+    服务启动时就把 pin / auto_accept / save_dir 拷进了自己的字段，而设置面板只写配置文件：
+    不刷新这些字段的话，改了 PIN 别人照样不用 PIN 就能发过来、改了保存目录文件还落回旧目录，
+    用户看到的就是「设置了没用」。端口没法热改（要重新 bind），由菜单在退出设置后重建服务。
+    """
+    if server is None: return
+    cfg = load_config()
+    server.pin = cfg.get("pin") or None
+    server.auto_accept = bool(cfg.get("auto_accept", True))
+    save_dir = cfg.get("save_dir") or "./downloads"
+    try: server.save_dir = Path(save_dir).expanduser()
+    except (OSError, ValueError): pass
+
+
+def interactive_config(server=None):
     while True:
+        _apply_server_config(server)
         cfg = load_config()
         alias = cfg.get("alias") or f"{socket.gethostname()} {t('cfg_default')}"
         port = cfg.get("port", DEFAULT_PORT); save_dir = cfg.get("save_dir", "./downloads")
@@ -3311,7 +3330,18 @@ def interactive_menu():
         elif choice == "7":
             cmd_history(argparse.Namespace(n=20))
         elif choice == "8":
-            interactive_config()
+            interactive_config(bg_server)
+            # PIN / 自动接受 / 保存目录刚才已经热同步；端口不同就只能重建服务
+            want = int(get_config("port") or DEFAULT_PORT)
+            if bg_server and bg_server.port != want:
+                bg_server.stop(); bg_server = None
+                try:
+                    bg_server = LspyServer(auto_accept=get_config("auto_accept"),
+                                           pin=get_config("pin"))
+                    bg_server.start(blocking=False)
+                    print("✅ " + t("cfg_port") + ": " + str(want))
+                except Exception as e:
+                    print("❌ " + t("auto_start_fail", e=e))
         else:
             print("⚠️ " + t("invalid_option"))
 
