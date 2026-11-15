@@ -42,7 +42,7 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.27.0"
+VERSION = "1.27.1"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
@@ -1864,6 +1864,20 @@ def scan_network(timeout=2.0, verbose=True, extra_hosts=None):
     return list(devices.values())
 
 # --- HTTP 深度扫描（专治 UDP/组播被防火墙或 AP 隔离拦截） ---
+def _port_open(host, port, timeout=0.3):
+    """先看端口是否接受连接，再决定要不要发 HTTP 请求。
+
+    局域网里绝大多数地址没有服务：直接对每个 IP 做 http + https 两次 urlopen，
+    每次都要等满连接超时（Windows 上单次能到 5-9 秒），扫一个 /24 网段就要半分钟以上，
+    看上去像卡死。一次 TCP 试探只要 0.3 秒，能把整个网段压到秒级。
+    """
+    try:
+        with socket.create_connection((str(host), int(port)), timeout=timeout):
+            return True
+    except Exception:
+        return False
+
+
 def http_scan(ip_or_host, timeout=1.0, port=None, hosts=None, announce=True):
     """对给定网段（或主机列表）并发探测 /info 接口。"""
     port = int(port if port is not None else get_config("port"))
@@ -1876,8 +1890,13 @@ def http_scan(ip_or_host, timeout=1.0, port=None, hosts=None, announce=True):
         candidates.append(ip_or_host)
 
     devices = []
+    total = len(candidates)
+    show_progress = announce and total >= 32 and sys.stdout.isatty()
 
     def probe(ip):
+        # 端口不通就不用发 HTTP 了，省掉整段连接超时
+        if not _port_open(ip, port, timeout=min(0.4, max(0.15, timeout))):
+            return None
         for scheme in ("http", "https"):
             url = f"{scheme}://{ip}:{port}{V2_PREFIX}/info"
             try:
@@ -1895,13 +1914,19 @@ def http_scan(ip_or_host, timeout=1.0, port=None, hosts=None, announce=True):
         return None
 
     if announce: print("\n" + t("deep_scanning", ip=label))
+    done = 0
     with concurrent.futures.ThreadPoolExecutor(max_workers=64) as pool:
         futures = [pool.submit(probe, ip) for ip in candidates]
         for f in concurrent.futures.as_completed(futures):
+            done += 1
             d = f.result()
             if d and d.fingerprint != get_fingerprint():
+                if show_progress: print("\r" + " " * 28, end="\r", flush=True)
                 devices.append(d)
                 if announce: print(f"  ✅ {t('found_device', d=d)}")
+            elif show_progress and done % 32 == 0:
+                print("\r  🔎 %d/%d" % (done, total), end="", flush=True)
+    if show_progress: print("\r" + " " * 28, end="\r", flush=True)
     return devices
 
 # ================== 核心：抑制异常 ==================
