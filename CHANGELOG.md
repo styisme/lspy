@@ -4,6 +4,16 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.25.1] - 2026-11-15
+
+### 修复
+
+- 1.25.0 新增的 `test_force_cfdialog_is_a_real_config_key` 把 `sys.stdout` 指向用系统默认编码打开的 `os.devnull`，在 CI 的 Windows 上（cp1252）打印 `✅` 时直接 `UnicodeEncodeError`，三个 Windows 矩阵全红。改用 `contextlib.redirect_stdout(io.StringIO())` 收口，与终端编码无关。
+
+### 测试
+
+- 本地用 `PYTHONIOENCODING=cp1252` 复现旧行为并验证修复：`TestDialogPicker` 在 cp1252 下 10 例全过。测试总数仍为 87。
+
 ## [1.25.0] - 2026-11-15
 
 ### 新增

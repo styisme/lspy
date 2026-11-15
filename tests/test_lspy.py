@@ -981,14 +981,14 @@ class TestDialogPicker(unittest.TestCase):
 
     def test_force_cfdialog_is_a_real_config_key(self):
         """开关得能从 CONFIG_DEFAULTS 和 config --set 两个方向进来。"""
+        import contextlib
+        import io
         self.assertFalse(lspy.CONFIG_DEFAULTS["force_cfdialog"])
         args = type("A", (), {"reset": False, "show": False, "set": "force_cfdialog=1"})()
         lspy.set_config("force_cfdialog", None)
-        orig_stdout = sys.stdout
-        sys.stdout = open(os.devnull, "w")
-        try: lspy.cmd_config(args)
-        finally:
-            sys.stdout.close(); sys.stdout = orig_stdout
+        # 用 StringIO 收口：CI 的 Windows 控制台是 cp1252，✅ 会触发 UnicodeEncodeError
+        with contextlib.redirect_stdout(io.StringIO()):
+            lspy.cmd_config(args)
         self.assertTrue(lspy.get_config("force_cfdialog"))
 
 
