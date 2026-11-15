@@ -27,6 +27,11 @@ os.environ.setdefault("LANG", "en")
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import lspy  # noqa: E402
 
+# 测试里把真实剪贴板写入换成桩：跑一遍测试不该动用户的剪贴板内容。
+# 需要验证真实通道的用例直接用 _win32_clipboard_set/_clipboard_get（见 TestReceiveClipboard）。
+REAL_CLIPBOARD_SET = lspy._clipboard_set
+lspy._clipboard_set = lambda text: True
+
 
 def tearDownModule():
     shutil.rmtree(TEST_HOME, ignore_errors=True)
@@ -702,6 +707,144 @@ class TestHistoryManage(unittest.TestCase):
             lspy.cmd_history(argparse.Namespace(n=20, clear=False, delete=None, unzip=1))
         self.assertFalse((Path(tmp).parent / "escape.txt").exists())
         self.assertIn(lspy._t_for(lspy._current_lang, "unzip_unsafe")[:4], buf.getvalue())
+
+
+class TestReceiveClipboard(unittest.TestCase):
+    """收到 ≤10KB 的 .txt 自动进剪贴板（对应 watchsend UploadHandler 的行为）。"""
+
+    def setUp(self):
+        self._cfg = lspy.get_config("clipboard_text")
+        lspy.set_config("clipboard_text", True)
+        self._orig = lspy._clipboard_set
+
+    def tearDown(self):
+        lspy._clipboard_set = self._orig
+        lspy.set_config("clipboard_text", self._cfg)
+
+    def test_small_txt_goes_to_clipboard(self):
+        tmp = tempfile.mkdtemp(prefix="lspy_test_clip_")
+        self.addCleanup(shutil.rmtree, tmp, True)
+        f = Path(tmp) / "code.txt"
+        f.write_text("123456", encoding="utf-8")
+        captured = []
+        lspy._clipboard_set = lambda text: captured.append(text) or True
+        self.assertTrue(lspy._maybe_clipboard_text(f))
+        self.assertEqual(captured, ["123456"])
+
+    def test_non_txt_and_oversize_are_ignored(self):
+        tmp = tempfile.mkdtemp(prefix="lspy_test_clip_")
+        self.addCleanup(shutil.rmtree, tmp, True)
+        captured = []
+        lspy._clipboard_set = lambda text: captured.append(text) or True
+        mp4 = Path(tmp) / "clip.mp4"; mp4.write_bytes(b"x" * 8)
+        big = Path(tmp) / "big.txt"; big.write_bytes(b"y" * (lspy.CLIPBOARD_TEXT_MAX + 1))
+        self.assertFalse(lspy._maybe_clipboard_text(mp4))
+        self.assertFalse(lspy._maybe_clipboard_text(big))
+        self.assertEqual(captured, [])
+
+    def test_disabled_by_config(self):
+        tmp = tempfile.mkdtemp(prefix="lspy_test_clip_")
+        self.addCleanup(shutil.rmtree, tmp, True)
+        f = Path(tmp) / "note.txt"; f.write_text("hi", encoding="utf-8")
+        lspy.set_config("clipboard_text", False)
+        lspy._clipboard_set = lambda text: self.fail("不应写入剪贴板")
+        self.assertFalse(lspy._maybe_clipboard_text(f))
+
+    def test_web_upload_of_txt_reaches_clipboard(self):
+        """走真实 HTTP 上传，确认 _post_process 的接线真的连上了。"""
+        captured = []
+        lspy._clipboard_set = lambda text: captured.append(text) or True
+        with ServerPair() as sp:
+            req = urllib.request.Request(f"{sp.base}/web/upload?name=web-note.txt",
+                                         data="从浏览器发来".encode("utf-8"), method="POST")
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                self.assertEqual(resp.status, 200)
+            for _ in range(40):
+                if captured: break
+                threading.Event().wait(0.05)
+        self.assertEqual(captured, ["从浏览器发来"])
+
+    @unittest.skipUnless(sys.platform == "win32", "只有 Windows 走 Win32 剪贴板通道")
+    def test_win32_native_clipboard_roundtrip(self):
+        """回归：tkinter 缺 init.tcl 时剪贴板整体失效，必须由 Win32 API 通道兜住。"""
+        old = lspy._win32_clipboard_get()
+        self.addCleanup(lambda: lspy._win32_clipboard_set(old) if old else None)
+        probe = "lspy 剪贴板 probe · 42"
+        self.assertTrue(lspy._win32_clipboard_set(probe))
+        self.assertEqual(lspy._win32_clipboard_get(), probe)
+
+
+class TestHistoryTrim(unittest.TestCase):
+    """历史条数上限（watchsend HistoryStore 只留最新 100 条）。"""
+
+    def setUp(self):
+        self._limit = lspy.get_config("history_max")
+        self._enable = lspy.get_config("history_enable")
+        lspy.set_config("history_enable", True)
+        if lspy.HISTORY_FILE.exists(): lspy.HISTORY_FILE.unlink()
+
+    def tearDown(self):
+        lspy.set_config("history_max", self._limit)
+        lspy.set_config("history_enable", self._enable)
+        if lspy.HISTORY_FILE.exists(): lspy.HISTORY_FILE.unlink()
+
+    def test_old_entries_are_dropped(self):
+        lspy.set_config("history_max", 3)
+        for i in range(6):
+            lspy.append_history(f"f{i}.txt", f"/tmp/f{i}.txt", i, True)
+        self.assertEqual([e["file"] for e in lspy.history_entries_all()],
+                         ["f5.txt", "f4.txt", "f3.txt"])
+        self.assertEqual(len(lspy.HISTORY_FILE.read_text("utf-8").splitlines()), 3)
+
+    def test_zero_disables_trimming(self):
+        lspy.set_config("history_max", 0)
+        for i in range(5):
+            lspy.append_history(f"g{i}.txt", f"/tmp/g{i}.txt", i, True)
+        self.assertEqual(len(lspy.HISTORY_FILE.read_text("utf-8").splitlines()), 5)
+
+    def test_trim_keeps_file_parseable(self):
+        lspy.set_config("history_max", 2)
+        for i in range(4):
+            lspy.append_history(f"h{i}.txt", f"/tmp/h{i}.txt", i, True)
+        for line in lspy.HISTORY_FILE.read_text("utf-8").splitlines():
+            json.loads(line)  # 每行都还是完整 JSON，没被截断
+
+
+class TestInfoIPv6(unittest.TestCase):
+    """info 里补充可直连的 IPv6 地址（对应 watchsend CrossNetActivity 的 [IPv6]:53317）。"""
+
+    def test_prints_bracketed_direct_address(self):
+        import argparse
+        from contextlib import redirect_stdout
+        import io
+        orig = lspy.local_ipv6_addresses
+        lspy.local_ipv6_addresses = lambda: ["2001:db8::1", "2001:db8::2"]
+        self.addCleanup(setattr, lspy, "local_ipv6_addresses", orig)
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            lspy.cmd_info(argparse.Namespace())
+        out = buf.getvalue()
+        self.assertIn("IPv6: [2001:db8::1]:", out)
+        self.assertIn("[2001:db8::2]", out)
+
+    def test_says_so_when_no_ipv6(self):
+        import argparse
+        from contextlib import redirect_stdout
+        import io
+        orig = lspy.local_ipv6_addresses
+        lspy.local_ipv6_addresses = lambda: []
+        self.addCleanup(setattr, lspy, "local_ipv6_addresses", orig)
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            lspy.cmd_info(argparse.Namespace())
+        self.assertIn(lspy._t_for(lspy._current_lang, "ipv6_not_found")[:4], buf.getvalue())
+
+    def test_enumeration_skips_loopback_and_link_local(self):
+        for ip in lspy.local_ipv6_addresses():
+            low = ip.lower()
+            self.assertFalse(low.startswith("fe8"), ip)
+            self.assertNotIn(low, ("::1", "::"))
+            self.assertNotIn("%", ip)  # 带 zone id 的链路本地地址不能拿来直连
 
 
 if __name__ == "__main__":

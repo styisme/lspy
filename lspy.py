@@ -41,7 +41,7 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.23.0"
+VERSION = "1.23.1"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
@@ -60,8 +60,8 @@ CONFIG_DEFAULTS = {
     "lang": "auto", "filter_ext": "exe,bat,cmd,vbs,sh",
     "whitelist": [], "blacklist": [], "auto_accept_whitelist": False,
     "use_https": False, "web_enable": True, "organize_by_type": True,
-    "history_enable": True, "auto_unzip": False,
-    "open_after_receive": False, "log_level": "INFO",
+    "history_enable": True, "auto_unzip": False, "history_max": 300,
+    "clipboard_text": True, "open_after_receive": False, "log_level": "INFO",
 }
 
 SUPPORTED_LANGS = ["zh", "zh_TW", "en", "ja", "ko", "de", "fr", "es", "ru", "pt"]
@@ -144,6 +144,9 @@ I18N = {
         "pick_files_title": "Select files", "yes": "yes", "no": "no",
         "stun_probing": "Probing STUN...", "stun_result": "Public address: {r}", "stun_fail": "STUN failed: {e}",
         "history_empty": "No history", "history_entry": "[{t}] {f} ({s} bytes) receive={r}",
+        "text_copied": "Copied to clipboard: {f}",
+        "ipv6_not_found": "No IPv6 address found",
+        "cfg_invalid_number": "{k} must be a non-negative integer",
         "history_cleared": "History wiped", "history_deleted": "Deleted: {f}",
         "history_bad_index": "No such entry: {n}", "history_missing": "File is gone: {p}",
         "not_zip": "Not a ZIP file: {p}",
@@ -226,6 +229,9 @@ I18N = {
         "prompt_pick_device": "选择 [1-{n}]: ", "pick_files_title": "选择文件", "yes": "是", "no": "否",
         "stun_probing": "STUN 探测...", "stun_result": "公网地址：{r}", "stun_fail": "STUN 失败：{e}",
         "history_empty": "无历史记录", "history_entry": "[{t}] {f}（{s} 字节）receive={r}",
+        "text_copied": "已复制到剪贴板：{f}",
+        "ipv6_not_found": "未找到 IPv6 地址",
+        "cfg_invalid_number": "{k} 必须是非负整数",
         "history_cleared": "已清空历史记录", "history_deleted": "已删除：{f}",
         "history_bad_index": "没有这条记录：{n}", "history_missing": "文件已不存在：{p}",
         "not_zip": "不是 ZIP 文件：{p}",
@@ -311,6 +317,9 @@ I18N = {
         "pick_files_title": "Dateien auswählen", "yes": "ja", "no": "nein",
         "stun_probing": "STUN wird abgefragt...", "stun_result": "Öffentliche Adresse: {r}", "stun_fail": "STUN fehlgeschlagen: {e}",
         "history_empty": "Kein Verlauf", "history_entry": "[{t}] {f} ({s} Bytes) receive={r}",
+        "text_copied": "In die Zwischenablage kopiert: {f}",
+        "ipv6_not_found": "Keine IPv6-Adresse gefunden",
+        "cfg_invalid_number": "{k} muss eine nicht negative Ganzzahl sein",
         "history_cleared": "Verlauf gelöscht", "history_deleted": "Gelöscht: {f}",
         "history_bad_index": "Kein solcher Eintrag: {n}", "history_missing": "Datei fehlt: {p}",
         "not_zip": "Keine ZIP-Datei: {p}",
@@ -397,6 +406,9 @@ I18N = {
         "pick_files_title": "Sélectionner des fichiers", "yes": "oui", "no": "non",
         "stun_probing": "Interrogation STUN...", "stun_result": "Adresse publique : {r}", "stun_fail": "Échec STUN : {e}",
         "history_empty": "Historique vide", "history_entry": "[{t}] {f} ({s} octets) receive={r}",
+        "text_copied": "Copié dans le presse-papiers : {f}",
+        "ipv6_not_found": "Aucune adresse IPv6 trouvée",
+        "cfg_invalid_number": "{k} doit être un entier positif ou nul",
         "history_cleared": "Historique effacé", "history_deleted": "Supprimé : {f}",
         "history_bad_index": "Entrée inexistante : {n}", "history_missing": "Fichier absent : {p}",
         "not_zip": "Ce n'est pas un ZIP : {p}",
@@ -483,6 +495,9 @@ I18N = {
         "pick_files_title": "ファイルを選択", "yes": "はい", "no": "いいえ",
         "stun_probing": "STUN を問い合わせ中...", "stun_result": "グローバルアドレス: {r}", "stun_fail": "STUN 失敗: {e}",
         "history_empty": "履歴はありません", "history_entry": "[{t}] {f}（{s} バイト）receive={r}",
+        "text_copied": "クリップボードにコピーしました：{f}",
+        "ipv6_not_found": "IPv6 アドレスが見つかりません",
+        "cfg_invalid_number": "{k} は 0 以上の整数である必要があります",
         "history_cleared": "履歴を消去しました", "history_deleted": "削除しました: {f}",
         "history_bad_index": "その番号の記録はありません: {n}", "history_missing": "ファイルが見つかりません: {p}",
         "not_zip": "ZIP ファイルではありません: {p}",
@@ -569,6 +584,9 @@ I18N = {
         "pick_files_title": "파일 선택", "yes": "예", "no": "아니오",
         "stun_probing": "STUN 조회 중...", "stun_result": "공인 주소: {r}", "stun_fail": "STUN 실패: {e}",
         "history_empty": "기록 없음", "history_entry": "[{t}] {f} ({s} 바이트) receive={r}",
+        "text_copied": "클립보드에 복사했습니다: {f}",
+        "ipv6_not_found": "IPv6 주소를 찾을 수 없습니다",
+        "cfg_invalid_number": "{k}은(는) 0 이상의 정수여야 합니다",
         "history_cleared": "기록을 지웠습니다", "history_deleted": "삭제됨: {f}",
         "history_bad_index": "해당 기록이 없습니다: {n}", "history_missing": "파일이 없습니다: {p}",
         "not_zip": "ZIP 파일이 아닙니다: {p}",
@@ -651,6 +669,9 @@ I18N = {
         "prompt_pick_device": "選擇 [1-{n}]: ", "pick_files_title": "選擇檔案", "yes": "是", "no": "否",
         "stun_probing": "STUN 探測...", "stun_result": "公網位址：{r}", "stun_fail": "STUN 失敗：{e}",
         "history_empty": "無歷史紀錄", "history_entry": "[{t}] {f}（{s} 位元組）receive={r}",
+        "text_copied": "已複製到剪貼簿：{f}",
+        "ipv6_not_found": "找不到 IPv6 位址",
+        "cfg_invalid_number": "{k} 必須是非負整數",
         "history_cleared": "已清空歷史記錄", "history_deleted": "已刪除：{f}",
         "history_bad_index": "沒有這筆記錄：{n}", "history_missing": "檔案已不存在：{p}",
         "not_zip": "不是 ZIP 檔案：{p}",
@@ -736,6 +757,9 @@ I18N = {
         "pick_files_title": "Seleccionar archivos", "yes": "sí", "no": "no",
         "stun_probing": "Consultando STUN...", "stun_result": "Dirección pública: {r}", "stun_fail": "Fallo de STUN: {e}",
         "history_empty": "Sin historial", "history_entry": "[{t}] {f} ({s} bytes) receive={r}",
+        "text_copied": "Copiado al portapapeles: {f}",
+        "ipv6_not_found": "No se encontró ninguna dirección IPv6",
+        "cfg_invalid_number": "{k} debe ser un entero no negativo",
         "history_cleared": "Historial borrado", "history_deleted": "Eliminado: {f}",
         "history_bad_index": "No existe esa entrada: {n}", "history_missing": "El archivo ya no existe: {p}",
         "not_zip": "No es un ZIP: {p}",
@@ -822,6 +846,9 @@ I18N = {
         "pick_files_title": "Выбор файлов", "yes": "да", "no": "нет",
         "stun_probing": "Запрос STUN...", "stun_result": "Публичный адрес: {r}", "stun_fail": "Ошибка STUN: {e}",
         "history_empty": "История пуста", "history_entry": "[{t}] {f} ({s} байт) receive={r}",
+        "text_copied": "Скопировано в буфер обмена: {f}",
+        "ipv6_not_found": "Адрес IPv6 не найден",
+        "cfg_invalid_number": "{k} должно быть целым неотрицательным числом",
         "history_cleared": "История очищена", "history_deleted": "Удалено: {f}",
         "history_bad_index": "Нет такой записи: {n}", "history_missing": "Файл не найден: {p}",
         "not_zip": "Это не ZIP-файл: {p}",
@@ -908,6 +935,9 @@ I18N = {
         "pick_files_title": "Selecionar ficheiros", "yes": "sim", "no": "não",
         "stun_probing": "A consultar STUN...", "stun_result": "Endereço público: {r}", "stun_fail": "Falha STUN: {e}",
         "history_empty": "Sem histórico", "history_entry": "[{t}] {f} ({s} bytes) receive={r}",
+        "text_copied": "Copiado para a área de transferência: {f}",
+        "ipv6_not_found": "Nenhum endereço IPv6 encontrado",
+        "cfg_invalid_number": "{k} deve ser um inteiro não negativo",
         "history_cleared": "Histórico apagado", "history_deleted": "Removido: {f}",
         "history_bad_index": "Não existe essa entrada: {n}", "history_missing": "O ficheiro já não existe: {p}",
         "not_zip": "Não é um ficheiro ZIP: {p}",
@@ -1150,7 +1180,32 @@ def append_history(filename, path, size, received):
                  "path": str(path), "size": size, "receive": received}
         with open(HISTORY_FILE, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        _trim_history()
     except Exception as e: _log.warning("history write: %s", e)
+
+def _trim_history(limit=None):
+    """只保留最近 limit 条（默认取配置 history_max，0/负数表示不裁剪）。
+
+    对应 watchsend HistoryStore「超过 100 条丢最旧」的行为，防止 history.jsonl
+    无限增长、每次读取都全量解析。裁剪走临时文件 + os.replace，不会写坏历史。
+    """
+    try:
+        lim = int(get_config("history_max") if limit is None else limit)
+    except (TypeError, ValueError):
+        return 0
+    if lim <= 0 or not HISTORY_FILE.exists(): return 0
+    try:
+        lines = [l for l in HISTORY_FILE.read_text("utf-8").splitlines() if l.strip()]
+        if len(lines) <= lim: return 0
+        kept = lines[-lim:]
+        tmp = HISTORY_FILE.with_name(HISTORY_FILE.name + ".tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
+            f.write("\n".join(kept) + "\n")
+        os.replace(tmp, HISTORY_FILE)
+        return len(lines) - len(kept)
+    except Exception as e:
+        _log.warning("history trim: %s", e)
+        return 0
 
 def read_history(n=20):
     if not HISTORY_FILE.exists(): return []
@@ -1328,8 +1383,102 @@ def web_list_files(base, limit=WEB_LIST_LIMIT, depth=WEB_LIST_DEPTH):
     return out
 
 
+def _win32_clipboard_set(text):
+    """用 Win32 API 直接写剪贴板（CF_UNICODETEXT），不依赖 Tcl/Tk。
+
+    tkinter 需要 init.tcl 等数据文件，精简 Python 与 PyInstaller 打包里常常缺失，
+    结果 import tkinter 成功、`tkinter.Tk()` 却抛 TclError，剪贴板静默失效。
+    """
+    try:
+        import ctypes
+        from ctypes import wintypes
+        user32 = ctypes.WinDLL("user32", use_last_error=True)
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        user32.OpenClipboard.argtypes = [wintypes.HWND]
+        user32.OpenClipboard.restype = wintypes.BOOL
+        user32.SetClipboardData.argtypes = [wintypes.UINT, wintypes.HANDLE]
+        user32.SetClipboardData.restype = wintypes.HANDLE
+        kernel32.GlobalAlloc.argtypes = [wintypes.UINT, ctypes.c_size_t]
+        kernel32.GlobalAlloc.restype = wintypes.HGLOBAL
+        kernel32.GlobalLock.argtypes = [wintypes.HGLOBAL]
+        kernel32.GlobalLock.restype = ctypes.c_void_p
+        kernel32.GlobalUnlock.argtypes = [wintypes.HGLOBAL]
+
+        CF_UNICODETEXT, GMEM_MOVEABLE = 13, 0x0002
+        if not user32.OpenClipboard(None): return False
+        try:
+            user32.EmptyClipboard()
+            payload = text.encode("utf-16-le") + b"\x00\x00"   # 必须带结尾 NUL
+            handle = kernel32.GlobalAlloc(GMEM_MOVEABLE, len(payload))
+            if not handle: return False
+            ptr = kernel32.GlobalLock(handle)
+            if not ptr:
+                kernel32.GlobalFree(handle); return False
+            try: ctypes.memmove(ptr, payload, len(payload))
+            finally: kernel32.GlobalUnlock(handle)
+            if not user32.SetClipboardData(CF_UNICODETEXT, handle):
+                kernel32.GlobalFree(handle); return False
+            return True    # 句柄所有权已交给剪贴板，不能自己 GlobalFree
+        finally:
+            user32.CloseClipboard()
+    except Exception as e:
+        _log.debug("win32 clipboard set: %s", e)
+        return False
+
+
+def _win32_clipboard_get():
+    try:
+        import ctypes
+        from ctypes import wintypes
+        user32 = ctypes.WinDLL("user32", use_last_error=True)
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        user32.GetClipboardData.argtypes = [wintypes.UINT]
+        user32.GetClipboardData.restype = wintypes.HANDLE
+        kernel32.GlobalLock.argtypes = [wintypes.HGLOBAL]
+        kernel32.GlobalLock.restype = ctypes.c_void_p
+        kernel32.GlobalUnlock.argtypes = [wintypes.HGLOBAL]
+
+        CF_UNICODETEXT = 13
+        if not user32.IsClipboardFormatAvailable(CF_UNICODETEXT): return ""
+        if not user32.OpenClipboard(None): return ""
+        try:
+            handle = user32.GetClipboardData(CF_UNICODETEXT)
+            if not handle: return ""
+            ptr = kernel32.GlobalLock(handle)
+            if not ptr: return ""
+            try: return ctypes.wstring_at(ptr) or ""
+            finally: kernel32.GlobalUnlock(handle)
+        finally:
+            user32.CloseClipboard()
+    except Exception as e:
+        _log.debug("win32 clipboard get: %s", e)
+        return ""
+
+
+def _clipboard_cmd(candidates):
+    """返回本机可用的剪贴板命令行工具（按优先级）；全都没有返回 None。"""
+    for name, args in candidates:
+        if shutil.which(name): return (name, args)
+    return None
+
+
 def _clipboard_get():
-    """读取本机剪贴板；无 GUI/tkinter 环境返回空串（不抛异常）。"""
+    """读取本机剪贴板；优先系统原生通道，最后才退回 tkinter，失败返回空串。"""
+    try:
+        if sys.platform == "win32":
+            text = _win32_clipboard_get()
+            if text: return text
+        elif sys.platform == "darwin":
+            if shutil.which("pbpaste"):
+                return subprocess.run(["pbpaste"], capture_output=True, timeout=5).stdout.decode("utf-8", "replace")
+        else:
+            tool = _clipboard_cmd([("wl-paste", []), ("xclip", ["-selection", "clipboard", "-o"]),
+                                   ("xsel", ["--clipboard", "--output"])])
+            if tool:
+                out = subprocess.run([tool[0]] + tool[1], capture_output=True, timeout=5).stdout
+                return out.decode("utf-8", "replace")
+    except Exception as e:
+        _log.debug("native clipboard get: %s", e)
     try:
         import tkinter
         r = tkinter.Tk(); r.withdraw()
@@ -1339,7 +1488,26 @@ def _clipboard_get():
 
 
 def _clipboard_set(text):
-    """写入本机剪贴板；失败返回 False，由调用方改用落盘兜底。"""
+    """写入本机剪贴板；失败返回 False，由调用方改用落盘兜底。
+
+    顺序：系统原生（Win32 API / pbcopy / wl-copy / xclip / xsel）→ tkinter 兜底。
+    原生通道不需要 Tcl/Tk 数据文件，因此在 PyInstaller 打包与精简 Python 里也能用。
+    """
+    try:
+        if sys.platform == "win32":
+            if _win32_clipboard_set(text): return True
+        elif sys.platform == "darwin":
+            if shutil.which("pbcopy"):
+                subprocess.run(["pbcopy"], input=text.encode("utf-8"), timeout=5)
+                return True
+        else:
+            tool = _clipboard_cmd([("wl-copy", []), ("xclip", ["-selection", "clipboard"]),
+                                   ("xsel", ["--clipboard", "--input"])])
+            if tool:
+                subprocess.run([tool[0]] + tool[1], input=text.encode("utf-8"), timeout=5)
+                return True
+    except Exception as e:
+        _log.debug("native clipboard set: %s", e)
     try:
         import tkinter
         r = tkinter.Tk(); r.withdraw()
@@ -1348,6 +1516,28 @@ def _clipboard_set(text):
             return True
         finally: r.destroy()
     except Exception: return False
+
+
+CLIPBOARD_TEXT_MAX = 10 * 1024   # 只有 ≤10 KB 的 .txt 才值得占用剪贴板（沿用 watchsend 的门槛）
+
+def _maybe_clipboard_text(target, size=None):
+    """收到小 .txt 时顺手写进剪贴板（对应 watchsend UploadHandler 的自动复制）。
+
+    只吞异常、不抛：剪贴板在无 GUI 环境下必然失败，不能因此让接收流程报错。
+    返回 True 表示确实写进去了。
+    """
+    try:
+        target = Path(target)
+        if target.suffix.lower() != ".txt": return False
+        if not get_config("clipboard_text"): return False
+        if size is None: size = target.stat().st_size
+        if size <= 0 or size > CLIPBOARD_TEXT_MAX: return False
+        text = target.read_text("utf-8", errors="ignore")
+        if not text.strip(): return False
+        return bool(_clipboard_set(text))
+    except Exception as e:
+        _log.warning("clipboard copy: %s", e)
+        return False
 
 
 _WEB_PAGE_TEMPLATE = """<!DOCTYPE html><html lang="@@LANG@@"><head><meta charset="utf-8">
@@ -1550,6 +1740,24 @@ def local_ipv4_addresses():
     return sorted(found)
 
 
+def local_ipv6_addresses():
+    """枚举本机非回环、非链路本地的 IPv6（对应 watchsend 的 [IPv6]:53317 展示）。
+
+    只挑全球/唯一本地单播地址：链路本地 fe80:: 需要 zone id 才能路由，展示出来
+    反而让人输入一个连不上的地址。
+    """
+    found = set()
+    try:
+        for entry in socket.getaddrinfo(socket.gethostname(), 0, socket.AF_INET6):
+            ip = str(entry[4][0]).split("%")[0]
+            low = ip.lower()
+            if not ip or low == "::1" or low == "::": continue
+            if low.startswith(("fe80:", "fe80::")) or low.startswith("fe8"): continue
+            found.add(ip)
+    except Exception: pass
+    return sorted(found)
+
+
 def scan_network(timeout=2.0, verbose=True, extra_hosts=None):
     """组播 + 广播探测局网设备。extra_hosts 用于手动追加待探测地址。"""
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -1708,6 +1916,8 @@ class LspyServer:
                     print("✅ " + t("unzip_ok", d=Path(out_dir).resolve()))
             if get_config("open_after_receive"):
                 _open_path(target)
+            if _maybe_clipboard_text(target):
+                print("📋 " + t("text_copied", f=target.name))
         except Exception as e:
             _log.warning("post-process failed: %s", e)
 
@@ -2383,7 +2593,17 @@ def _discover(timeout=2.0, announce=True):
     return devs
 
 
-def cmd_info(args): print(json.dumps(build_self_info(), indent=2, ensure_ascii=False))
+def cmd_info(args):
+    info = build_self_info()
+    print(json.dumps(info, indent=2, ensure_ascii=False))
+    # 协议字段里没有 IPv6 这一项（LocalSend 规范固定），所以单独提示可直连地址，
+    # 方便跨网时把 [IPv6]:端口 手动填给对端（对应 watchsend CrossNetActivity 的展示）。
+    port = info["port"]
+    v6 = local_ipv6_addresses()
+    if v6:
+        for ip in v6: print(f"IPv6: [{ip}]:{port}")
+    else:
+        print(t("ipv6_not_found"))
 
 
 def cmd_scan(args):
@@ -2525,8 +2745,12 @@ def cmd_config(args):
                 v = int(v)
             elif k in ("auto_accept", "use_https", "web_enable", "organize_by_type",
                        "history_enable", "auto_unzip", "open_after_receive",
-                       "auto_accept_whitelist", "debug_keys"):
+                       "auto_accept_whitelist", "debug_keys", "clipboard_text"):
                 v = v.lower() in ("1", "true", "yes", "on")
+            elif k == "history_max":
+                if not v.isdigit():
+                    print("⚠️ " + t("cfg_invalid_number", k=k)); return
+                v = int(v)
             elif k in ("whitelist", "blacklist"):
                 v = [x.strip() for x in v.split(",") if x.strip()]
         except Exception as e:

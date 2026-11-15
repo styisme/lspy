@@ -5,7 +5,7 @@
 > Une implémentation en ligne de commande du protocole LocalSend. Un seul fichier, aucune dépendance tierce : LocalSend sur le téléphone, une commande sur l'ordinateur. Relais inter-réseaux via ntfy.sh inclus.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.23.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.23.1-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -28,6 +28,7 @@ Ce projet a été largement développé avec l'aide de modèles de langage. Les 
 - **Inter-réseaux** : via ntfy.sh, blocs de 2400 octets, 3 tentatives, empreinte SHA-256 finale.
 - **Page de partage web** (envoi / téléchargement / texte, portée depuis watchsend ; la page suit l'`Accept-Language` du navigateur), **10 langues d'interface**.
 - **Historique & debug** (également issus de watchsend) : `history --delete N` / `--clear` / `--unzip N` (ZIP marqué 📦, protection Zip Slip), `--debug-keys` affiche les clés i18n brutes.
+- **Petits plus à la réception** : les `.txt` reçus jusqu'à 10 Ko partent automatiquement dans le presse-papiers (désactivable via `clipboard_text`), l'historique est plafonné par `history_max` (300 par défaut), et `info` affiche aussi `[IPv6]:port`.
 
 ---
 

@@ -40,7 +40,7 @@ cd lspy
 
 python lspy.py --help                     # run without installing
 pip install .                             # install the `lspy` command
-python -m unittest discover -s tests -v   # full suite (64 tests)
+python -m unittest discover -s tests -v   # full suite (75 tests)
 python scripts/sync_version.py --check    # version consistency with CHANGELOG
 pip install pyinstaller && python scripts/build_binary.py --clean   # standalone executable
 ```
@@ -245,6 +245,8 @@ File: `~/.lspy/config.json`, edited via `lspy config --set k=v`.
 | `web_enable` | `true` | Serve the web status page |
 | `organize_by_type` | `true` | Group saved files by type |
 | `history_enable` | `true` | Append to `history.jsonl` |
+| `history_max` | `300` | Max history entries kept; oldest dropped beyond it, `0` disables trimming |
+| `clipboard_text` | `true` | Copy received `.txt` up to 10 KB into the local clipboard |
 | `auto_unzip` | `false` | Auto-extract after receive (Zip Slip checks still apply) |
 | `open_after_receive` | `false` | Open received files with the OS handler |
 | `lang` | `auto` | `auto` or `zh/zh_TW/en/ja/ko/de/fr/es/ru/pt` |

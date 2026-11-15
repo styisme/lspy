@@ -4,6 +4,26 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.23.1] - 2026-11-15
+
+### 新增
+
+- **收到的小 txt 自动进剪贴板**（移植自 watchsend `UploadHandler`）：接收完成的 `.txt` 若不超过 10 KB 且内容非空，直接把正文写进本机剪贴板（`_maybe_clipboard_text`），省掉「去下载目录找文件、再打开复制」这一步。无 GUI/无剪贴板的环境静默跳过，不影响接收；`config --set clipboard_text=false` 可关掉。
+- **IPv6 可直连地址展示**（移植自 watchsend `CrossNetActivity` 的 `[IPv6]:53317`）：`info` 在协议 JSON 之后追加本机 IPv6 的 `[地址]:端口`，跨网时可以直接抄给对端。只列全球/唯一本地单播地址，`::1`、`::`、`fe80::` 链路本地（需 zone id 才能路由）一律不展示。
+
+### 变更
+
+- **历史记录条数上限**（移植自 watchsend `HistoryStore` 只保留最新 100 条）：新增 `history_max` 配置，默认 300，超出后追加时自动丢掉最旧记录（走临时文件 + `os.replace`，不会写坏历史）；设 0 表示不裁剪。原先 `history.jsonl` 只增不减，长期使用会无限膨胀、每次读取都要全量解析。
+
+### 修复
+
+- **剪贴板改为系统原生通道**：`_clipboard_set` / `_clipboard_get` 先走 Win32 API（`CF_UNICODETEXT`）、`pbcopy` / `wl-copy` / `xclip` / `xsel`，`tkinter` 只作兜底。原先只依赖 `tkinter`，而它需要 `init.tcl` 等数据文件 —— 在精简 Python 与 PyInstaller 打包里常常缺失，`import tkinter` 成功但 `tkinter.Tk()` 抛 `TclError`，于是剪贴板写入一直静默失败：1.22.0 的 `/web/text` 在中文 Windows 上从未真正写进剪贴板，本次新增的「收到 txt 自动进剪贴板」也会无声失效。
+
+### 测试
+
+- 新增 11 个用例：小 txt 写入剪贴板、非 txt 与超 10 KB 跳过、配置关闭后不写、真实 HTTP 上传 `.txt` 后剪贴板收到正文（验证 `_post_process` 接线）、历史上限丢最旧 / 0 关闭裁剪 / 裁剪后每行仍是合法 JSON、IPv6 列表按方括号打印、无 IPv6 时给出提示、枚举结果不含回环与链路本地、Win32 剪贴板原生通道往返（含中文）。测试总数 64 → 75。
+- 测试进程默认把 `_clipboard_set` 换成桩，跑测试不会再覆盖用户自己的剪贴板内容。
+
 ## [1.23.0] - 2026-11-15
 
 ### 新增

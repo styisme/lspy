@@ -5,7 +5,7 @@
 > A command-line implementation of the LocalSend protocol. One file, zero third-party dependencies: LocalSend on your phone, one command on your desktop. Cross-network relay over ntfy.sh included.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.23.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.23.1-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-brightgreen)]()
@@ -22,7 +22,7 @@
 
 ## 📦 Version & Origin
 
-Current version: **v1.23.0** (single source of truth is [CHANGELOG.md](CHANGELOG.md), verified and injected by CI).
+Current version: **v1.23.1** (single source of truth is [CHANGELOG.md](CHANGELOG.md), verified and injected by CI).
 
 lspy is an **independent command-line implementation** of the LocalSend protocol, written from scratch. It does not copy the official app (Apache-2.0) sources and only interoperates at the protocol level — see [LICENSE-LocalSend](LICENSE-LocalSend). Sibling GUI implementations: [OldSend](https://github.com/styisme/oldsend) and [WatchSend](https://github.com/styisme/watchsend); they share protocol ideas but no code.
 
@@ -46,7 +46,9 @@ lspy is an **independent command-line implementation** of the LocalSend protocol
 ### 🔁 Cross-network & UI
 - **Cross-network relay**: `cross-send` / `cross-recv` over ntfy.sh; the 6-digit PIN is the topic, chunks are 2400 bytes (under the per-message limit), with 3 retries, a SHA-256 + length trailer and per-message de-duplication.
 - **Web share page**: the receiver serves one HTML page (device info + recent receipts) that doubles as browser-side transfer: upload files straight into the receive folder, browse and download what was received, and push text into the local clipboard (falls back to a `.txt` file when no clipboard is available). The page and `/web/*` endpoints are ported from watchsend's `WebShareHandler`; with a PIN set, every read and write requires it. The page follows the browser's `Accept-Language` and only falls back to the CLI language when none of the ten matches.
-- **History management** (ported from watchsend's History Quick Management): `history --delete N` removes entry N (1 = newest, the CLI equivalent of a long-press delete), `--clear` wipes the list, and `--unzip N` extracts that ZIP in place through the same `safe_unzip` (absolute paths, `..` traversal and symlink entries are refused). ZIP entries are marked 📦 in the list.
+- **History management** (ported from watchsend's History Quick Management): `history --delete N` removes entry N (1 = newest, the CLI equivalent of a long-press delete), `--clear` wipes the list, and `--unzip N` extracts that ZIP in place through the same `safe_unzip` (absolute paths, `..` traversal and symlink entries are refused). ZIP entries are marked 📦 in the list. History is capped by `history_max` (default 300), so the oldest record is dropped instead of growing the file forever.
+- **Received .txt lands in the clipboard** (ported from watchsend's `UploadHandler`): a received `.txt` of at most 10 KB has its body copied to the local clipboard, so there is no need to hunt the file down in the download folder. Environments without a clipboard skip it silently, and `config --set clipboard_text=false` turns it off.
+- **IPv6 direct address** (ported from watchsend's `[IPv6]:53317` readout): `info` appends `[address]:port` for this machine's IPv6 addresses below the protocol JSON, ready to hand to the peer for cross-network transfers; only global and unique-local unicast addresses are listed, link-local ones are not.
 - **Debug keys mode** (ported from watchsend's Debug Keys Mode): `--debug-keys` renders raw i18n keys such as `⟦history_empty⟧` so missing translations stand out; `config --set debug_keys=true` keeps it on across runs, while the flag itself never writes to the config.
 - **Interactive menu**: running without a subcommand starts a background receiver and offers scan / send / cross-net / history / settings.
 - **10 UI languages**: zh, zh_TW, en, ja, ko, de, fr, es, ru, pt.

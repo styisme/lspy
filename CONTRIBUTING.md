@@ -40,7 +40,7 @@ cd lspy
 
 python lspy.py --help                     # 免安装运行
 pip install .                             # 安装为 lspy 命令
-python -m unittest discover -s tests -v   # 全量测试（64 例）
+python -m unittest discover -s tests -v   # 全量测试（75 例）
 python scripts/sync_version.py --check    # 校验版本号与 CHANGELOG 一致
 pip install pyinstaller && python scripts/build_binary.py --clean   # 打包单文件可执行程序
 ```
@@ -245,6 +245,8 @@ Closes #123
 | `web_enable` | `true` | 是否提供 Web 状态页 |
 | `organize_by_type` | `true` | 按文件类型分目录保存 |
 | `history_enable` | `true` | 是否写 `history.jsonl` |
+| `history_max` | `300` | 历史保留条数上限，超出丢最旧；`0` 表示不裁剪 |
+| `clipboard_text` | `true` | 收到 ≤10 KB 的 `.txt` 时自动写进本机剪贴板 |
 | `auto_unzip` | `false` | 接收完成后自动解压（仍走 Zip Slip 校验） |
 | `open_after_receive` | `false` | 接收完成后用系统程序打开 |
 | `lang` | `auto` | 界面语言：`auto` 或 `zh/zh_TW/en/ja/ko/de/fr/es/ru/pt` |

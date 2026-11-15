@@ -5,7 +5,7 @@
 > LocalSend 協定的命令列實作。單檔、零第三方依賴：手機跑 LocalSend，電腦一行指令收發檔案；另可透過 ntfy.sh 做跨網中繼。
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.23.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.23.1-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -19,7 +19,7 @@
 
 ## 📦 版本與來源
 
-目前版本：**v1.23.0**（版本號唯一來源為 [CHANGELOG.md](CHANGELOG.md)，由 CI 驗證並注入）。
+目前版本：**v1.23.1**（版本號唯一來源為 [CHANGELOG.md](CHANGELOG.md)，由 CI 驗證並注入）。
 
 本專案為 LocalSend 協定的獨立命令列實作，自零撰寫，未複製官方 App 原始碼，僅於協定層互通。
 
@@ -35,7 +35,9 @@
 - **TLS**：`lspy cert` 產生自簽憑證，雙端皆可走 HTTPS。
 - **跨網中繼**：`cross-send` / `cross-recv` 走 ntfy.sh，分塊 2400 位元組、3 次重試、尾包 SHA-256 與長度校驗。
 - **Web 分享頁**：接收端內建 HTML 頁面（裝置資訊 + 最近接收紀錄），並可當「網頁版傳輸」用：瀏覽器直接上傳檔案到接收目錄、瀏覽並下載已接收檔案、把文字寫進本機剪貼簿（不可用時存成 txt）。頁面與 `/web/*` 端點移植自 watchsend 的 `WebShareHandler`；設了 PIN 時頁面的讀寫一律需要 PIN。頁面語言跟隨瀏覽器的 `Accept-Language`，十種語言都認不出才回退 CLI 語言。
-- **歷史記錄管理**（移植自 watchsend 的 History Quick Management）：`history --delete N` 刪除第 N 筆（1＝最新）、`--clear` 清空、`--unzip N` 就地解壓該筆 ZIP（沿用 `safe_unzip`，絕對路徑 / `..` / 符號連結一律拒絕）；清單裡 ZIP 標 📦。
+- **歷史記錄管理**（移植自 watchsend 的 History Quick Management）：`history --delete N` 刪除第 N 筆（1＝最新）、`--clear` 清空、`--unzip N` 就地解壓該筆 ZIP（沿用 `safe_unzip`，絕對路徑 / `..` / 符號連結一律拒絕）；清單裡 ZIP 標 📦。筆數由 `history_max`（預設 300）封頂，超出自動丟最舊，不再無限膨脹。
+- **收到的小 txt 自動進剪貼簿**（移植自 watchsend 的 `UploadHandler`）：≤10 KB 的 `.txt` 接收完直接把內容寫進本機剪貼簿，不必再去下載目錄找檔案；沒有剪貼簿的環境靜默跳過，`config --set clipboard_text=false` 可關閉。
+- **IPv6 直連位址**（移植自 watchsend 的 `[IPv6]:53317` 顯示）：`info` 在協定 JSON 後追加本機 IPv6 的 `[位址]:埠`，跨網時可直接抄給對端；只列全球/唯一本地位址，連結本地位址不顯示。
 - **除錯鍵模式**（移植自 watchsend 的 Debug Keys Mode）：`--debug-keys` 讓介面顯示原始 i18n 鍵名，缺翻譯一眼可見；`config --set debug_keys=true` 可長期開啟。
 - **10 種介面語言**。
 
