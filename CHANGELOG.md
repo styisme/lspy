@@ -4,6 +4,13 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.21.2] - 2026-11-15
+
+### 修复
+
+- Linux 上一个 locale 环境变量都没有时（`LANG`/`LC_*` 全空），`history` 等命令会把 `locale.getdefaultlocale()` 的 `DeprecationWarning` 直接打进取到的输出里。现在该探测函数被包进 `warnings.catch_warnings` 并忽略 `DeprecationWarning`，同时用 `getattr` 兼容 Python 3.15 移除该 API 后的情形。
+- 补一个回归测试断言该探测不再泄漏弃用警告，测试总数 36 → 37。
+
 ## [1.21.1] - 2026-11-15
 
 ### 修复
@@ -106,6 +113,7 @@
 
 - 初版：LocalSend v1/v2 收发、组播扫描、HTTP 深度扫描、ntfy.sh 跨网、多语言菜单。
 
+[1.21.2]: https://github.com/styisme/lspy/compare/v1.21.1...v1.21.2
 [1.21.1]: https://github.com/styisme/lspy/compare/v1.21.0...v1.21.1
 [1.21.0]: https://github.com/styisme/lspy/compare/v1.20.1...v1.21.0
 [1.20.1]: https://github.com/styisme/lspy/compare/v1.20.0...v1.20.1

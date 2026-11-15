@@ -5,7 +5,7 @@
 > A command-line implementation of the LocalSend protocol. One file, zero third-party dependencies: LocalSend on your phone, one command on your desktop. Cross-network relay over ntfy.sh included.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.21.1-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.21.2-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-brightgreen)]()
@@ -22,7 +22,7 @@
 
 ## 📦 Version & Origin
 
-Current version: **v1.21.1** (single source of truth is [CHANGELOG.md](CHANGELOG.md), verified and injected by CI).
+Current version: **v1.21.2** (single source of truth is [CHANGELOG.md](CHANGELOG.md), verified and injected by CI).
 
 lspy is an **independent command-line implementation** of the LocalSend protocol, written from scratch. It does not copy the official app (Apache-2.0) sources and only interoperates at the protocol level — see [LICENSE-LocalSend](LICENSE-LocalSend). Sibling GUI implementations: [OldSend](https://github.com/styisme/oldsend) and [WatchSend](https://github.com/styisme/watchsend); they share protocol ideas but no code.
 

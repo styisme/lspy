@@ -41,7 +41,7 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.21.1"
+VERSION = "1.21.2"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
@@ -910,8 +910,20 @@ def _lang_from_env():
                 if n: return n
     return None
 
+def _locale_default_name():
+    """locale.getdefaultlocale() 在 3.15 会被移除，调用时还会往 stderr 打 DeprecationWarning。"""
+    fn = getattr(locale, "getdefaultlocale", None)
+    if fn is None: return None
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        try:
+            return fn()[0]
+        except Exception:
+            return None
+
 def _lang_from_locale():
-    for getter in (lambda: locale.getlocale()[0], lambda: locale.getdefaultlocale()[0]):
+    for getter in (lambda: locale.getlocale()[0], _locale_default_name):
         try:
             loc = getter()
         except Exception:

@@ -155,6 +155,15 @@ class TestConfigAndI18n(unittest.TestCase):
         lspy.set_config("lang", "auto")
         self.assertIn(lspy.detect_lang(), lspy.SUPPORTED_LANGS)
 
+    def test_locale_probe_does_not_leak_deprecation_warning(self):
+        """getdefaultlocale() 的 DeprecationWarning 曾直接打到 CLI 输出里。"""
+        import warnings
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            lspy._lang_from_locale()
+        msgs = [str(w.message) for w in caught if issubclass(w.category, DeprecationWarning)]
+        self.assertEqual([m for m in msgs if "getdefaultlocale" in m], [])
+
     def test_every_supported_lang_has_own_catalog(self):
         """每个受支持语言都必须有独立完整词表，不能是英文副本（回归：语言菜单曾全部显示 English）。"""
         en = lspy.I18N["en"]
