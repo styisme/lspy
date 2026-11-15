@@ -5,7 +5,7 @@
 > A command-line implementation of the LocalSend protocol. One file, zero third-party dependencies: LocalSend on your phone, one command on your desktop. Cross-network relay over ntfy.sh included.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.25.1-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.26.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-brightgreen)]()
@@ -22,7 +22,7 @@
 
 ## 📦 Version & Origin
 
-Current version: **v1.25.1** (single source of truth is [CHANGELOG.md](CHANGELOG.md), verified and injected by CI).
+Current version: **v1.26.0** (single source of truth is [CHANGELOG.md](CHANGELOG.md), verified and injected by CI).
 
 lspy is an **independent command-line implementation** of the LocalSend protocol, written from scratch. It does not copy the official app (Apache-2.0) sources and only interoperates at the protocol level — see [LICENSE-LocalSend](LICENSE-LocalSend). Sibling GUI implementations: [OldSend](https://github.com/styisme/oldsend) and [WatchSend](https://github.com/styisme/watchsend); they share protocol ideas but no code.
 
@@ -51,7 +51,7 @@ lspy is an **independent command-line implementation** of the LocalSend protocol
 - **IPv6 direct address** (ported from watchsend's `[IPv6]:53317` readout): `info` appends `[address]:port` for this machine's IPv6 addresses below the protocol JSON, ready to hand to the peer for cross-network transfers; only global and unique-local unicast addresses are listed, link-local ones are not.
 - **Debug keys mode** (ported from watchsend's Debug Keys Mode): `--debug-keys` renders raw i18n keys such as `⟦history_empty⟧` so missing translations stand out; `config --set debug_keys=true` keeps it on across runs, while the flag itself never writes to the config.
 - **Interactive menu**: running without a subcommand starts a background receiver and offers scan / send / cross-net / history / settings.
-- **File picker without tkinter**: bundled [cfdialog](https://github.com/styisme/cfdialog) 0.3.0 (MIT, one file, stdlib only) takes over when `tkinter` is missing — a terminal browser with numbered entries, `g` for partitions, `h` for hidden files, `a`/`c`/`d` for multi-select; typing `?` at the save-dir setting opens a folder browser.
+- **File picker without tkinter**: bundled [cfdialog](https://github.com/styisme/cfdialog) 0.3.0 (MIT, one file, stdlib only) takes over when `tkinter` is missing — a terminal browser with numbered entries, `g` for partitions, `h` for hidden files, `a`/`c`/`d` for multi-select; typing `?` at the save-dir setting opens a folder browser. On Android `tkinter` is skipped altogether — mobile Python builds rarely ship Tk — and the picker goes straight to cfdialog.
 - **Force the cfdialog picker**: `config --set force_cfdialog=true` (or item 10 in `8. Settings`) sends file selection straight to cfdialog and skips `tkinter`. On machines where `tkinter` imports but never shows a window (missing Tcl data, no DISPLAY, a window swallowed by remote desktop), the automatic order stalls on a dead dialog first — this is the way out.
 - **10 UI languages**: zh, zh_TW, en, ja, ko, de, fr, es, ru, pt.
 
@@ -123,7 +123,7 @@ A single-file Python project with no third-party dependencies; packaging uses th
 
 ```bash
 pip install .
-python -m unittest discover -s tests -v       # 87 cases: unit + end-to-end
+python -m unittest discover -s tests -v       # 90 cases: unit + end-to-end
 python scripts/sync_version.py --check         # version matches CHANGELOG.md
 pip install pyinstaller && python scripts/build_binary.py   # standalone executable
 ```

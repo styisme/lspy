@@ -40,7 +40,7 @@ cd lspy
 
 python lspy.py --help                     # 免安装运行
 pip install .                             # 安装为 lspy 命令
-python -m unittest discover -s tests -v   # 全量测试（87 例）
+python -m unittest discover -s tests -v   # 全量测试（90 例）
 python scripts/sync_version.py --check    # 校验版本号与 CHANGELOG 一致
 pip install pyinstaller && python scripts/build_binary.py --clean   # 打包单文件可执行程序
 ```
@@ -101,6 +101,9 @@ lspy/
 ```
 
 `cfdialog.py` 与 `lg/` 不从上游改动：升级时整份替换，改行为请在上游提。lspy 侧只负责调用（`_cfdialog()` / `_dialog_pick_files()` / `_dialog_pick_folder()`），并在加载时关掉它的自动提权（`set_auto_elevate(False)`，否则首次选文件会尝试 UAC/root 并重启进程）。
+
+Android 上（`_is_android()` 按 `sys.platform == "android"`、`TERMUX_VERSION`、`PREFIX` 含 `com.termux`、`ANDROID_ROOT`/`ANDROID_DATA` 判定）选文件根本不 import `tkinter`，直接走 cfdialog —— 手机上的 Python 发行版基本不带 Tk。
+
 
 `lspy.py` 内部分区（自上而下）：常量与配置 → 日志与 stdio → i18n → 工具函数（文件名净化、唯一路径、进度条、HTTP opener）→ 发现（组播 / 广播 / HTTP 扫描）→ `LspyServer`（HTTP 处理与协商）→ 发送端 → 跨网 → 历史与证书 → 交互菜单 → `main`。
 

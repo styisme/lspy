@@ -40,7 +40,7 @@ cd lspy
 
 python lspy.py --help                     # run without installing
 pip install .                             # install the `lspy` command
-python -m unittest discover -s tests -v   # full suite (87 tests)
+python -m unittest discover -s tests -v   # full suite (90 tests)
 python scripts/sync_version.py --check    # version consistency with CHANGELOG
 pip install pyinstaller && python scripts/build_binary.py --clean   # standalone executable
 ```
@@ -101,6 +101,8 @@ lspy/
 ```
 
 `cfdialog.py` and `lg/` are never edited locally: upgrade by replacing the files wholesale, and send behaviour changes upstream. lspy only calls it (`_cfdialog()` / `_dialog_pick_files()` / `_dialog_pick_folder()`) and disables its auto-elevation on load (`set_auto_elevate(False)`) — otherwise the first pick would try UAC/root and restart the process.
+
+On Android (`_is_android()` checks `sys.platform == "android"`, `TERMUX_VERSION`, `PREFIX` containing `com.termux`, and `ANDROID_ROOT`/`ANDROID_DATA`) the picker never imports `tkinter` at all and goes straight to cfdialog — mobile Python builds rarely ship Tk.
 
 Inside `lspy.py` the sections run top-down: constants and config → logging and stdio → i18n → helpers (filename sanitising, unique paths, progress, HTTP opener) → discovery (multicast / broadcast / HTTP scan) → `LspyServer` → sender → cross-network → history and certificates → interactive menu → `main`.
 

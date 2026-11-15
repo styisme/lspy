@@ -41,7 +41,7 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.25.1"
+VERSION = "1.26.0"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
@@ -2880,6 +2880,30 @@ def interactive_config():
 
 _CFDIALOG = None      # None=未加载；False=这台机器上没有可用的 cfdialog
 
+_IS_ANDROID = None    # 惰性判定：Android 上没有可用的 tkinter，压根不该 import
+
+
+def _is_android():
+    """判断当前是不是跑在 Android 上（Termux / Pydroid / Chaquopy / CPython-for-Android）。
+
+    Android 的 Python 发行版通常不带 Tk，`import tkinter` 轻则 ImportError、重则拖住进程，
+    所以选文件时直接跳过 tkinter 这一级。判定只看环境标记，不发外部命令。
+    """
+    global _IS_ANDROID
+    if _IS_ANDROID is None:
+        marks = {
+            "sys.platform": sys.platform == "android",
+            "TERMUX_VERSION": bool(os.environ.get("TERMUX_VERSION")),
+            "PREFIX": "com.termux" in os.environ.get("PREFIX", ""),
+            "ANDROID_ROOT/DATA": bool(os.environ.get("ANDROID_ROOT") or os.environ.get("ANDROID_DATA")),
+        }
+        _IS_ANDROID = any(marks.values())
+        if _IS_ANDROID:
+            _log.debug("android detected (%s), tkinter disabled",
+                       ", ".join(k for k, v in marks.items() if v))
+    return _IS_ANDROID
+
+
 # cfdialog 的语言码与 lspy 的不完全一致（zh→zh_CN，de/pt 没有对应包，回退英文）
 _CFDIALOG_LANG = {"zh": "zh_CN", "zh_TW": "zh_TW", "en": "en", "ja": "ja",
                   "ko": "ko", "ru": "ru", "fr": "fr", "es": "es"}
@@ -2939,9 +2963,13 @@ def _dialog_pick_folder(start_dir=None):
 
 
 def pick_files():
-    """选文件：默认 tkinter → cfdialog → 手敲；force_cfdialog 打开时跳过 tkinter。"""
+    """选文件：默认 tkinter → cfdialog → 手敲。
+
+    两种情况跳过 tkinter：开了 force_cfdialog；或者跑在 Android 上（那里的 Python 基本不带 Tk，
+    `import tkinter` 不是失败就是卡住）。跳过之后仍按 cfdialog → 手敲继续降级。
+    """
     force = bool(get_config("force_cfdialog"))
-    if not force:
+    if not force and not _is_android():
         try:
             import tkinter as tk
             from tkinter import filedialog

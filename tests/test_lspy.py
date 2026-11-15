@@ -992,5 +992,57 @@ class TestDialogPicker(unittest.TestCase):
         self.assertTrue(lspy.get_config("force_cfdialog"))
 
 
+    def test_android_is_detected_from_env_marks(self):
+        """Android 判定只看环境标记；Termux / 系统变量 / sys.platform 任一条命中即可。"""
+        import os as _os
+        from unittest import mock
+        orig = lspy._IS_ANDROID
+        lspy._IS_ANDROID = None
+        self.addCleanup(setattr, lspy, "_IS_ANDROID", orig)
+
+        def probe(env, platform="linux"):
+            lspy._IS_ANDROID = None
+            base = {k: v for k, v in _os.environ.items()
+                    if k not in ("TERMUX_VERSION", "PREFIX", "ANDROID_ROOT", "ANDROID_DATA")}
+            base.update(env)
+            with mock.patch.dict(_os.environ, base, clear=True), \
+                 mock.patch.object(sys, "platform", platform):
+                return lspy._is_android()
+
+        self.assertTrue(probe({"TERMUX_VERSION": "0.118"}))
+        self.assertTrue(probe({"PREFIX": "/data/data/com.termux/files/usr"}))
+        self.assertTrue(probe({"ANDROID_ROOT": "/system"}))
+        self.assertTrue(probe({}, platform="android"))
+        self.assertFalse(probe({"PREFIX": "/usr"}))
+
+    def test_android_skips_tkinter_and_uses_cfdialog(self):
+        """Android 上不许 import tkinter，选文件要直接落到 cfdialog。"""
+        import types
+        from unittest import mock
+        stub = types.ModuleType("tkinter")
+
+        def _boom(*a, **k):
+            raise AssertionError("Android 上不该 import tkinter")
+
+        stub.Tk = _boom
+        fake_fd = types.ModuleType("tkinter.filedialog")
+        fake_fd.askopenfilenames = _boom
+        stub.filedialog = fake_fd
+        self._install(self._FakeCf(files=[Path("/sdcard/one.txt")]))
+        with mock.patch.object(lspy, "_is_android", lambda: True), \
+             mock.patch.dict(sys.modules, {"tkinter": stub, "tkinter.filedialog": fake_fd}):
+            self.assertEqual(lspy.pick_files(), [str(Path("/sdcard/one.txt"))])
+
+    def test_android_without_library_still_types_paths(self):
+        """Android 上没有 cfdialog 时，落到手敲路径而不是崩。"""
+        import builtins
+        from unittest import mock
+        self._install(False)
+        with mock.patch.object(lspy, "_is_android", lambda: True), \
+             mock.patch.dict(sys.modules, {"tkinter": None}), \
+             mock.patch.object(builtins, "input", lambda prompt="": '/sdcard/a.txt,/sdcard/b.txt'):
+            self.assertEqual(lspy.pick_files(), ["/sdcard/a.txt", "/sdcard/b.txt"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

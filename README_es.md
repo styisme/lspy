@@ -5,7 +5,7 @@
 > Una implementación de línea de comandos del protocolo LocalSend. Un solo archivo, sin dependencias de terceros: LocalSend en el móvil, una orden en el ordenador. Incluye retransmisión entre redes mediante ntfy.sh.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.25.1-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.26.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -29,7 +29,7 @@ Este proyecto se desarrolló en gran medida con asistencia de modelos de lenguaj
 - **Página web de compartir** (subir / descargar / texto, portada desde watchsend; la página sigue el `Accept-Language` del navegador), **10 idiomas de interfaz**.
 - **Historial y depuración** (también de watchsend): `history --delete N` / `--clear` / `--unzip N` (ZIP marcado 📦, protección Zip Slip), `--debug-keys` muestra las claves i18n sin traducir.
 - **Detalles de recepción**: los `.txt` recibidos de hasta 10 KB van directos al portapapeles (se desactiva con `clipboard_text`), el historial se recorta con `history_max` (300 por defecto) e `info` muestra además `[IPv6]:puerto`.
-- **Selector de archivos sin tkinter**: [cfdialog](https://github.com/styisme/cfdialog) 0.3.0 incluido (MIT, un solo archivo) sustituye el diálogo de tkinter por un navegador de terminal (números, `g` particiones, `h` ocultos, `a`/`c`/`d` selección múltiple); `?` en la carpeta de recepción abre el explorador de carpetas. `config --set force_cfdialog=true` fuerza el navegador de terminal y omite tkinter.
+- **Selector de archivos sin tkinter**: [cfdialog](https://github.com/styisme/cfdialog) 0.3.0 incluido (MIT, un solo archivo) sustituye el diálogo de tkinter por un navegador de terminal (números, `g` particiones, `h` ocultos, `a`/`c`/`d` selección múltiple); `?` en la carpeta de recepción abre el explorador de carpetas. `config --set force_cfdialog=true` fuerza el navegador de terminal y omite tkinter. En Android se omite tkinter (allí casi nunca incluye Tk) y el navegador arranca directamente.
 
 ---
 

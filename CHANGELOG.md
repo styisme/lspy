@@ -4,6 +4,17 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.26.0] - 2026-11-15
+
+### 新增
+
+- **Android 上自动跳过 tkinter**：新增 `_is_android()`，按 `sys.platform == "android"`、`TERMUX_VERSION`、`PREFIX` 含 `com.termux`、`ANDROID_ROOT` / `ANDROID_DATA` 四个标记判定（只读环境，不跑外部命令，结果缓存一次）。命中后 `pick_files()` 根本不 import `tkinter` —— 手机上的 Python 发行版（Termux、Pydroid、Chaquopy）基本不带 Tk，`import tkinter` 轻则 `ImportError`，重则卡住整个菜单；跳过后直接走 cfdialog，库也不在才退回手敲路径。
+- 判定与 `force_cfdialog` 相互独立：任一成立就跳过 `tkinter`，不互相覆盖。
+
+### 测试
+
+- 新增 3 个用例：四个环境标记逐个命中（含反例 `PREFIX=/usr` 不误判为 Android）、Android 上同时装上会抛错的 tkinter stub 与可用的 cfdialog 时必须走 cfdialog、Android 且没有 cfdialog 时仍能手敲路径。测试总数 87 → 90。
+
 ## [1.25.1] - 2026-11-15
 
 ### 修复
