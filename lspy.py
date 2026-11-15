@@ -41,7 +41,7 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.23.2"
+VERSION = "1.24.0"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
@@ -147,6 +147,7 @@ I18N = {
         "text_copied": "Copied to clipboard: {f}",
         "ipv6_not_found": "No IPv6 address found",
         "cfg_invalid_number": "{k} must be a non-negative integer",
+        "cfg_savedir_hint": "Type ? to browse folders",
         "history_cleared": "History wiped", "history_deleted": "Deleted: {f}",
         "history_bad_index": "No such entry: {n}", "history_missing": "File is gone: {p}",
         "not_zip": "Not a ZIP file: {p}",
@@ -232,6 +233,7 @@ I18N = {
         "text_copied": "已复制到剪贴板：{f}",
         "ipv6_not_found": "未找到 IPv6 地址",
         "cfg_invalid_number": "{k} 必须是非负整数",
+        "cfg_savedir_hint": "输入 ? 打开目录浏览器",
         "history_cleared": "已清空历史记录", "history_deleted": "已删除：{f}",
         "history_bad_index": "没有这条记录：{n}", "history_missing": "文件已不存在：{p}",
         "not_zip": "不是 ZIP 文件：{p}",
@@ -320,6 +322,7 @@ I18N = {
         "text_copied": "In die Zwischenablage kopiert: {f}",
         "ipv6_not_found": "Keine IPv6-Adresse gefunden",
         "cfg_invalid_number": "{k} muss eine nicht negative Ganzzahl sein",
+        "cfg_savedir_hint": "? eingeben, um Ordner zu durchsuchen",
         "history_cleared": "Verlauf gelöscht", "history_deleted": "Gelöscht: {f}",
         "history_bad_index": "Kein solcher Eintrag: {n}", "history_missing": "Datei fehlt: {p}",
         "not_zip": "Keine ZIP-Datei: {p}",
@@ -409,6 +412,7 @@ I18N = {
         "text_copied": "Copié dans le presse-papiers : {f}",
         "ipv6_not_found": "Aucune adresse IPv6 trouvée",
         "cfg_invalid_number": "{k} doit être un entier positif ou nul",
+        "cfg_savedir_hint": "Tapez ? pour parcourir les dossiers",
         "history_cleared": "Historique effacé", "history_deleted": "Supprimé : {f}",
         "history_bad_index": "Entrée inexistante : {n}", "history_missing": "Fichier absent : {p}",
         "not_zip": "Ce n'est pas un ZIP : {p}",
@@ -498,6 +502,7 @@ I18N = {
         "text_copied": "クリップボードにコピーしました：{f}",
         "ipv6_not_found": "IPv6 アドレスが見つかりません",
         "cfg_invalid_number": "{k} は 0 以上の整数である必要があります",
+        "cfg_savedir_hint": "? でフォルダを参照できます",
         "history_cleared": "履歴を消去しました", "history_deleted": "削除しました: {f}",
         "history_bad_index": "その番号の記録はありません: {n}", "history_missing": "ファイルが見つかりません: {p}",
         "not_zip": "ZIP ファイルではありません: {p}",
@@ -587,6 +592,7 @@ I18N = {
         "text_copied": "클립보드에 복사했습니다: {f}",
         "ipv6_not_found": "IPv6 주소를 찾을 수 없습니다",
         "cfg_invalid_number": "{k}은(는) 0 이상의 정수여야 합니다",
+        "cfg_savedir_hint": "? 를 입력하면 폴더를 찾아볼 수 있습니다",
         "history_cleared": "기록을 지웠습니다", "history_deleted": "삭제됨: {f}",
         "history_bad_index": "해당 기록이 없습니다: {n}", "history_missing": "파일이 없습니다: {p}",
         "not_zip": "ZIP 파일이 아닙니다: {p}",
@@ -672,6 +678,7 @@ I18N = {
         "text_copied": "已複製到剪貼簿：{f}",
         "ipv6_not_found": "找不到 IPv6 位址",
         "cfg_invalid_number": "{k} 必須是非負整數",
+        "cfg_savedir_hint": "輸入 ? 開啟目錄瀏覽器",
         "history_cleared": "已清空歷史記錄", "history_deleted": "已刪除：{f}",
         "history_bad_index": "沒有這筆記錄：{n}", "history_missing": "檔案已不存在：{p}",
         "not_zip": "不是 ZIP 檔案：{p}",
@@ -760,6 +767,7 @@ I18N = {
         "text_copied": "Copiado al portapapeles: {f}",
         "ipv6_not_found": "No se encontró ninguna dirección IPv6",
         "cfg_invalid_number": "{k} debe ser un entero no negativo",
+        "cfg_savedir_hint": "Escribe ? para explorar carpetas",
         "history_cleared": "Historial borrado", "history_deleted": "Eliminado: {f}",
         "history_bad_index": "No existe esa entrada: {n}", "history_missing": "El archivo ya no existe: {p}",
         "not_zip": "No es un ZIP: {p}",
@@ -849,6 +857,7 @@ I18N = {
         "text_copied": "Скопировано в буфер обмена: {f}",
         "ipv6_not_found": "Адрес IPv6 не найден",
         "cfg_invalid_number": "{k} должно быть целым неотрицательным числом",
+        "cfg_savedir_hint": "Введите ? чтобы выбрать папку",
         "history_cleared": "История очищена", "history_deleted": "Удалено: {f}",
         "history_bad_index": "Нет такой записи: {n}", "history_missing": "Файл не найден: {p}",
         "not_zip": "Это не ZIP-файл: {p}",
@@ -938,6 +947,7 @@ I18N = {
         "text_copied": "Copiado para a área de transferência: {f}",
         "ipv6_not_found": "Nenhum endereço IPv6 encontrado",
         "cfg_invalid_number": "{k} deve ser um inteiro não negativo",
+        "cfg_savedir_hint": "Introduza ? para navegar pelas pastas",
         "history_cleared": "Histórico apagado", "history_deleted": "Removido: {f}",
         "history_bad_index": "Não existe essa entrada: {n}", "history_missing": "O ficheiro já não existe: {p}",
         "not_zip": "Não é um ficheiro ZIP: {p}",
@@ -2806,7 +2816,16 @@ def interactive_config():
             v = input(t("cfg_prompt_port", d=port)).strip()
             if v.isdigit() and 1 <= int(v) <= 65535: set_config("port", int(v))
             elif v: print("⚠️ " + t("cfg_invalid_port"))
-        elif choice == "3": set_config("save_dir", input(t("cfg_prompt_savedir", d=save_dir)).strip() or None)
+        elif choice == "3":
+            # 输入 ? 时用 cfdialog 的目录浏览器挑一个，省得对着键盘敲一长串路径
+            print("  " + t("cfg_savedir_hint"))
+            v = input(t("cfg_prompt_savedir", d=save_dir)).strip()
+            if v == "?":
+                picked = _dialog_pick_folder(save_dir)
+                if picked: set_config("save_dir", str(picked)); print("✅ " + t("cfg_savedir") + ": " + str(picked))
+                else: print("⚠️ " + t("no_file_selected"))
+                continue
+            set_config("save_dir", v or None)
         elif choice == "4": set_config("pin", input(t("cfg_prompt_pin", d=cfg.get("pin") or "")).strip() or None)
         elif choice == "5": set_config("auto_accept", not auto)
         elif choice == "6": set_config("ntfy_topic", input(t("cfg_prompt_topic", d=topic)).strip() or None)
@@ -2821,6 +2840,66 @@ def interactive_config():
                 if 0 <= idx < len(codes): set_config("lang", codes[idx]); init_lang()
             except Exception: pass
 
+_CFDIALOG = None      # None=未加载；False=这台机器上没有可用的 cfdialog
+
+# cfdialog 的语言码与 lspy 的不完全一致（zh→zh_CN，de/pt 没有对应包，回退英文）
+_CFDIALOG_LANG = {"zh": "zh_CN", "zh_TW": "zh_TW", "en": "en", "ja": "ja",
+                  "ko": "ko", "ru": "ru", "fr": "fr", "es": "es"}
+
+
+def _cfdialog():
+    """惰性加载随仓库附带的 cfdialog；缺库时返回 None，调用方继续降级。"""
+    global _CFDIALOG
+    if _CFDIALOG is None:
+        try:
+            import cfdialog as cf
+            # cfdialog 默认会在首次调用时尝试提权并把进程重启，交互菜单里绝不能这样
+            cf.set_auto_elevate(False)
+            _CFDIALOG = cf
+        except Exception as e:
+            _log.debug("cfdialog unavailable: %s", e)
+            _CFDIALOG = False
+    return _CFDIALOG or None
+
+
+def _dialog_lang(cf):
+    code = _CFDIALOG_LANG.get(_current_lang or "")
+    try:
+        if code: cf.set_language(code)
+    except Exception: pass
+
+
+def _dialog_pick_files(multiple=True):
+    """用 cfdialog 的交互式浏览选文件。
+
+    返回列表（空列表 = 用户取消）；没有可用的 cfdialog 时返回 None，
+    让调用方退回到「手敲路径」。
+    """
+    cf = _cfdialog()
+    if cf is None: return None
+    _dialog_lang(cf)
+    try:
+        res = cf.pick_file(multiple=multiple, mode="path", prompt=t("pick_files_title"))
+    except Exception as e:
+        _log.debug("cfdialog pick_file: %s", e)
+        return []          # BrowserCancelled 与异常都算「没选到」，不再逼用户手敲
+    if not res: return []
+    return [Path(p) for p in (res if isinstance(res, (list, tuple)) else [res])]
+
+
+def _dialog_pick_folder(start_dir=None):
+    """用 cfdialog 选目录；选不到或没有库时返回 None。"""
+    cf = _cfdialog()
+    if cf is None: return None
+    _dialog_lang(cf)
+    try:
+        res = cf.pick_folder(mode="path", start_dir=start_dir)
+    except Exception as e:
+        _log.debug("cfdialog pick_folder: %s", e)
+        return None
+    return Path(res) if res else None
+
+
 def pick_files():
     try:
         import tkinter as tk
@@ -2829,6 +2908,8 @@ def pick_files():
         paths = filedialog.askopenfilenames(title=t("pick_files_title")); root.destroy()
         if paths: return list(paths)
     except Exception: pass
+    picked = _dialog_pick_files()
+    if picked is not None: return [str(p) for p in picked]
     raw = input(t("prompt_files")).strip()
     return [x.strip().strip('"').strip("'") for x in raw.split(",") if x.strip()]
 

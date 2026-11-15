@@ -858,5 +858,84 @@ class TestInfoIPv6(unittest.TestCase):
             self.assertNotIn("%", ip)  # 带 zone id 的链路本地地址不能拿来直连
 
 
+class TestDialogPicker(unittest.TestCase):
+    """随仓库附带的 cfdialog：可选依赖，缺了就降级，不能把菜单弄崩。"""
+
+    class _FakeCf:
+        def __init__(self, files=None, folder=None, boom=False):
+            self.files, self.folder, self.boom = files, folder, boom
+            self.lang = None
+
+        def set_auto_elevate(self, enabled):
+            self.auto_elevate = enabled
+
+        def set_language(self, code):
+            self.lang = code
+
+        def pick_file(self, **kwargs):
+            if self.boom: raise RuntimeError("boom")
+            return self.files
+
+        def pick_folder(self, **kwargs):
+            if self.boom: raise RuntimeError("boom")
+            return self.folder
+
+    def _install(self, fake):
+        orig = lspy._CFDIALOG
+        lspy._CFDIALOG = fake
+        self.addCleanup(setattr, lspy, "_CFDIALOG", orig)
+
+    def test_returns_none_without_library(self):
+        self._install(False)
+        self.assertIsNone(lspy._cfdialog())
+        self.assertIsNone(lspy._dialog_pick_files())
+        self.assertIsNone(lspy._dialog_pick_folder())
+
+    def test_module_loader_disables_auto_elevation(self):
+        """默认提权会重启整个进程，菜单里用了就是炸给你看。"""
+        orig = lspy._CFDIALOG
+        lspy._CFDIALOG = None
+        self.addCleanup(setattr, lspy, "_CFDIALOG", orig)
+        cf = lspy._cfdialog()
+        self.assertIsNotNone(cf, "仓库里带了 cfdialog.py，应能加载")
+        self.assertFalse(cf._AUTO_ELEVATE)
+
+    def test_multiple_paths_become_strings(self):
+        self._install(self._FakeCf(files=[Path("/a/one.txt"), Path("/a/two.txt")]))
+        got = lspy._dialog_pick_files()
+        self.assertEqual(got, [Path("/a/one.txt"), Path("/a/two.txt")])
+
+    def test_single_path_is_wrapped(self):
+        self._install(self._FakeCf(files=Path("/a/one.txt")))
+        self.assertEqual(len(lspy._dialog_pick_files(multiple=False)), 1)
+
+    def test_cancel_and_error_mean_nothing_picked(self):
+        self._install(self._FakeCf(files=None))
+        self.assertEqual(lspy._dialog_pick_files(), [])
+        self._install(self._FakeCf(boom=True))
+        self.assertEqual(lspy._dialog_pick_files(), [])
+        self.assertIsNone(lspy._dialog_pick_folder())
+
+    def test_pick_files_falls_back_to_typed_paths(self):
+        """没有 tkinter、没有 cfdialog 时仍能手敲逗号分隔的路径。"""
+        import builtins
+        from unittest import mock
+        self._install(False)
+        orig_tk = sys.modules.get("tkinter")
+        sys.modules["tkinter"] = None          # 让 import tkinter 直接失败
+        self.addCleanup(lambda: sys.modules.__setitem__("tkinter", orig_tk) if orig_tk else sys.modules.pop("tkinter", None))
+        with mock.patch.object(builtins, "input", lambda prompt="": 'a.txt, "b c.txt"'):
+            self.assertEqual(lspy.pick_files(), ["a.txt", "b c.txt"])
+
+    def test_language_map_matches_cfdialog_packs(self):
+        """映射必须是 lspy 语言的子集，且只能映射 cfdialog 真有的语言包。"""
+        packs = {"zh_CN", "zh_TW", "en", "ja", "ko", "ru", "fr", "es", "ar"}
+        self.assertTrue(set(lspy._CFDIALOG_LANG) <= set(lspy.SUPPORTED_LANGS))
+        self.assertEqual(lspy._CFDIALOG_LANG["zh"], "zh_CN")
+        self.assertEqual(lspy._CFDIALOG_LANG["zh_TW"], "zh_TW")
+        for code in lspy._CFDIALOG_LANG.values():
+            self.assertIn(code, packs)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

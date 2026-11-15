@@ -5,7 +5,7 @@
 > A command-line implementation of the LocalSend protocol. One file, zero third-party dependencies: LocalSend on your phone, one command on your desktop. Cross-network relay over ntfy.sh included.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.23.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.24.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-brightgreen)]()
@@ -22,7 +22,7 @@
 
 ## 📦 Version & Origin
 
-Current version: **v1.23.2** (single source of truth is [CHANGELOG.md](CHANGELOG.md), verified and injected by CI).
+Current version: **v1.24.0** (single source of truth is [CHANGELOG.md](CHANGELOG.md), verified and injected by CI).
 
 lspy is an **independent command-line implementation** of the LocalSend protocol, written from scratch. It does not copy the official app (Apache-2.0) sources and only interoperates at the protocol level — see [LICENSE-LocalSend](LICENSE-LocalSend). Sibling GUI implementations: [OldSend](https://github.com/styisme/oldsend) and [WatchSend](https://github.com/styisme/watchsend); they share protocol ideas but no code.
 
@@ -51,6 +51,7 @@ lspy is an **independent command-line implementation** of the LocalSend protocol
 - **IPv6 direct address** (ported from watchsend's `[IPv6]:53317` readout): `info` appends `[address]:port` for this machine's IPv6 addresses below the protocol JSON, ready to hand to the peer for cross-network transfers; only global and unique-local unicast addresses are listed, link-local ones are not.
 - **Debug keys mode** (ported from watchsend's Debug Keys Mode): `--debug-keys` renders raw i18n keys such as `⟦history_empty⟧` so missing translations stand out; `config --set debug_keys=true` keeps it on across runs, while the flag itself never writes to the config.
 - **Interactive menu**: running without a subcommand starts a background receiver and offers scan / send / cross-net / history / settings.
+- **File picker without tkinter**: bundled [cfdialog](https://github.com/styisme/cfdialog) 0.3.0 (MIT, one file, stdlib only) takes over when `tkinter` is missing — a terminal browser with numbered entries, `g` for partitions, `h` for hidden files, `a`/`c`/`d` for multi-select; typing `?` at the save-dir setting opens a folder browser.
 - **10 UI languages**: zh, zh_TW, en, ja, ko, de, fr, es, ru, pt.
 
 ---
@@ -66,7 +67,7 @@ python lspy.py --help          # run directly
 pip install .                  # or install the `lspy` command
 ```
 
-Python 3.8+, no third-party dependencies. Without `tkinter`, the file picker falls back to typed paths.
+Python 3.8+, no third-party dependencies. Without `tkinter`, the picker falls back to the bundled cfdialog terminal browser, and only then to typed paths.
 
 No Python at hand? Grab the standalone build from [Releases](https://github.com/styisme/lspy/releases): `lspy-<version>-windows-x64.exe` on Windows, `lspy-<version>-linux-x86_64` on Linux — download and run. The Linux binary is built on Ubuntu 22.04 and needs `glibc >= 2.35`; on older distributions use `pip install lspy`.
 
@@ -121,13 +122,13 @@ A single-file Python project with no third-party dependencies; packaging uses th
 
 ```bash
 pip install .
-python -m unittest discover -s tests -v       # 64 cases: unit + end-to-end
+python -m unittest discover -s tests -v       # 84 cases: unit + end-to-end
 python scripts/sync_version.py --check         # version matches CHANGELOG.md
 pip install pyinstaller && python scripts/build_binary.py   # standalone executable
 ```
 
 `build_binary.py` reads the version from `CHANGELOG.md` and writes a platform-named artifact into `dist/`:
-`lspy-<version>-windows-x64.exe`, `lspy-<version>-linux-x86_64`, `lspy-<version>-linux-arm64`, `lspy-<version>-macos-arm64`, `lspy-<version>-macos-x64`. Pass `--clean` to wipe `build/` and `dist/` first.
+`lspy-<version>-windows-x64.exe`, `lspy-<version>-linux-x86_64`, `lspy-<version>-linux-arm64`, `lspy-<version>-macos-arm64`, `lspy-<version>-macos-x64`. Pass `--clean` to wipe `build/` and `dist/` first. `cfdialog.py` and `lg/*.txt` are bundled too (unpacked to `_MEIPASS/lg`, exactly that library's `LIB_DIR/lg`).
 
 ### 🤖 Automation
 
@@ -161,3 +162,5 @@ pip install pyinstaller && python scripts/build_binary.py   # standalone executa
 ## 📜 License
 
 MIT — see [LICENSE](LICENSE). Protocol compatibility notice: [LICENSE-LocalSend](LICENSE-LocalSend). Independent implementation, no copied official source.
+
+Third-party: `cfdialog.py` and `lg/*.txt` are copied verbatim from [styisme/cfdialog](https://github.com/styisme/cfdialog) 0.3.0 (also MIT); its copyright notice is kept in [LICENSE-cfdialog](LICENSE-cfdialog).

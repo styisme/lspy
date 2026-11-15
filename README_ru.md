@@ -5,7 +5,7 @@
 > Реализация протокола LocalSend в командной строке. Один файл, без сторонних зависимостей: LocalSend на телефоне, одна команда на компьютере. Есть ретрансляция между сетями через ntfy.sh.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.23.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.24.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -29,6 +29,7 @@
 - **Веб-страница обмена** (загрузка / скачивание / текст, портирована из watchsend; страница следует `Accept-Language` браузера), **10 языков интерфейса**.
 - **История и отладка** (тоже из watchsend): `history --delete N` / `--clear` / `--unzip N` (ZIP помечен 📦, защита от Zip Slip), `--debug-keys` показывает исходные ключи i18n.
 - **Мелкие удобства при получении**: полученные `.txt` до 10 КБ сразу попадают в буфер обмена (отключается через `clipboard_text`), история обрезается по `history_max` (по умолчанию 300), а `info` дополнительно печатает `[IPv6]:порт`.
+- **Выбор файлов без tkinter**: встроенный [cfdialog](https://github.com/styisme/cfdialog) 0.3.0 (MIT, один файл) заменяет диалог tkinter на терминальный браузер (номера, `g` разделы, `h` скрытые файлы, `a`/`c`/`d` множественный выбор); `?` в настройке папки приёма открывает обзор папок.
 
 ---
 

@@ -40,7 +40,7 @@ cd lspy
 
 python lspy.py --help                     # 免安装运行
 pip install .                             # 安装为 lspy 命令
-python -m unittest discover -s tests -v   # 全量测试（77 例）
+python -m unittest discover -s tests -v   # 全量测试（84 例）
 python scripts/sync_version.py --check    # 校验版本号与 CHANGELOG 一致
 pip install pyinstaller && python scripts/build_binary.py --clean   # 打包单文件可执行程序
 ```
@@ -77,12 +77,14 @@ python scripts/build_binary.py --clean    # 需要 pyinstaller；产物在 dist/
 ```text
 lspy/
 ├── lspy.py                     # 单文件主程序（CLI + HTTP 服务 + 发送端 + 跨网 + i18n）
+├── cfdialog.py                 # 随仓库附带的文件对话框库（上游 0.3.0 原样复制，MIT）
+├── lg/                         # cfdialog 语言包（上游 0.3.0 原样复制）
 ├── tests/
 │   └── test_lspy.py            # unittest：单元 + 端到端收发
 ├── scripts/
 │   ├── sync_version.py         # 从 CHANGELOG 提取版本并注入（唯一版本来源）
 │   ├── extract_release_notes.py # 生成发版用的版本号与 Release Notes
-│   └── build_binary.py         # 用 PyInstaller 打包单文件可执行程序
+│   └── build_binary.py         # 用 PyInstaller 打包单文件可执行程序（含 cfdialog 与 lg）
 ├── docs/
 │   ├── AI_DISCLOSURE.md        # AI 生成声明
 │   ├── DEVELOPMENT_CONSTRAINTS.md  # 开发环境约束
@@ -94,9 +96,11 @@ lspy/
 ├── README.md / README_EN.md / README_*.md   # 10 语言文档
 ├── CHANGELOG.md                # 版本唯一来源
 ├── CONTRIBUTING.md / CONTRIBUTING_EN.md
-├── LICENSE / LICENSE-LocalSend
+├── LICENSE / LICENSE-LocalSend / LICENSE-cfdialog
 └── pyproject.toml
 ```
+
+`cfdialog.py` 与 `lg/` 不从上游改动：升级时整份替换，改行为请在上游提。lspy 侧只负责调用（`_cfdialog()` / `_dialog_pick_files()` / `_dialog_pick_folder()`），并在加载时关掉它的自动提权（`set_auto_elevate(False)`，否则首次选文件会尝试 UAC/root 并重启进程）。
 
 `lspy.py` 内部分区（自上而下）：常量与配置 → 日志与 stdio → i18n → 工具函数（文件名净化、唯一路径、进度条、HTTP opener）→ 发现（组播 / 广播 / HTTP 扫描）→ `LspyServer`（HTTP 处理与协商）→ 发送端 → 跨网 → 历史与证书 → 交互菜单 → `main`。
 
@@ -326,4 +330,4 @@ A：说明 `lspy.py` / `pyproject.toml` 与 `CHANGELOG.md` 顶部版本不同。
 
 ## 许可
 
-贡献即表示同意以 [MIT 协议](LICENSE) 授权你的代码。与 LocalSend 的协议兼容性说明见 [LICENSE-LocalSend](LICENSE-LocalSend)。
+贡献即表示同意以 [MIT 协议](LICENSE) 授权你的代码。与 LocalSend 的协议兼容性说明见 [LICENSE-LocalSend](LICENSE-LocalSend)；随仓库附带的第三方组件声明见 [LICENSE-cfdialog](LICENSE-cfdialog)。

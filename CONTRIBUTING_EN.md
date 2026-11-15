@@ -40,7 +40,7 @@ cd lspy
 
 python lspy.py --help                     # run without installing
 pip install .                             # install the `lspy` command
-python -m unittest discover -s tests -v   # full suite (77 tests)
+python -m unittest discover -s tests -v   # full suite (84 tests)
 python scripts/sync_version.py --check    # version consistency with CHANGELOG
 pip install pyinstaller && python scripts/build_binary.py --clean   # standalone executable
 ```
@@ -77,12 +77,14 @@ python scripts/build_binary.py --clean    # needs pyinstaller; artifacts land in
 ```text
 lspy/
 ├── lspy.py                     # single-file app (CLI + HTTP server + sender + cross-net + i18n)
+├── cfdialog.py                 # bundled file-dialog library (upstream 0.3.0, verbatim, MIT)
+├── lg/                         # cfdialog language packs (upstream 0.3.0, verbatim)
 ├── tests/
 │   └── test_lspy.py            # unittest: units + end-to-end transfer
 ├── scripts/
 │   ├── sync_version.py         # single-source version extraction & injection
 │   ├── extract_release_notes.py # version + release notes for publishing
-│   └── build_binary.py         # PyInstaller single-file executable
+│   └── build_binary.py         # PyInstaller single-file executable (bundles cfdialog + lg)
 ├── docs/
 │   ├── AI_DISCLOSURE.md
 │   ├── DEVELOPMENT_CONSTRAINTS.md
@@ -94,9 +96,11 @@ lspy/
 ├── README.md / README_EN.md / README_*.md   # 10 languages
 ├── CHANGELOG.md                # single source of version
 ├── CONTRIBUTING.md / CONTRIBUTING_EN.md
-├── LICENSE / LICENSE-LocalSend
+├── LICENSE / LICENSE-LocalSend / LICENSE-cfdialog
 └── pyproject.toml
 ```
+
+`cfdialog.py` and `lg/` are never edited locally: upgrade by replacing the files wholesale, and send behaviour changes upstream. lspy only calls it (`_cfdialog()` / `_dialog_pick_files()` / `_dialog_pick_folder()`) and disables its auto-elevation on load (`set_auto_elevate(False)`) — otherwise the first pick would try UAC/root and restart the process.
 
 Inside `lspy.py` the sections run top-down: constants and config → logging and stdio → i18n → helpers (filename sanitising, unique paths, progress, HTTP opener) → discovery (multicast / broadcast / HTTP scan) → `LspyServer` → sender → cross-network → history and certificates → interactive menu → `main`.
 
@@ -325,4 +329,4 @@ A: `lspy.py` / `pyproject.toml` disagree with the top of `CHANGELOG.md`; run `py
 
 ## License
 
-Contributions are licensed under [MIT](LICENSE). Protocol compatibility notice: [LICENSE-LocalSend](LICENSE-LocalSend).
+Contributions are licensed under [MIT](LICENSE). Protocol compatibility notice: [LICENSE-LocalSend](LICENSE-LocalSend). Bundled third-party notice: [LICENSE-cfdialog](LICENSE-cfdialog).

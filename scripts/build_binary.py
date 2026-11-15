@@ -16,12 +16,13 @@ Requires PyInstaller (`pip install pyinstaller`). lspy itself has no third-party
 runtime dependencies, so the bundle stays small.
 """
 
+import importlib.util
+import os
+import platform
 import re
 import shutil
 import subprocess
 import sys
-import platform
-import importlib.util
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -76,11 +77,19 @@ def main(argv):
         "--clean",
         "--noconfirm",
         "--name", "lspy",
+        "--paths", str(ROOT),
         str(ROOT / "lspy.py"),
     ]
     # tkinter is imported lazily inside pick_files(), so name it explicitly when present.
     if importlib.util.find_spec("tkinter") is not None:
         cmd += ["--hidden-import", "tkinter", "--hidden-import", "tkinter.filedialog"]
+    # 随仓库附带的 cfdialog（单文件库）也要进包；它的 lg/*.txt 语言包单独作为数据打包，
+    # 解包后位于 _MEIPASS/lg，正好对上 cfdialog 的 LIB_DIR/lg。
+    if (ROOT / "cfdialog.py").is_file():
+        cmd += ["--hidden-import", "cfdialog"]
+        lg = ROOT / "lg"
+        if lg.is_dir():
+            cmd += ["--add-data", f"{lg}{os.pathsep}lg"]
 
     print("building:", " ".join(cmd))
     result = subprocess.run(cmd, cwd=str(ROOT))

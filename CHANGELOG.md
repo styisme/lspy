@@ -4,6 +4,23 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.24.0] - 2026-11-15
+
+### 新增
+
+- **内置 cfdialog 文件选择器**：随仓库附带 [cfdialog](https://github.com/styisme/cfdialog) 0.3.0（单文件、纯标准库的 CLI 文件对话框库，MIT），`4. 发送文件到设备` 选文件时依次尝试 `tkinter` → `cfdialog` 交互式浏览器 → 手敲路径。没有 `tkinter` 数据文件的精简 Python（本例即是）以前只能一路退到「输入路径」，现在可以在目录里用数字跳转、`g` 切分区、`h` 显示隐藏文件、`a`/`c`/`d` 多选。
+- **设置里的保存目录支持浏览**：`8. 设置` → 保存目录一项输入 `?` 直接用目录浏览器挑，不用再对着键盘敲一长串路径；提示文案（`cfg_savedir_hint`）已补进 10 份词表。
+
+### 变更
+
+- cfdialog 的自动提权被显式关闭（`set_auto_elevate(False)`）：它默认会在首次调用时尝试 UAC/root 并**重启整个进程**，放进交互菜单等于随机退出。
+- cfdialog 的界面语言跟随 lspy 当前语言（`zh→zh_CN`、`zh_TW→zh_TW`、`en/ja/ko/ru/fr/es` 直映）；`de`/`pt` 没有对应语言包，回退英文。
+- 打包脚本把 `lg/*.txt` 作为数据一并塞进单文件产物（解包后 `_MEIPASS/lg` 正好对上 cfdialog 的 `LIB_DIR/lg`），所以 exe 里的选择器不是只有中英两种语言。
+
+### 测试
+
+- 新增 7 个用例：缺库时三条入口都返回 `None`（继续降级而不是崩）、加载器确实关掉了自动提权、多选/单选返回值规整、取消与异常都算「没选到」、`tkinter` 与 cfdialog 都不可用时仍能手敲逗号分隔路径、语言映射只映射 cfdialog 真有的语言包。测试总数 77 → 84。
+
 ## [1.23.2] - 2026-11-15
 
 ### 修复
