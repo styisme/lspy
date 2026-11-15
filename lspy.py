@@ -41,7 +41,7 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.21.2"
+VERSION = "1.22.0"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
@@ -170,6 +170,11 @@ I18N = {
         "bound_port": "Bound to port {p}", "no_write_perm": "Cannot write to {p}: {e}",
         "integrity_fail": "Integrity check failed for {f}", "chunk_hash": "Chunk {i} checksum mismatch, retrying",
         "version": "Version", "web_alone": "Web page available at {u}",
+        "web_tab_upload": "Send to this device", "web_tab_download": "Download from this device", "web_tab_text": "Text message",
+        "web_upload_hint": "Drop files here or click to choose. They are saved to the receive folder.", "web_download_empty": "Nothing received yet", "web_text_hint": "Text goes to the clipboard, or to a .txt file when the clipboard is unavailable.",
+        "web_send": "Send", "web_clip_btn": "Read clipboard", "web_pin_prompt": "Access PIN",
+        "web_up_ok": "Uploaded", "web_text_ok": "Text sent", "web_pin_bad": "PIN required",
+        "web_uploaded": "Uploaded {f}",
         "menu_serve_fg": "Switch to foreground service (verbose progress)",
         "auto_start": "Starting background receiver...", "auto_start_fail": "Auto-start failed: {e}",
         "port_in_use": "Port {p} is unavailable: {e}",
@@ -243,6 +248,11 @@ I18N = {
         "bound_port": "已绑定端口 {p}", "no_write_perm": "无法写入 {p}：{e}",
         "integrity_fail": "{f} 完整性校验失败", "chunk_hash": "分块 {i} 校验失败，重试中",
         "version": "版本", "web_alone": "网页界面：{u}",
+        "web_tab_upload": "上传到本机", "web_tab_download": "下载本机文件", "web_tab_text": "发送文本",
+        "web_upload_hint": "拖入文件或点击选择，上传后保存到接收目录", "web_download_empty": "还没有接收过文件", "web_text_hint": "文本会写入本机剪贴板；剪贴板不可用时保存为 txt 文件",
+        "web_send": "发送", "web_clip_btn": "读取剪贴板", "web_pin_prompt": "访问 PIN",
+        "web_up_ok": "已上传", "web_text_ok": "已发送", "web_pin_bad": "需要 PIN",
+        "web_uploaded": "已上传 {f}",
         "menu_serve_fg": "切换为前台服务（详细进度）",
         "auto_start": "正在自动启动后台接收服务...", "auto_start_fail": "自动启动失败：{e}",
         "port_in_use": "端口 {p} 不可用：{e}",
@@ -321,6 +331,11 @@ I18N = {
         "bound_port": "An Port {p} gebunden", "no_write_perm": "Kann nicht nach {p} schreiben: {e}",
         "integrity_fail": "Integritätsprüfung fehlgeschlagen für {f}", "chunk_hash": "Prüfsumme von Block {i} stimmt nicht, neuer Versuch",
         "version": "Version", "web_alone": "Webseite unter {u}",
+        "web_tab_upload": "An dieses Gerät senden", "web_tab_download": "Von diesem Gerät laden", "web_tab_text": "Textnachricht",
+        "web_upload_hint": "Dateien hierher ziehen oder klicken. Sie werden im Empfangsordner gespeichert.", "web_download_empty": "Noch nichts empfangen", "web_text_hint": "Text wird in die Zwischenablage kopiert oder als .txt-Datei gespeichert, wenn keine Zwischenablage verfügbar ist.",
+        "web_send": "Senden", "web_clip_btn": "Zwischenablage lesen", "web_pin_prompt": "Zugriffs-PIN",
+        "web_up_ok": "Hochgeladen", "web_text_ok": "Text gesendet", "web_pin_bad": "PIN erforderlich",
+        "web_uploaded": "Hochgeladen: {f}",
         "menu_serve_fg": "In den Vordergrunddienst wechseln (ausführlicher Verlauf)",
         "auto_start": "Hintergrund-Empfänger wird gestartet...", "auto_start_fail": "Autostart fehlgeschlagen: {e}",
         "port_in_use": "Port {p} nicht verfügbar: {e}",
@@ -399,6 +414,11 @@ I18N = {
         "bound_port": "Lié au port {p}", "no_write_perm": "Impossible d'écrire dans {p} : {e}",
         "integrity_fail": "Contrôle d'intégrité échoué pour {f}", "chunk_hash": "Somme de contrôle du bloc {i} incorrecte, nouvelle tentative",
         "version": "Version", "web_alone": "Page web sur {u}",
+        "web_tab_upload": "Envoyer à cet appareil", "web_tab_download": "Télécharger depuis cet appareil", "web_tab_text": "Message texte",
+        "web_upload_hint": "Déposez des fichiers ici ou cliquez pour choisir. Ils sont enregistrés dans le dossier de réception.", "web_download_empty": "Rien reçu pour l'instant", "web_text_hint": "Le texte est copié dans le presse-papiers, ou enregistré en .txt si celui-ci est indisponible.",
+        "web_send": "Envoyer", "web_clip_btn": "Lire le presse-papiers", "web_pin_prompt": "PIN d'accès",
+        "web_up_ok": "Envoyé", "web_text_ok": "Texte envoyé", "web_pin_bad": "PIN requis",
+        "web_uploaded": "Envoyé : {f}",
         "menu_serve_fg": "Passer au service au premier plan (progression détaillée)",
         "auto_start": "Démarrage du récepteur en arrière-plan...", "auto_start_fail": "Échec du démarrage automatique : {e}",
         "port_in_use": "Port {p} indisponible : {e}",
@@ -477,6 +497,11 @@ I18N = {
         "bound_port": "ポート {p} にバインドしました", "no_write_perm": "{p} に書き込めません: {e}",
         "integrity_fail": "{f} の整合性チェックに失敗", "chunk_hash": "チャンク {i} のチェックサム不一致、再試行します",
         "version": "バージョン", "web_alone": "Web ページ: {u}",
+        "web_tab_upload": "この端末へ送信", "web_tab_download": "端末からダウンロード", "web_tab_text": "テキスト送信",
+        "web_upload_hint": "ファイルをドロップするかクリックして選択。受信フォルダーに保存されます。", "web_download_empty": "まだファイルを受信していません", "web_text_hint": "テキストはクリップボードにコピーされます。クリップボードが使えない場合は txt ファイルとして保存されます。",
+        "web_send": "送信", "web_clip_btn": "クリップボードを読み取る", "web_pin_prompt": "アクセス PIN",
+        "web_up_ok": "アップロード済み", "web_text_ok": "送信済み", "web_pin_bad": "PIN が必要",
+        "web_uploaded": "アップロード済み {f}",
         "menu_serve_fg": "前面サービスに切り替え（詳細な進捗）",
         "auto_start": "バックグラウンド受信サービスを起動中...", "auto_start_fail": "自動起動に失敗: {e}",
         "port_in_use": "ポート {p} が使用できません: {e}",
@@ -555,6 +580,11 @@ I18N = {
         "bound_port": "포트 {p} 에 바인딩됨", "no_write_perm": "{p} 에 쓸 수 없습니다: {e}",
         "integrity_fail": "{f} 무결성 검사 실패", "chunk_hash": "청크 {i} 체크섬 불일치, 재시도",
         "version": "버전", "web_alone": "웹 페이지: {u}",
+        "web_tab_upload": "이 기기로 보내기", "web_tab_download": "기기에서 다운로드", "web_tab_text": "텍스트 보내기",
+        "web_upload_hint": "파일을 끌어다 놓거나 클릭해 선택하세요. 받기 폴더에 저장됩니다.", "web_download_empty": "아직 받은 파일이 없습니다", "web_text_hint": "텍스트는 클립보드에 복사되며, 클립보드를 쓸 수 없으면 txt 파일로 저장됩니다.",
+        "web_send": "보내기", "web_clip_btn": "클립보드 읽기", "web_pin_prompt": "접근 PIN",
+        "web_up_ok": "업로드됨", "web_text_ok": "전송됨", "web_pin_bad": "PIN 필요",
+        "web_uploaded": "업로드됨 {f}",
         "menu_serve_fg": "포그라운드 서비스로 전환 (상세 진행)",
         "auto_start": "백그라운드 수신 서비스 시작 중...", "auto_start_fail": "자동 시작 실패: {e}",
         "port_in_use": "포트 {p} 사용 불가: {e}",
@@ -628,6 +658,11 @@ I18N = {
         "bound_port": "已綁定連接埠 {p}", "no_write_perm": "無法寫入 {p}：{e}",
         "integrity_fail": "{f} 完整性驗證失敗", "chunk_hash": "分塊 {i} 驗證失敗，重試中",
         "version": "版本", "web_alone": "網頁介面：{u}",
+        "web_tab_upload": "上傳到本機", "web_tab_download": "下載本機檔案", "web_tab_text": "傳送文字",
+        "web_upload_hint": "拖入檔案或點擊選擇，上傳後儲存到接收目錄", "web_download_empty": "還沒有接收過檔案", "web_text_hint": "文字會寫入本機剪貼簿；剪貼簿不可用時儲存為 txt 檔案",
+        "web_send": "傳送", "web_clip_btn": "讀取剪貼簿", "web_pin_prompt": "存取 PIN",
+        "web_up_ok": "已上傳", "web_text_ok": "已傳送", "web_pin_bad": "需要 PIN",
+        "web_uploaded": "已上傳 {f}",
         "menu_serve_fg": "切換為前景服務（詳細進度）",
         "auto_start": "正在自動啟動背景接收服務...", "auto_start_fail": "自動啟動失敗：{e}",
         "port_in_use": "連接埠 {p} 無法使用：{e}",
@@ -706,6 +741,11 @@ I18N = {
         "bound_port": "Vinculado al puerto {p}", "no_write_perm": "No se puede escribir en {p}: {e}",
         "integrity_fail": "Fallo de integridad para {f}", "chunk_hash": "Suma del bloque {i} incorrecta, reintentando",
         "version": "Versión", "web_alone": "Página web en {u}",
+        "web_tab_upload": "Enviar a este dispositivo", "web_tab_download": "Descargar desde este dispositivo", "web_tab_text": "Mensaje de texto",
+        "web_upload_hint": "Arrastra archivos aquí o haz clic para elegirlos. Se guardan en la carpeta de recepción.", "web_download_empty": "Aún no se ha recibido nada", "web_text_hint": "El texto se copia al portapapeles o se guarda como .txt si no está disponible.",
+        "web_send": "Enviar", "web_clip_btn": "Leer portapapeles", "web_pin_prompt": "PIN de acceso",
+        "web_up_ok": "Subido", "web_text_ok": "Texto enviado", "web_pin_bad": "Se requiere PIN",
+        "web_uploaded": "Subido: {f}",
         "menu_serve_fg": "Pasar al servicio en primer plano (progreso detallado)",
         "auto_start": "Iniciando receptor en segundo plano...", "auto_start_fail": "Fallo del inicio automático: {e}",
         "port_in_use": "Puerto {p} no disponible: {e}",
@@ -784,6 +824,11 @@ I18N = {
         "bound_port": "Привязано к порту {p}", "no_write_perm": "Нет прав на запись в {p}: {e}",
         "integrity_fail": "Проверка целостности не пройдена для {f}", "chunk_hash": "Несовпадение контрольной суммы блока {i}, повтор",
         "version": "Версия", "web_alone": "Веб-страница: {u}",
+        "web_tab_upload": "Отправить на это устройство", "web_tab_download": "Скачать с этого устройства", "web_tab_text": "Текстовое сообщение",
+        "web_upload_hint": "Перетащите файлы сюда или нажмите для выбора. Они сохраняются в папке приёма.", "web_download_empty": "Пока ничего не получено", "web_text_hint": "Текст копируется в буфер обмена или сохраняется в файл .txt, если буфер недоступен.",
+        "web_send": "Отправить", "web_clip_btn": "Прочитать буфер", "web_pin_prompt": "PIN доступа",
+        "web_up_ok": "Загружено", "web_text_ok": "Текст отправлен", "web_pin_bad": "Требуется PIN",
+        "web_uploaded": "Загружено: {f}",
         "menu_serve_fg": "Перейти в службу переднего плана (подробный прогресс)",
         "auto_start": "Запуск фонового приёмника...", "auto_start_fail": "Ошибка автозапуска: {e}",
         "port_in_use": "Порт {p} недоступен: {e}",
@@ -862,6 +907,11 @@ I18N = {
         "bound_port": "Ligado à porta {p}", "no_write_perm": "Não é possível escrever em {p}: {e}",
         "integrity_fail": "Falha de integridade em {f}", "chunk_hash": "Soma de verificação do bloco {i} não corresponde, a repetir",
         "version": "Versão", "web_alone": "Página web em {u}",
+        "web_tab_upload": "Enviar para este dispositivo", "web_tab_download": "Descarregar deste dispositivo", "web_tab_text": "Mensagem de texto",
+        "web_upload_hint": "Arraste ficheiros para aqui ou clique para escolher. São guardados na pasta de receção.", "web_download_empty": "Ainda nada recebido", "web_text_hint": "O texto é copiado para a área de transferência ou guardado como .txt se esta não estiver disponível.",
+        "web_send": "Enviar", "web_clip_btn": "Ler área de transferência", "web_pin_prompt": "PIN de acesso",
+        "web_up_ok": "Enviado", "web_text_ok": "Texto enviado", "web_pin_bad": "PIN necessário",
+        "web_uploaded": "Enviado: {f}",
         "menu_serve_fg": "Passar ao serviço em primeiro plano (progresso detalhado)",
         "auto_start": "A iniciar o recetor em segundo plano...", "auto_start_fail": "Falha no arranque automático: {e}",
         "port_in_use": "Porta {p} indisponível: {e}",
@@ -1148,6 +1198,221 @@ def _is_blacklisted(fp):
 def _is_whitelisted(fp):
     return any(fp == x or fp.startswith(x) for x in (get_config("whitelist") or []) if x)
 
+# ================== Web 分享（移植自 watchsend WebShareHandler） ==================
+WEB_MAX_UPLOAD = 2 * 1024 * 1024 * 1024   # 单次浏览器上传上限 2 GiB
+WEB_LIST_LIMIT = 500                      # 文件列表最多返回条数
+WEB_LIST_DEPTH = 4                        # 相对 save_dir 的最大展示深度
+
+
+def web_safe_path(base, rel):
+    """把浏览器给的相对路径解析到 base 之内；越界（../、绝对路径、跨盘）返回 None。"""
+    if not rel: return None
+    raw = str(rel).replace("\\", "/").replace("\x00", "")
+    if raw.startswith("/") or (len(raw) > 1 and raw[1] == ":"): return None
+    parts = [p for p in raw.split("/") if p not in ("", ".")]
+    if any(p == ".." for p in parts): return None
+    base_r = Path(base).expanduser().resolve()
+    target = (base_r / Path(*parts)).resolve() if parts else base_r
+    try:
+        if os.path.commonpath([str(base_r), str(target)]) != str(base_r): return None
+    except ValueError: return None
+    return target
+
+
+def web_list_files(base, limit=WEB_LIST_LIMIT, depth=WEB_LIST_DEPTH):
+    """列出接收目录内的文件（相对路径），供网页「下载」页签使用。"""
+    out, base = [], Path(base).expanduser()
+    try:
+        for root, dirs, files in os.walk(base):
+            rel_root = Path(root).relative_to(base)
+            if len(rel_root.parts) >= depth: dirs[:] = []
+            dirs[:] = [d for d in dirs if not d.startswith(".")]
+            for fn in files:
+                if fn.startswith("."): continue
+                p = Path(root) / fn
+                try: st = p.stat()
+                except OSError: continue
+                out.append({"name": str((rel_root / fn).as_posix()), "size": st.st_size,
+                            "mtime": int(st.st_mtime)})
+                if len(out) >= limit: return out
+    except OSError: pass
+    return out
+
+
+def _clipboard_get():
+    """读取本机剪贴板；无 GUI/tkinter 环境返回空串（不抛异常）。"""
+    try:
+        import tkinter
+        r = tkinter.Tk(); r.withdraw()
+        try: return str(r.clipboard_get() or "")
+        finally: r.destroy()
+    except Exception: return ""
+
+
+def _clipboard_set(text):
+    """写入本机剪贴板；失败返回 False，由调用方改用落盘兜底。"""
+    try:
+        import tkinter
+        r = tkinter.Tk(); r.withdraw()
+        try:
+            r.clipboard_clear(); r.clipboard_append(text); r.update()
+            return True
+        finally: r.destroy()
+    except Exception: return False
+
+
+_WEB_PAGE_TEMPLATE = """<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>@@TITLE@@</title><style>
+:root{--bg:#f6f7f9;--card:#ffffff;--line:#e5e7eb;--txt:#1f2430;--muted:#6b7280;--acc:#2563eb}
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;max-width:860px;margin:0 auto;padding:20px;background:var(--bg);color:var(--txt)}
+h1{font-size:20px;margin:0 0 4px} h2{font-size:15px;margin:0 0 12px;font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:14px}
+.k{display:inline-block;min-width:92px;color:var(--muted);font-size:13px}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid #f0f1f4;font-size:13px;word-break:break-all}
+code{color:#4b5563;font-size:12px}
+.muted{color:var(--muted);font-size:12px}
+.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tab{padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:13px;color:var(--muted)}
+.tab.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.panel{display:none} .panel.on{display:block}
+.zone{border:2px dashed #d7dbe2;border-radius:10px;padding:26px;text-align:center;cursor:pointer;color:var(--muted);background:#fbfcfe}
+.zone.hot{border-color:var(--acc);background:#eff5ff}
+.bar{height:6px;background:#eef0f4;border-radius:3px;overflow:hidden;margin-top:6px}
+.fill{height:100%;width:0;background:var(--acc);transition:width .15s}
+.row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #f0f1f4;font-size:13px;align-items:center}
+a.dl{color:var(--acc);text-decoration:none;font-size:13px;white-space:nowrap}
+.btn{padding:9px 18px;border:0;border-radius:9px;background:var(--acc);color:#fff;font-size:14px;cursor:pointer}
+.btn.ghost{background:#fff;border:1px solid var(--line);color:var(--txt)}
+textarea{width:100%;min-height:130px;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:14px;font-family:inherit;resize:vertical}
+input[type=password]{width:100%;padding:9px;border:1px solid var(--line);border-radius:9px;margin-top:6px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#1f2430;color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.on{opacity:1}
+</style></head><body>
+<h1>@@TITLE@@</h1>
+<p class="muted">@@HINT@@</p>
+
+<div class="card" id="pin-card" style="display:none">
+<h2>@@PIN_PROMPT@@</h2>
+<input type="password" id="pin-input" placeholder="PIN" onchange="savePin(this.value)">
+</div>
+
+<div class="card">
+<div><span class="k">@@ALIAS@@</span>@@ALIAS_V@@</div>
+<div><span class="k">@@PORT@@</span>@@PORT_V@@</div>
+<div><span class="k">@@FP@@</span><code>@@FP_V@@</code></div>
+<div><span class="k">ver</span>@@VER@@</div>
+</div>
+
+<div class="tabs">
+<button class="tab on" onclick="switchTab('upload',this)">@@TAB_UP@@</button>
+<button class="tab" onclick="switchTab('download',this)">@@TAB_DOWN@@</button>
+<button class="tab" onclick="switchTab('text',this)">@@TAB_TEXT@@</button>
+</div>
+
+<div class="card panel on" id="p-upload">
+<h2>@@TAB_UP@@</h2>
+<div class="zone" id="zone" onclick="document.getElementById('file-input').click()">@@UP_HINT@@</div>
+<input type="file" id="file-input" multiple style="display:none" onchange="handleFiles(this.files)">
+<div id="up-list" style="margin-top:12px"></div>
+</div>
+
+<div class="card panel" id="p-download">
+<h2>@@TAB_DOWN@@</h2>
+<div id="dl-list"><p class="muted">…</p></div>
+</div>
+
+<div class="card panel" id="p-text">
+<h2>@@TAB_TEXT@@</h2>
+<textarea id="text-input" placeholder="@@TEXT_HINT@@"></textarea>
+<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+<button class="btn" onclick="sendText()">@@SEND@@</button>
+<button class="btn ghost" onclick="readClip()">@@CLIP@@</button>
+</div>
+</div>
+
+<div class="card"><h2>@@RECENT@@</h2>
+<table><thead><tr><th>Time</th><th>File</th><th>Path</th></tr></thead><tbody>@@ROWS@@</tbody></table>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+var PIN_REQ = @@PIN_REQ@@;
+var MSG = {up_ok:"@@UP_OK@@", text_ok:"@@TEXT_OK@@", pin_bad:"@@PIN_BAD@@"};
+function pin(){ return localStorage.getItem('lspy_pin') || ''; }
+function savePin(v){ localStorage.setItem('lspy_pin', v); if (v) loadFiles(); }
+function withPin(url){ var p = pin(); if (!p) return url; return url + (url.indexOf('?') >= 0 ? '&' : '?') + 'pin=' + encodeURIComponent(p); }
+function toast(msg){ var el = document.getElementById('toast'); el.textContent = msg; el.className = 'toast on'; setTimeout(function(){ el.className = 'toast'; }, 2200); }
+function needPin(r){ if (r.status === 401){ document.getElementById('pin-card').style.display = 'block'; throw new Error(MSG.pin_bad); } if (!r.ok) throw new Error('HTTP ' + r.status); return r; }
+function switchTab(name, btn){
+  ['upload','download','text'].forEach(function(n){ document.getElementById('p-' + n).className = 'card panel' + (n === name ? ' on' : ''); });
+  var tabs = document.querySelectorAll('.tab'); for (var i = 0; i < tabs.length; i++) tabs[i].className = 'tab';
+  btn.className = 'tab on';
+  if (name === 'download') loadFiles();
+}
+function fmtSize(b){ if (b < 1024) return b + ' B'; if (b < 1048576) return (b / 1024).toFixed(1) + ' KB'; if (b < 1073741824) return (b / 1048576).toFixed(1) + ' MB'; return (b / 1073741824).toFixed(2) + ' GB'; }
+function loadFiles(){
+  var box = document.getElementById('dl-list');
+  fetch(withPin('/web/files')).then(needPin).then(function(r){ return r.json(); }).then(function(d){
+    if (!d.files || !d.files.length){ box.innerHTML = '<p class="muted">@@DL_EMPTY@@</p>'; return; }
+    var html = '';
+    d.files.forEach(function(f){
+      html += '<div class="row"><span>' + f.name.replace(/</g,'&lt;') + ' <span class="muted">' + fmtSize(f.size) + '</span></span>'
+            + '<a class="dl" href="' + withPin('/web/download?name=' + encodeURIComponent(f.name)) + '">↓</a></div>';
+    });
+    box.innerHTML = html;
+  }).catch(function(e){ box.innerHTML = '<p class="muted">' + e.message + '</p>'; });
+}
+function upOne(file, idx){
+  return new Promise(function(resolve){
+    var xhr = new XMLHttpRequest();
+    var row = document.getElementById('u-' + idx);
+    xhr.open('POST', withPin('/web/upload?name=' + encodeURIComponent(file.name)));
+    xhr.upload.onprogress = function(ev){ if (ev.lengthComputable){ var pct = Math.round(ev.loaded * 100 / ev.total); row.querySelector('.fill').style.width = pct + '%'; row.querySelector('.pct').textContent = pct + '%'; } };
+    xhr.onload = function(){ if (xhr.status === 401){ document.getElementById('pin-card').style.display = 'block'; row.querySelector('.pct').textContent = MSG.pin_bad; } else if (xhr.status >= 200 && xhr.status < 300){ row.querySelector('.pct').textContent = '100%'; row.querySelector('.fill').style.width = '100%'; } else { row.querySelector('.pct').textContent = 'HTTP ' + xhr.status; } resolve(); };
+    xhr.onerror = function(){ row.querySelector('.pct').textContent = 'ERR'; resolve(); };
+    xhr.send(file);
+  });
+}
+async function handleFiles(files){
+  if (!files || !files.length) return;
+  var list = document.getElementById('up-list');
+  list.innerHTML = '';
+  for (var i = 0; i < files.length; i++){
+    var div = document.createElement('div');
+    div.className = 'row';
+    div.id = 'u-' + i;
+    div.innerHTML = '<span>' + files[i].name.replace(/</g,'&lt;') + ' <span class="muted">' + fmtSize(files[i].size) + '</span></span><span class="pct">0%</span><div class="bar" style="flex:1 1 100%;max-width:none"><div class="fill"></div></div>';
+    div.style.flexWrap = 'wrap';
+    list.appendChild(div);
+  }
+  for (var j = 0; j < files.length; j++){ await upOne(files[j], j); }
+  toast(MSG.up_ok);
+  loadFiles();
+}
+function sendText(){
+  var text = document.getElementById('text-input').value;
+  if (!text){ return; }
+  fetch(withPin('/web/text'), {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text:text})})
+    .then(needPin).then(function(){ toast(MSG.text_ok); })
+    .catch(function(e){ toast(e.message); });
+}
+function readClip(){
+  fetch(withPin('/web/clipboard')).then(needPin).then(function(r){ return r.text(); }).then(function(txt){
+    if (txt){ document.getElementById('text-input').value = txt; } else { toast(MSG.text_ok); }
+  }).catch(function(e){ toast(e.message); });
+}
+var z = document.getElementById('zone');
+['dragenter','dragover'].forEach(function(ev){ z.addEventListener(ev, function(e){ e.preventDefault(); z.className = 'zone hot'; }); });
+['dragleave','drop'].forEach(function(ev){ z.addEventListener(ev, function(e){ e.preventDefault(); z.className = 'zone'; }); });
+z.addEventListener('drop', function(e){ handleFiles(e.dataTransfer.files); });
+if (PIN_REQ){ document.getElementById('pin-card').style.display = 'block'; }
+if (PIN_REQ && !pin()){ } else { loadFiles(); }
+</script></body></html>"""
+
+
 # ================== 设备模型 & 扫描 ==================
 class Device:
     def __init__(self, alias, ip, port=DEFAULT_PORT, version="", fingerprint="", deviceModel="", deviceType="desktop", https=False):
@@ -1369,32 +1634,39 @@ class LspyServer:
                     _html.escape(str(e.get("file", ""))),
                     _html.escape(str(e.get("path", "")))))
         body = "".join(rows) or f"<tr><td colspan=3>{_html.escape(t('web_none'))}</td></tr>"
-        title = _html.escape(t("web_title"))
-        return """<!DOCTYPE html><html><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{title}</title><style>
-body{{font-family:system-ui,Segoe UI,sans-serif;max-width:820px;margin:0 auto;padding:24px;background:#f7f8fa;color:#1f2430}}
-h1{{font-size:20px;margin:0 0 16px}} .card{{background:#fff;border:1px solid #e6e8eb;border-radius:12px;padding:18px;margin-bottom:16px}}
-.k{{display:inline-block;min-width:96px;color:#6b7280}} table{{width:100%;border-collapse:collapse}}
-th,td{{text-align:left;padding:8px;border-bottom:1px solid #eef0f3;font-size:13px}}
-code{{color:#4b5563;font-size:12px}} .muted{{color:#6b7280;font-size:12px}}
-</style></head><body>
-<h1>{title}</h1>
-<div class="card">
-<div><span class="k">{alias}</span>{alias_v}</div>
-<div><span class="k">{port}</span>{port_v}</div>
-<div><span class="k">{fp}</span><code>{fp_v}</code></div>
-<div><span class="k">ver</span>{ver}</div>
-<div class="muted" style="margin-top:12px">{hint}</div>
-</div>
-<div class="card"><h1 style="font-size:16px">{recent}</h1>
-<table><thead><tr><th>Time</th><th>File</th><th>Path</th></tr></thead><tbody>{body}</tbody></table>
-</div></body></html>""".format(
-            title=title, alias=t("web_alias"), alias_v=_html.escape(str(info["alias"])),
-            port=t("web_port"), port_v=info["port"], fp=t("web_fp"),
-            fp_v=_html.escape(str(info["fingerprint"])[:32]),
-            ver=_html.escape(VERSION), hint=_html.escape(t("web_hint")),
-            recent=_html.escape(t("web_recent")), body=body)
+        page = _WEB_PAGE_TEMPLATE
+        for token, value in (
+            ("@@TITLE@@", _html.escape(t("web_title"))),
+            ("@@TAB_UP@@", _html.escape(t("web_tab_upload"))),
+            ("@@TAB_DOWN@@", _html.escape(t("web_tab_download"))),
+            ("@@TAB_TEXT@@", _html.escape(t("web_tab_text"))),
+            ("@@UP_HINT@@", _html.escape(t("web_upload_hint"))),
+            ("@@DL_EMPTY@@", _html.escape(t("web_download_empty"))),
+            ("@@TEXT_HINT@@", _html.escape(t("web_text_hint"))),
+            ("@@SEND@@", _html.escape(t("web_send"))),
+            ("@@CLIP@@", _html.escape(t("web_clip_btn"))),
+            ("@@PIN_PROMPT@@", _html.escape(t("web_pin_prompt"))),
+            ("@@UP_OK@@", _html.escape(t("web_up_ok"))),
+            ("@@TEXT_OK@@", _html.escape(t("web_text_ok"))),
+            ("@@PIN_BAD@@", _html.escape(t("web_pin_bad"))),
+            ("@@ALIAS@@", _html.escape(t("web_alias"))),
+            ("@@ALIAS_V@@", _html.escape(str(info["alias"]))),
+            ("@@PORT@@", _html.escape(t("web_port"))),
+            ("@@PORT_V@@", str(info["port"])),
+            ("@@FP@@", _html.escape(t("web_fp"))),
+            ("@@FP_V@@", _html.escape(str(info["fingerprint"])[:32])),
+            ("@@VER@@", _html.escape(VERSION)),
+            ("@@HINT@@", _html.escape(t("web_hint"))),
+            ("@@RECENT@@", _html.escape(t("web_recent"))),
+            ("@@ROWS@@", body),
+            ("@@PIN_REQ@@", "true" if self.pin else "false"),
+        ):
+            page = page.replace(token, value)
+        return page
+
+    def _web_files_payload(self):
+        return {"files": web_list_files(self.save_dir), "dir": str(self.save_dir.resolve()),
+                "pin": bool(self.pin)}
 
     def _gen_session_id(self): return f"{int(time.time() * 1000):x}{random.getrandbits(64):x}"
     def _gen_token(self): return f"{time.time_ns() ^ random.getrandbits(64):x}"
@@ -1416,12 +1688,35 @@ code{{color:#4b5563;font-size:12px}} .muted{{color:#6b7280;font-size:12px}}
                 return self.rfile.read(length) if length > 0 else b""
 
             def _pin_ok(self, qs):
-                return not server.pin or qs.get("pin", [None])[0] == server.pin
+                if not server.pin: return True
+                given = qs.get("pin", [None])[0] or self.headers.get("X-LocalSend-Pin")
+                return given == server.pin
 
             def _unauthorized(self):
                 self.send_response(401); self.send_header("X-LocalSend-Pin", "true")
                 self.send_header("Content-Length", "0"); self.send_header("Connection", "close")
                 self.end_headers(); self.close_connection = True
+
+            def _text(self, body, ctype="text/plain; charset=utf-8"):
+                self.send_response(200)
+                self.send_header("Content-Type", ctype)
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Connection", "close")
+                self.end_headers(); self.wfile.write(body); self.close_connection = True
+
+            def _send_file(self, target):
+                """流式下载，支持 Range 之外的简单 GET；不整块读入内存。"""
+                size = target.stat().st_size
+                name = urllib.parse.quote(target.name)
+                self.send_response(200)
+                self.send_header("Content-Type", "application/octet-stream")
+                self.send_header("Content-Length", str(size))
+                self.send_header("Content-Disposition", f"attachment; filename*=UTF-8''{name}")
+                self.send_header("Connection", "close")
+                self.end_headers()
+                with open(target, "rb") as f:
+                    shutil.copyfileobj(f, self.wfile)
+                self.close_connection = True
 
             def _html_page(self):
                 body = server._web_page_html().encode("utf-8")
@@ -1438,6 +1733,30 @@ code{{color:#4b5563;font-size:12px}} .muted{{color:#6b7280;font-size:12px}}
                 if path in ("/", "/index.html"):
                     if not server.web_enable: self._json(404, {"error": "web disabled"}); return
                     self._html_page(); return
+                if path.startswith("/web/"):
+                    if not server.web_enable: self._json(404, {"error": "web disabled"}); return
+                    if path == "/web/info":
+                        info = build_self_info(port=server.bound_port,
+                                               protocol="https" if server._use_https else "http")
+                        info["web"] = True; info["pinRequired"] = bool(server.pin)
+                        info["files"] = len(web_list_files(server.save_dir))
+                        self._json(200, info); return
+                    if not self._pin_ok(peer_qs): self._unauthorized(); return
+                    if path == "/web/files":
+                        payload = server._web_files_payload()
+                        payload.pop("pin", None)
+                        self._json(200, payload); return
+                    if path == "/web/clipboard":
+                        self._text(_clipboard_get().encode("utf-8")); return
+                    if path == "/web/download":
+                        rel = peer_qs.get("name", [""])[0]
+                        target = web_safe_path(server.save_dir, rel)
+                        if not target or not target.is_file():
+                            self._json(404, {"error": "not found"}); return
+                        try: self._send_file(target)
+                        except OSError: self._json(404, {"error": "gone"})
+                        return
+                    self._json(404, {"error": "not found"}); return
                 if path in (f"{V2_PREFIX}/info", f"{V1_PREFIX}/info"):
                     self._json(200, build_self_info(port=server.bound_port,
                                                     protocol="https" if server._use_https else "http"))
@@ -1453,6 +1772,62 @@ code{{color:#4b5563;font-size:12px}} .muted{{color:#6b7280;font-size:12px}}
                 path = parsed.path
                 qs = urllib.parse.parse_qs(parsed.query)
                 peer_ip = self.client_address[0]
+
+                if path.startswith("/web/"):
+                    if not server.web_enable: self._json(404, {"error": "web disabled"}); return
+                    if not self._pin_ok(qs): self._unauthorized(); return
+                    if path == "/web/upload":
+                        name = safe_filename(qs.get("name", [""])[0] or f"web_{int(time.time())}")
+                        if _is_blocked_ext(name):
+                            print("\n⛔ " + t("blocked_ext", f=name))
+                            self._json(403, {"error": "blocked"}); return
+                        try: length = int(self.headers.get("Content-Length", "0") or 0)
+                        except (TypeError, ValueError): length = 0
+                        if length <= 0: self._json(411, {"error": "length required"}); return
+                        if length > WEB_MAX_UPLOAD:
+                            self._json(413, {"error": "too large"}); return
+                        tdir, safe_name = choose_target_dir(name, server.save_dir)
+                        try:
+                            tdir.mkdir(parents=True, exist_ok=True)
+                            target = unique_path(tdir, safe_name)
+                            received = 0
+                            with open(target, "wb") as f:
+                                remaining = length
+                                while remaining > 0:
+                                    chunk = self.rfile.read(min(65536, remaining))
+                                    if not chunk: break
+                                    f.write(chunk); received += len(chunk); remaining -= len(chunk)
+                        except OSError as e:
+                            self._json(507, {"error": str(e)}); return
+                        if received != length:
+                            try: target.unlink()
+                            except OSError: pass
+                            self._json(400, {"error": "incomplete"}); return
+                        print("📤 " + t("web_uploaded", f=target.name))
+                        append_history(target.name, target, received, True)
+                        threading.Thread(target=server._post_process, args=(target,),
+                                         daemon=True).start()
+                        self._json(200, {"status": "ok", "name": target.name,
+                                         "path": str(target)}); return
+                    if path == "/web/text":
+                        try: o = json.loads(self._read_body().decode("utf-8") or "{}")
+                        except Exception: o = {}
+                        text = str((o or {}).get("text", "") or "")
+                        if not text.strip():
+                            self._json(400, {"error": "empty"}); return
+                        clip = _clipboard_set(text)
+                        saved = None
+                        if not clip:
+                            stamp = time.strftime("%Y%m%d-%H%M%S")
+                            target = unique_path(server.save_dir, f"web-text-{stamp}.txt")
+                            try:
+                                target.parent.mkdir(parents=True, exist_ok=True)
+                                target.write_text(text, "utf-8"); saved = str(target)
+                                append_history(target.name, target, len(text.encode("utf-8")), True)
+                            except OSError as e:
+                                self._json(507, {"error": str(e)}); return
+                        self._json(200, {"status": "ok", "clipboard": clip, "saved": saved}); return
+                    self._json(404, {"error": "not found"}); return
 
                 if path in (f"{V2_PREFIX}/register", f"{V1_PREFIX}/register"):
                     self._read_body()

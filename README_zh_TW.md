@@ -5,7 +5,7 @@
 > LocalSend 協定的命令列實作。單檔、零第三方依賴：手機跑 LocalSend，電腦一行指令收發檔案；另可透過 ntfy.sh 做跨網中繼。
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.21.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.22.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -19,7 +19,7 @@
 
 ## 📦 版本與來源
 
-目前版本：**v1.21.2**（版本號唯一來源為 [CHANGELOG.md](CHANGELOG.md)，由 CI 驗證並注入）。
+目前版本：**v1.22.0**（版本號唯一來源為 [CHANGELOG.md](CHANGELOG.md)，由 CI 驗證並注入）。
 
 本專案為 LocalSend 協定的獨立命令列實作，自零撰寫，未複製官方 App 原始碼，僅於協定層互通。
 
@@ -34,7 +34,7 @@
 - **解壓防護**：拒絕絕對路徑、磁碟機代號、`..` 穿越與符號連結（Zip Slip）。
 - **TLS**：`lspy cert` 產生自簽憑證，雙端皆可走 HTTPS。
 - **跨網中繼**：`cross-send` / `cross-recv` 走 ntfy.sh，分塊 2400 位元組、3 次重試、尾包 SHA-256 與長度校驗。
-- **Web 狀態頁**：接收端內建 HTML 頁面（裝置資訊 + 最近接收紀錄）。
+- **Web 分享頁**：接收端內建 HTML 頁面（裝置資訊 + 最近接收紀錄），並可當「網頁版傳輸」用：瀏覽器直接上傳檔案到接收目錄、瀏覽並下載已接收檔案、把文字寫進本機剪貼簿（不可用時存成 txt）。頁面與 `/web/*` 端點移植自 watchsend 的 `WebShareHandler`；設了 PIN 時頁面的讀寫一律需要 PIN。
 - **10 種介面語言**。
 
 ---

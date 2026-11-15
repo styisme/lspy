@@ -269,6 +269,19 @@ Closes #123
 
 发送端优先 `send-request` → `send`；遇 404/405 回退 `prepare-upload` → `upload`。跨网通道用 ntfy 消息 JSON，分块 2400 字节，尾包携带 `__SHA256__:<hash>:<len>`。
 
+Web 分享页（`web_enable` 关闭时整组 404；设了 PIN 时全部要求 `pin` 查询参数或 `X-LocalSend-Pin` 请求头）：
+
+| 端点 | 方法 | 作用 |
+|---|---|---|
+| `/`、`/index.html` | GET | 单页分享界面：上传 / 下载 / 文本三页签 + 设备信息 + 最近接收 |
+| `/web/info` | GET | 别名、端口、版本、是否要求 PIN、已接收文件数 |
+| `/web/files` | GET | 接收目录内的文件列表（相对路径、大小、mtime，上限 500 条） |
+| `/web/download?name=` | GET | 流式下载单个文件；`name` 经 `web_safe_path` 校验，`..`/绝对路径一律拒 |
+| `/web/upload?name=` | POST | 原始 body 落盘到接收目录，复用 `safe_filename` + `unique_path` + 扩展名黑名单，单次上限 2 GiB |
+| `/web/text` | POST | JSON `{text}`：写入本机剪贴板；无剪贴板时落盘为 `web-text-<时间>.txt` |
+| `/web/clipboard` | GET | 读本机剪贴板的纯文本 |
+
+
 ---
 
 ## 故障排查

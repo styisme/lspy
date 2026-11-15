@@ -5,7 +5,7 @@
 > LocalSend 协议的命令行实现。单文件、零第三方依赖，手机上跑 LocalSend，电脑上一条命令收发文件；也能借 ntfy.sh 做跨网中继。
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.21.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.22.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-brightgreen)]()
@@ -22,7 +22,7 @@
 
 ## 📦 版本与来源
 
-当前版本：**v1.21.2**（版本号唯一来源为 [CHANGELOG.md](CHANGELOG.md)，由 CI 校验并注入）。
+当前版本：**v1.22.0**（版本号唯一来源为 [CHANGELOG.md](CHANGELOG.md)，由 CI 校验并注入）。
 
 本项目是 LocalSend 协议的**独立命令行实现**，从零编写，不复制官方 App（Apache-2.0）源码，仅在协议层与其互通，详见 [LICENSE-LocalSend](LICENSE-LocalSend)。同族的图形端实现见 [OldSend](https://github.com/styisme/oldsend) 与 [WatchSend](https://github.com/styisme/watchsend)，lspy 与其共享协议思路，代码互不依赖。
 
@@ -45,7 +45,7 @@
 
 ### 🔁 跨网与界面
 - **跨网中继**：`cross-send` / `cross-recv` 以 ntfy.sh 为通道，6 位 PIN 即话题名，分块 2400 字节（不超单条上限）、3 次退避重试、尾包 SHA-256 + 长度校验、按消息 id 去重。
-- **Web 状态页**：接收端内建一页 HTML（设备信息 + 最近接收记录），`--web` 自动打开。
+- **Web 分享页**：接收端内建一页 HTML（设备信息 + 最近接收记录），并当成「网页版传输」用：浏览器直接上传文件到接收目录、浏览并下载已接收文件、把文本写进本机剪贴板（不可用时落盘成 txt）。这套页面与 `/web/*` 端点移植自 watchsend 的 `WebShareHandler`；设了 PIN 时页面的读写一律要 PIN。
 - **交互菜单**：无子命令运行即自动后台接收，菜单内可扫描、发送、跨网、查历史、改配置。
 - **10 种界面语言**：简/繁中文、英、日、韩、德、法、西、俄、葡。
 
@@ -106,7 +106,7 @@ lspy cross-recv 123456 -d ./incoming         # 另一端凭 PIN 接收
 
 配置文件位于 `~/.lspy/`（`config.json`、`history.jsonl`、`lspy.log`、`cert.pem` / `key.pem`）。常用键：`alias`、`port`、`save_dir`、`pin`、`auto_accept`、`filter_ext`、`whitelist` / `blacklist`、`auto_accept_whitelist`、`use_https`、`web_enable`、`organize_by_type`、`history_enable`、`auto_unzip`、`open_after_receive`、`lang`、`ntfy_topic`、`log_level`、`fingerprint`，完整说明见 [CONTRIBUTING.md](CONTRIBUTING.md#配置项)。
 
-协议端点一览（`/api/localsend/{v1,v2}/…`）：`info`、`register`、`prepare-upload`、`send-request`、`upload`、`send`、`cancel`，以及 Web 状态页 `/`。细节见 [CONTRIBUTING.md](CONTRIBUTING.md#协议实现)。
+协议端点一览（`/api/localsend/{v1,v2}/…`）：`info`、`register`、`prepare-upload`、`send-request`、`upload`、`send`、`cancel`，以及 Web 分享页 `/` 与 `/web/info`、`/web/files`、`/web/download`、`/web/upload`、`/web/text`、`/web/clipboard`。细节见 [CONTRIBUTING.md](CONTRIBUTING.md#协议实现)。
 
 ---
 

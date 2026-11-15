@@ -5,7 +5,7 @@
 > A command-line implementation of the LocalSend protocol. One file, zero third-party dependencies: LocalSend on your phone, one command on your desktop. Cross-network relay over ntfy.sh included.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.21.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.22.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-brightgreen)]()
@@ -22,7 +22,7 @@
 
 ## 📦 Version & Origin
 
-Current version: **v1.21.2** (single source of truth is [CHANGELOG.md](CHANGELOG.md), verified and injected by CI).
+Current version: **v1.22.0** (single source of truth is [CHANGELOG.md](CHANGELOG.md), verified and injected by CI).
 
 lspy is an **independent command-line implementation** of the LocalSend protocol, written from scratch. It does not copy the official app (Apache-2.0) sources and only interoperates at the protocol level — see [LICENSE-LocalSend](LICENSE-LocalSend). Sibling GUI implementations: [OldSend](https://github.com/styisme/oldsend) and [WatchSend](https://github.com/styisme/watchsend); they share protocol ideas but no code.
 
@@ -45,7 +45,7 @@ lspy is an **independent command-line implementation** of the LocalSend protocol
 
 ### 🔁 Cross-network & UI
 - **Cross-network relay**: `cross-send` / `cross-recv` over ntfy.sh; the 6-digit PIN is the topic, chunks are 2400 bytes (under the per-message limit), with 3 retries, a SHA-256 + length trailer and per-message de-duplication.
-- **Web status page**: the receiver serves a small HTML page (device info + recent receipts); `--web` opens it.
+- **Web share page**: the receiver serves one HTML page (device info + recent receipts) that doubles as browser-side transfer: upload files straight into the receive folder, browse and download what was received, and push text into the local clipboard (falls back to a `.txt` file when no clipboard is available). The page and `/web/*` endpoints are ported from watchsend's `WebShareHandler`; with a PIN set, every read and write requires it.
 - **Interactive menu**: running without a subcommand starts a background receiver and offers scan / send / cross-net / history / settings.
 - **10 UI languages**: zh, zh_TW, en, ja, ko, de, fr, es, ru, pt.
 
@@ -106,7 +106,7 @@ lspy cross-recv 123456 -d ./incoming      # peer enters the PIN
 
 Runtime data lives in `~/.lspy/` (`config.json`, `history.jsonl`, `lspy.log`, `cert.pem`/`key.pem`). Common keys: `alias`, `port`, `save_dir`, `pin`, `auto_accept`, `filter_ext`, `whitelist`/`blacklist`, `auto_accept_whitelist`, `use_https`, `web_enable`, `organize_by_type`, `history_enable`, `auto_unzip`, `open_after_receive`, `lang`, `ntfy_topic`, `log_level`, `fingerprint`.
 
-Protocol endpoints (`/api/localsend/{v1,v2}/…`): `info`, `register`, `prepare-upload`, `send-request`, `upload`, `send`, `cancel`, plus the web status page at `/`.
+Protocol endpoints (`/api/localsend/{v1,v2}/…`): `info`, `register`, `prepare-upload`, `send-request`, `upload`, `send`, `cancel`, plus the web share page at `/` and `/web/info`, `/web/files`, `/web/download`, `/web/upload`, `/web/text`, `/web/clipboard`.
 
 ---
 

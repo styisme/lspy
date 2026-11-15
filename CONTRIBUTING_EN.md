@@ -269,6 +269,18 @@ Server routes (prefix `/api/localsend/v2`, also mounted under `/v1`):
 
 The sender prefers `send-request` → `send`, falling back to `prepare-upload` → `upload` on 404/405. The cross-network channel uses ntfy JSON messages, 2400-byte chunks, with a `__SHA256__:<hash>:<len>` trailer.
 
+Web share page (the whole group 404s when `web_enable` is off; with a PIN set every call needs it as the `pin` query parameter or the `X-LocalSend-Pin` header):
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/`, `/index.html` | GET | Single-page UI: upload / download / text tabs, device info, recent receipts |
+| `/web/info` | GET | Alias, port, version, whether a PIN is required, received file count |
+| `/web/files` | GET | Files in the receive folder (relative path, size, mtime, max 500) |
+| `/web/download?name=` | GET | Stream one file; `name` is validated by `web_safe_path`, so `..` and absolute paths are rejected |
+| `/web/upload?name=` | POST | Raw body written into the receive folder via `safe_filename` + `unique_path` + the extension policy, max 2 GiB |
+| `/web/text` | POST | JSON `{text}`: write to the local clipboard, or to `web-text-<time>.txt` when no clipboard exists |
+| `/web/clipboard` | GET | Plain text of the local clipboard |
+
 ---
 
 ## Troubleshooting

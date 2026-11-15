@@ -239,6 +239,134 @@ class TestInfoAndWeb(unittest.TestCase):
             self.assertEqual(ctx.exception.code, 404)
 
 
+class TestWebShare(unittest.TestCase):
+    """移植自 watchsend 的浏览器分享页：上传 / 下载 / 文本 三件套。"""
+
+    def _get(self, url):
+        with urllib.request.urlopen(url, timeout=5) as resp:
+            return resp.status, resp.read()
+
+    def _post(self, url, data, headers=None):
+        req = urllib.request.Request(url, data=data, method="POST", headers=headers or {})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            return resp.status, resp.read()
+
+    def test_page_has_three_tabs(self):
+        with ServerPair() as sp:
+            _, raw = self._get(f"{sp.base}/")
+            html = raw.decode("utf-8")
+            self.assertIn("/web/upload", html)
+            self.assertIn("/web/files", html)
+            self.assertIn("/web/text", html)
+            for key in ("web_tab_upload", "web_tab_download", "web_tab_text"):
+                self.assertNotIn(key, html)  # 文案必须真实本地化，不能漏出 key
+            self.assertNotIn("@@", html)  # 模板占位符必须全部替换
+
+    def test_info_endpoint(self):
+        with ServerPair() as sp:
+            _, raw = self._get(f"{sp.base}/web/info")
+            info = json.loads(raw.decode())
+            self.assertTrue(info["web"])
+            self.assertEqual(info["port"], sp.server.bound_port)
+            self.assertFalse(info["pinRequired"])
+
+    def test_files_lists_received_files(self):
+        with ServerPair() as sp:
+            (Path(sp.tmp) / "hello.txt").write_text("abc", encoding="utf-8")
+            _, raw = self._get(f"{sp.base}/web/files")
+            files = json.loads(raw.decode())["files"]
+            names = [f["name"] for f in files]
+            self.assertIn("hello.txt", names)
+            self.assertEqual([f["size"] for f in files if f["name"] == "hello.txt"], [3])
+
+    def test_upload_saves_into_save_dir(self):
+        with ServerPair() as sp:
+            status, raw = self._post(f"{sp.base}/web/upload?name=from-web.txt", b"payload")
+            self.assertEqual(status, 200)
+            self.assertEqual(json.loads(raw.decode())["name"], "from-web.txt")
+            target = Path(json.loads(raw.decode())["path"])
+            self.assertTrue(target.exists())
+            self.assertEqual(target.read_bytes(), b"payload")
+            self.assertTrue(str(target.resolve()).startswith(str(Path(sp.tmp).resolve())))
+
+    def test_upload_blocks_extension_policy(self):
+        with ServerPair() as sp:
+            with self.assertRaises(urllib.error.HTTPError) as ctx:
+                self._post(f"{sp.base}/web/upload?name=evil.exe", b"MZ")
+            self.assertEqual(ctx.exception.code, 403)
+            self.assertFalse(any(p.suffix == ".exe" for p in Path(sp.tmp).iterdir()))
+
+    def test_download_returns_bytes(self):
+        with ServerPair() as sp:
+            (Path(sp.tmp) / "dl.bin").write_bytes(b"\x00\x01\x02")
+            status, raw = self._get(f"{sp.base}/web/download?name=dl.bin")
+            self.assertEqual(status, 200)
+            self.assertEqual(raw, b"\x00\x01\x02")
+
+    def test_download_blocks_traversal(self):
+        with ServerPair() as sp:
+            secret = Path(sp.tmp).parent / "outside.txt"
+            secret.write_text("secret", encoding="utf-8")
+            try:
+                for bad in ("../outside.txt", "..%2Foutside.txt", "sub/../../outside.txt"):
+                    with self.assertRaises(urllib.error.HTTPError) as ctx:
+                        self._get(f"{sp.base}/web/download?name={bad}")
+                    self.assertIn(ctx.exception.code, (400, 404))
+            finally:
+                secret.unlink()
+
+    def test_upload_blocks_traversal_name(self):
+        with ServerPair() as sp:
+            _, raw = self._post(f"{sp.base}/web/upload?name=../../escape.txt", b"x")
+            saved = Path(json.loads(raw.decode())["path"])
+            self.assertTrue(str(saved.resolve()).startswith(str(Path(sp.tmp).resolve())))
+            self.assertEqual(saved.name, "escape.txt")
+
+    def test_pin_protects_web_api(self):
+        with ServerPair(pin="2468") as sp:
+            with self.assertRaises(urllib.error.HTTPError) as ctx:
+                self._get(f"{sp.base}/web/files")
+            self.assertEqual(ctx.exception.code, 401)
+            _, raw = self._get(f"{sp.base}/web/files?pin=2468")
+            self.assertIn("files", json.loads(raw.decode()))
+            with self.assertRaises(urllib.error.HTTPError) as ctx2:
+                self._post(f"{sp.base}/web/upload?name=x.txt", b"data")
+            self.assertEqual(ctx2.exception.code, 401)
+            status, _ = self._post(f"{sp.base}/web/upload?name=x.txt&pin=2468", b"data")
+            self.assertEqual(status, 200)
+
+    def test_text_endpoint_saves_when_no_clipboard(self):
+        with ServerPair() as sp:
+            status, raw = self._post(f"{sp.base}/web/text",
+                                     json.dumps({"text": "note to self"}).encode(),
+                                     {"Content-Type": "application/json"})
+            body = json.loads(raw.decode())
+            self.assertEqual(status, 200)
+            self.assertIn("clipboard", body)
+            if not body["clipboard"]:
+                self.assertTrue(body["saved"] and Path(body["saved"]).exists())
+
+    def test_text_endpoint_rejects_empty(self):
+        with ServerPair() as sp:
+            with self.assertRaises(urllib.error.HTTPError) as ctx:
+                self._post(f"{sp.base}/web/text", b"{}")
+            self.assertEqual(ctx.exception.code, 400)
+
+
+class TestWebSafePath(unittest.TestCase):
+    def test_blocks_escape(self):
+        base = tempfile.mkdtemp(prefix="lspy_web_")
+        try:
+            self.assertIsNone(lspy.web_safe_path(base, "../x.txt"))
+            self.assertIsNone(lspy.web_safe_path(base, "/etc/passwd"))
+            self.assertIsNone(lspy.web_safe_path(base, "C:\\Windows\\win.ini"))
+            self.assertIsNone(lspy.web_safe_path(base, ""))
+            ok = lspy.web_safe_path(base, "sub/a.txt")
+            self.assertEqual(ok, (Path(base).resolve() / "sub" / "a.txt"))
+        finally:
+            shutil.rmtree(base, ignore_errors=True)
+
+
 class TestPortConflict(unittest.TestCase):
     """Windows 把端口占用报成 WinError 10013，必须仍能识别为冲突并给出回退。"""
 

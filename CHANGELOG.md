@@ -4,6 +4,24 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.22.0] - 2026-11-15
+
+### 新增
+
+- **Web 分享页**（移植自 watchsend 的 `WebShareHandler` + `index.html`）：接收端的 `/` 从只读状态页升级为单页三页签分享界面 —— 浏览器直接上传文件到接收目录（拖拽/多选、逐文件进度、名称经 `safe_filename`+`unique_path`、命中 `filter_ext` 一律 403、单次上限 2 GiB）、浏览并下载已接收文件（`/web/files` + 流式 `/web/download`，`web_safe_path` 挡住 `..` 与绝对路径）、把文本写进本机剪贴板（无剪贴板环境自动落盘为 `web-text-<时间>.txt`）。
+- `/web/info` 返回别名、端口、版本、是否需要 PIN 与已接收文件数。
+- 设了 PIN 时，`/web/*` 全部要求 `pin` 查询参数或 `X-LocalSend-Pin` 请求头；页面会提示输入并记住（localStorage）。
+- 13 条新文案进 10 份词表（各 175 键），页面语言跟随 CLI 当前语言。
+
+### 变更
+
+- 页面模板改为占位符替换（`@@TOKEN@@`），不再用 `.format` 拼 CSS，避免大括号转义坑。
+- README 10 语言与 CONTRIBUTING 中英同步更新 Web 分享页说明与端点表。
+
+### 测试
+
+- 新增 12 个用例：页面三页签 + 占位符全部替换、`/web/info`、文件列表、上传落盘与中文名、扩展名拦截、下载字节一致、下载 `..` 穿越拒绝、上传穿越名压平、PIN 保护、`/web/text` 空与非空、`web_safe_path` 边界。测试总数 37 → 49。
+
 ## [1.21.2] - 2026-11-15
 
 ### 修复
@@ -113,6 +131,7 @@
 
 - 初版：LocalSend v1/v2 收发、组播扫描、HTTP 深度扫描、ntfy.sh 跨网、多语言菜单。
 
+[1.22.0]: https://github.com/styisme/lspy/compare/v1.21.2...v1.22.0
 [1.21.2]: https://github.com/styisme/lspy/compare/v1.21.1...v1.21.2
 [1.21.1]: https://github.com/styisme/lspy/compare/v1.21.0...v1.21.1
 [1.21.0]: https://github.com/styisme/lspy/compare/v1.20.1...v1.21.0
