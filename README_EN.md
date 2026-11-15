@@ -5,7 +5,7 @@
 > A command-line implementation of the LocalSend protocol. One file, zero third-party dependencies: LocalSend on your phone, one command on your desktop. Cross-network relay over ntfy.sh included.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.22.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.23.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-brightgreen)]()
@@ -22,7 +22,7 @@
 
 ## 📦 Version & Origin
 
-Current version: **v1.22.0** (single source of truth is [CHANGELOG.md](CHANGELOG.md), verified and injected by CI).
+Current version: **v1.23.0** (single source of truth is [CHANGELOG.md](CHANGELOG.md), verified and injected by CI).
 
 lspy is an **independent command-line implementation** of the LocalSend protocol, written from scratch. It does not copy the official app (Apache-2.0) sources and only interoperates at the protocol level — see [LICENSE-LocalSend](LICENSE-LocalSend). Sibling GUI implementations: [OldSend](https://github.com/styisme/oldsend) and [WatchSend](https://github.com/styisme/watchsend); they share protocol ideas but no code.
 
@@ -45,7 +45,9 @@ lspy is an **independent command-line implementation** of the LocalSend protocol
 
 ### 🔁 Cross-network & UI
 - **Cross-network relay**: `cross-send` / `cross-recv` over ntfy.sh; the 6-digit PIN is the topic, chunks are 2400 bytes (under the per-message limit), with 3 retries, a SHA-256 + length trailer and per-message de-duplication.
-- **Web share page**: the receiver serves one HTML page (device info + recent receipts) that doubles as browser-side transfer: upload files straight into the receive folder, browse and download what was received, and push text into the local clipboard (falls back to a `.txt` file when no clipboard is available). The page and `/web/*` endpoints are ported from watchsend's `WebShareHandler`; with a PIN set, every read and write requires it.
+- **Web share page**: the receiver serves one HTML page (device info + recent receipts) that doubles as browser-side transfer: upload files straight into the receive folder, browse and download what was received, and push text into the local clipboard (falls back to a `.txt` file when no clipboard is available). The page and `/web/*` endpoints are ported from watchsend's `WebShareHandler`; with a PIN set, every read and write requires it. The page follows the browser's `Accept-Language` and only falls back to the CLI language when none of the ten matches.
+- **History management** (ported from watchsend's History Quick Management): `history --delete N` removes entry N (1 = newest, the CLI equivalent of a long-press delete), `--clear` wipes the list, and `--unzip N` extracts that ZIP in place through the same `safe_unzip` (absolute paths, `..` traversal and symlink entries are refused). ZIP entries are marked 📦 in the list.
+- **Debug keys mode** (ported from watchsend's Debug Keys Mode): `--debug-keys` renders raw i18n keys such as `⟦history_empty⟧` so missing translations stand out; `config --set debug_keys=true` keeps it on across runs, while the flag itself never writes to the config.
 - **Interactive menu**: running without a subcommand starts a background receiver and offers scan / send / cross-net / history / settings.
 - **10 UI languages**: zh, zh_TW, en, ja, ko, de, fr, es, ru, pt.
 
@@ -101,10 +103,11 @@ lspy cross-recv 123456 -d ./incoming      # peer enters the PIN
 | `lspy serve [-p 53317] [-d DIR] [--pin PIN] [--auto-accept\|--confirm] [--web] [--no-multicast] [--no-web]` | Receive service |
 | `lspy send FILES... (--device NAME\|--ip HOST[:PORT]) [--pin PIN] [--https]` | Send files |
 | `lspy cross-send FILES... [--pin PIN]` / `lspy cross-recv PIN [-d DIR]` | Cross-network transfer |
-| `lspy history [-n 20]` / `lspy open FILES...` / `lspy cert` / `lspy stun` | History, open, certificates, public-IP probe |
+| `lspy history [-n 20] [--delete N] [--clear] [--unzip N]` | List / delete one / clear / extract a ZIP |
+| `lspy open FILES...` / `lspy cert` / `lspy stun` | Open, certificates, public-IP probe |
 | `lspy config [--show] [--set k=v] [--reset]` | Manage settings |
 
-Runtime data lives in `~/.lspy/` (`config.json`, `history.jsonl`, `lspy.log`, `cert.pem`/`key.pem`). Common keys: `alias`, `port`, `save_dir`, `pin`, `auto_accept`, `filter_ext`, `whitelist`/`blacklist`, `auto_accept_whitelist`, `use_https`, `web_enable`, `organize_by_type`, `history_enable`, `auto_unzip`, `open_after_receive`, `lang`, `ntfy_topic`, `log_level`, `fingerprint`.
+Runtime data lives in `~/.lspy/` (`config.json`, `history.jsonl`, `lspy.log`, `cert.pem`/`key.pem`). Common keys: `alias`, `port`, `save_dir`, `pin`, `auto_accept`, `filter_ext`, `whitelist`/`blacklist`, `auto_accept_whitelist`, `use_https`, `web_enable`, `organize_by_type`, `history_enable`, `auto_unzip`, `open_after_receive`, `lang`, `ntfy_topic`, `log_level`, `fingerprint`, `debug_keys`.
 
 Protocol endpoints (`/api/localsend/{v1,v2}/…`): `info`, `register`, `prepare-upload`, `send-request`, `upload`, `send`, `cancel`, plus the web share page at `/` and `/web/info`, `/web/files`, `/web/download`, `/web/upload`, `/web/text`, `/web/clipboard`.
 
@@ -116,7 +119,7 @@ A single-file Python project with no third-party dependencies; packaging uses th
 
 ```bash
 pip install .
-python -m unittest discover -s tests -v       # 29 cases: unit + end-to-end
+python -m unittest discover -s tests -v       # 64 cases: unit + end-to-end
 python scripts/sync_version.py --check         # version matches CHANGELOG.md
 pip install pyinstaller && python scripts/build_binary.py   # standalone executable
 ```

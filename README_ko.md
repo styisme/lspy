@@ -5,7 +5,7 @@
 > LocalSend 프로토콜의 CLI 구현. 단일 파일, 서드파티 의존성 없음. 휴대폰은 LocalSend, PC는 명령 한 줄로 파일 송수신. ntfy.sh를 통한 크로스 네트워크 중계 지원.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.22.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.23.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -26,7 +26,8 @@
 - **Zip Slip 방어**: 절대 경로, 드라이브 문자, `..` 탈출, 심볼릭 링크 거부.
 - **TLS**: `lspy cert`로 자체 서명 인증서 생성, 양쪽 모두 HTTPS 사용 가능.
 - **크로스 네트워크**: ntfy.sh 경유, 2400바이트 청크, 3회 재시도, SHA-256 + 길이 꼬리 검증.
-- **Web 공유 페이지**(업로드 / 다운로드 / 텍스트, watchsend 이식), **10개 UI 언어**.
+- **Web 공유 페이지**(업로드 / 다운로드 / 텍스트, watchsend 이식; 페이지는 브라우저 `Accept-Language` 를 따름), **10개 UI 언어**.
+- **기록 및 디버그**(역시 watchsend 이식): `history --delete N` / `--clear` / `--unzip N`(ZIP 은 📦, Zip Slip 방지 포함), `--debug-keys` 로 i18n 원본 키 표시.
 
 ---
 

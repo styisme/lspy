@@ -554,5 +554,155 @@ class TestHelpers(unittest.TestCase):
         self.assertLess(len(encoded), 4096)
 
 
+class TestWebLanguage(unittest.TestCase):
+    """Web 页跟着浏览器语言走（移植自 watchsend 的 Web 10-Language Adaptive）。"""
+
+    def test_accept_language_picks_highest_q(self):
+        self.assertEqual(lspy.pick_accept_language("zh-CN,zh;q=0.9,en;q=0.8"), "zh")
+        self.assertEqual(lspy.pick_accept_language("fr;q=0.5,de;q=0.9"), "de")
+
+    def test_accept_language_skips_zero_q_and_unknown(self):
+        self.assertEqual(lspy.pick_accept_language("de;q=0, ja-JP"), "ja")
+        self.assertIsNone(lspy.pick_accept_language("xx-YY,zz;q=0.5"))
+
+    def test_accept_language_falls_back_to_cli_lang(self):
+        self.assertEqual(lspy.pick_accept_language("", "ko"), "ko")
+        self.assertEqual(lspy.pick_accept_language(None, "ko"), "ko")
+
+    def test_page_renders_in_browser_language(self):
+        import urllib.request
+        with ServerPair() as pair:
+            req = urllib.request.Request(pair.base + "/", headers={"Accept-Language": "ja-JP,ja;q=0.9"})
+            with urllib.request.urlopen(req, timeout=5) as r:
+                html = r.read().decode("utf-8")
+            self.assertIn('lang="ja"', html)
+            self.assertIn(lspy._t_for("ja", "web_title"), html)
+            self.assertIn(lspy._t_for("ja", "web_tab_upload"), html)
+
+    def test_page_falls_back_when_browser_lang_unknown(self):
+        import urllib.request
+        with ServerPair() as pair:
+            req = urllib.request.Request(pair.base + "/", headers={"Accept-Language": "xx-YY"})
+            with urllib.request.urlopen(req, timeout=5) as r:
+                html = r.read().decode("utf-8")
+            lang = lspy._current_lang
+            self.assertIn(lspy._t_for(lang, "web_title"), html)
+
+
+class TestDebugKeys(unittest.TestCase):
+    """调试键模式：打开后界面直接显示原始 i18n key（watchsend 的 Debug Keys Mode）。"""
+
+    def tearDown(self):
+        lspy._debug_keys = False
+
+    def test_debug_keys_returns_raw_key(self):
+        lspy._debug_keys = True
+        self.assertEqual(lspy.t("history_empty"), "⟦history_empty⟧")
+        self.assertEqual(lspy.t("history_entry", t="x", f="y", s=1, r=True), "⟦history_entry⟧")
+
+    def test_debug_keys_off_returns_translation(self):
+        lspy._debug_keys = False
+        self.assertEqual(lspy.t("history_empty"), lspy._t_for(lspy._current_lang, "history_empty"))
+
+    def test_cli_flag_turns_every_label_into_a_key(self):
+        import io
+        from contextlib import redirect_stdout
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            lspy.main(["--debug-keys", "history"])
+        self.assertIn("⟦history_empty⟧", buf.getvalue())
+
+
+class TestHistoryManage(unittest.TestCase):
+    """历史快速管理：删除单条 / 清空 / 解压 ZIP（含 Zip Slip 防护）。"""
+
+    def setUp(self):
+        self._history_enable = lspy.get_config("history_enable")
+        lspy.set_config("history_enable", True)
+        if lspy.HISTORY_FILE.exists():
+            lspy.HISTORY_FILE.unlink()
+
+    def tearDown(self):
+        if self._history_enable is None:
+            lspy.set_config("history_enable", None)
+        else:
+            lspy.set_config("history_enable", self._history_enable)
+        if lspy.HISTORY_FILE.exists():
+            lspy.HISTORY_FILE.unlink()
+
+    def _seed(self, names):
+        for i, name in enumerate(names):
+            lspy.append_history(name, f"/tmp/{name}", i, True)
+
+    def test_zip_entries_are_marked_in_listing(self):
+        self.assertEqual(lspy.history_file_label("a.zip"), "a.zip 📦")
+        self.assertEqual(lspy.history_file_label("a.txt"), "a.txt")
+        self.assertEqual(lspy.history_file_label(None), "")
+
+    def test_delete_removes_the_entry_the_user_saw(self):
+        self._seed(["a.txt", "b.zip", "c.txt"])
+        self.assertEqual([e["file"] for e in lspy.history_entries_all()], ["c.txt", "b.zip", "a.txt"])
+        removed = lspy.delete_history_entry(2)
+        self.assertEqual(removed["file"], "b.zip")
+        self.assertEqual([e["file"] for e in lspy.history_entries_all()], ["c.txt", "a.txt"])
+
+    def test_delete_out_of_range_returns_none_and_keeps_file(self):
+        self._seed(["a.txt"])
+        self.assertIsNone(lspy.delete_history_entry(0))
+        self.assertIsNone(lspy.delete_history_entry(99))
+        self.assertEqual(len(lspy.history_entries_all()), 1)
+
+    def test_clear_wipes_the_file(self):
+        import argparse
+        from contextlib import redirect_stdout
+        self._seed(["a.txt", "b.txt"])
+        buf = __import__("io").StringIO()
+        with redirect_stdout(buf):
+            lspy.cmd_history(argparse.Namespace(n=20, clear=True, delete=None, unzip=None))
+        self.assertFalse(lspy.HISTORY_FILE.exists())
+
+    def test_unzip_from_history(self):
+        import argparse
+        from contextlib import redirect_stdout
+        tmp = tempfile.mkdtemp(prefix="lspy_test_zip_")
+        self.addCleanup(shutil.rmtree, tmp, True)
+        zip_path = Path(tmp) / "bundle.zip"
+        with zipfile.ZipFile(zip_path, "w") as zf:
+            zf.writestr("inner.txt", "hello")
+        lspy.append_history("bundle.zip", str(zip_path), zip_path.stat().st_size, True)
+        buf = __import__("io").StringIO()
+        with redirect_stdout(buf):
+            lspy.cmd_history(argparse.Namespace(n=20, clear=False, delete=None, unzip=1))
+        self.assertTrue((Path(tmp) / "bundle" / "inner.txt").is_file())
+
+    def test_unzip_rejects_non_zip_entry(self):
+        import argparse
+        from contextlib import redirect_stdout
+        tmp = tempfile.mkdtemp(prefix="lspy_test_zip_")
+        self.addCleanup(shutil.rmtree, tmp, True)
+        plain = Path(tmp) / "plain.txt"
+        plain.write_text("x", encoding="utf-8")
+        lspy.append_history("plain.txt", str(plain), 1, True)
+        buf = __import__("io").StringIO()
+        with redirect_stdout(buf):
+            lspy.cmd_history(argparse.Namespace(n=20, clear=False, delete=None, unzip=1))
+        self.assertIn(lspy._t_for(lspy._current_lang, "not_zip")[:6], buf.getvalue())
+
+    def test_unzip_refuses_zip_slip(self):
+        import argparse
+        from contextlib import redirect_stdout
+        tmp = tempfile.mkdtemp(prefix="lspy_test_zip_")
+        self.addCleanup(shutil.rmtree, tmp, True)
+        evil = Path(tmp) / "evil.zip"
+        with zipfile.ZipFile(evil, "w") as zf:
+            zf.writestr("../escape.txt", "boom")
+        lspy.append_history("evil.zip", str(evil), evil.stat().st_size, True)
+        buf = __import__("io").StringIO()
+        with redirect_stdout(buf):
+            lspy.cmd_history(argparse.Namespace(n=20, clear=False, delete=None, unzip=1))
+        self.assertFalse((Path(tmp).parent / "escape.txt").exists())
+        self.assertIn(lspy._t_for(lspy._current_lang, "unzip_unsafe")[:4], buf.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -4,6 +4,23 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.23.0] - 2026-11-15
+
+### 新增
+
+- **Web 页跟随浏览器语言**（移植自 watchsend 的「Web 10-Language Adaptive」）：接收端不再把网页语言绑死在 CLI 的当前语言，而是读 `Accept-Language` 并按 q 权重挑一门内置语言（`pick_accept_language`），认不出来才回退 CLI 语言。`<html lang>` 也一并写入，读屏与断词都跟着浏览器走。
+- **调试键模式**（移植自 watchsend 的 Debug Keys Mode）：`--debug-keys` 让本次运行的界面直接显示原始 i18n 键名（如 `⟦history_empty⟧`），一眼就能看出哪句没翻译；`config --set debug_keys=true` 可长期打开，命令行开关不会写进配置。
+- **历史记录管理**（移植自 watchsend 的 History Quick Management 与 Native ZIP Extraction）：`history --delete N` 删除列表里第 N 条（1＝最新，等价于 watchsend 的长按删除），`--clear` 整表清空，`--unzip N` 把该条 ZIP 就地解压到同名文件夹并复用 `safe_unzip`（绝对路径、`..` 穿越、符号链接条目一律拒绝）。列表里 ZIP 按 watchsend 的习惯标 📦。
+
+### 变更
+
+- 新增 `_t_for(lang, key)` 按语言取词条，Web 页按请求语言渲染，不再依赖全局 `_current_lang`。
+- 删除历史条目时先把「最新在前」的列表反序写进临时文件，再 `os.replace` 换回，避免写一半把历史弄丢。
+
+### 测试
+
+- 新增 15 个用例：`Accept-Language` 取高权重 / 跳过 `q=0` 与未知语言 / 无头回退、页面按 `ja` 与未知语言分别渲染、调试键模式返回原始键与命令行开关、ZIP 标记、按序号删除（含越界不动文件）、清空、历史 ZIP 解压、非 ZIP 拒绝、Zip Slip 拒绝。测试总数 49 → 64。
+
 ## [1.22.0] - 2026-11-15
 
 ### 新增

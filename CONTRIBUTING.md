@@ -40,7 +40,7 @@ cd lspy
 
 python lspy.py --help                     # 免安装运行
 pip install .                             # 安装为 lspy 命令
-python -m unittest discover -s tests -v   # 全量测试（29 例）
+python -m unittest discover -s tests -v   # 全量测试（64 例）
 python scripts/sync_version.py --check    # 校验版本号与 CHANGELOG 一致
 pip install pyinstaller && python scripts/build_binary.py --clean   # 打包单文件可执行程序
 ```
@@ -251,6 +251,7 @@ Closes #123
 | `ntfy_topic` | `oldsend_cross_` | 跨网 ntfy 话题前缀 |
 | `log_level` | `INFO` | `DEBUG/INFO/WARNING/ERROR` |
 | `fingerprint` | 自动生成 | 设备指纹，删除后自动重建 |
+| `debug_keys` | `false` | 调试键模式：界面显示原始 i18n 键名 |
 
 ---
 

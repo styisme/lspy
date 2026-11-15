@@ -5,7 +5,7 @@
 > Uma implementação de linha de comando do protocolo LocalSend. Arquivo único, sem dependências de terceiros: LocalSend no celular, um comando no computador. Inclui retransmissão entre redes via ntfy.sh.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.22.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.23.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -26,7 +26,8 @@ Este projeto foi amplamente desenvolvido com auxílio de modelos de linguagem. R
 - **Proteção Zip Slip**: caminhos absolutos, letras de unidade, travessia `..` e links simbólicos são recusados.
 - **TLS**: `lspy cert` gera um par autoassinado; ambos os lados podem usar HTTPS.
 - **Entre redes**: via ntfy.sh, blocos de 2400 bytes, 3 tentativas, SHA-256 final.
-- **Página web de partilha** (envio / descarga / texto, portada do watchsend), **10 idiomas de interface**.
+- **Página web de partilha** (envio / descarga / texto, portada do watchsend; a página segue o `Accept-Language` do navegador), **10 idiomas de interface**.
+- **Histórico e depuração** (também do watchsend): `history --delete N` / `--clear` / `--unzip N` (ZIP marcado 📦, proteção Zip Slip), `--debug-keys` mostra as chaves i18n em bruto.
 
 ---
 

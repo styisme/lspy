@@ -41,7 +41,7 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.22.0"
+VERSION = "1.23.0"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
@@ -144,6 +144,9 @@ I18N = {
         "pick_files_title": "Select files", "yes": "yes", "no": "no",
         "stun_probing": "Probing STUN...", "stun_result": "Public address: {r}", "stun_fail": "STUN failed: {e}",
         "history_empty": "No history", "history_entry": "[{t}] {f} ({s} bytes) receive={r}",
+        "history_cleared": "History wiped", "history_deleted": "Deleted: {f}",
+        "history_bad_index": "No such entry: {n}", "history_missing": "File is gone: {p}",
+        "not_zip": "Not a ZIP file: {p}",
         "cfg_title": "Current config", "cfg_alias": "Alias", "cfg_port": "Port", "cfg_savedir": "Save dir",
         "cfg_pin": "Default PIN", "cfg_auto": "Auto-accept", "cfg_topic": "NTFY topic", "cfg_fp": "Fingerprint",
         "cfg_lang": "Language", "cfg_none": "(none)", "cfg_default": "(default)",
@@ -223,6 +226,9 @@ I18N = {
         "prompt_pick_device": "选择 [1-{n}]: ", "pick_files_title": "选择文件", "yes": "是", "no": "否",
         "stun_probing": "STUN 探测...", "stun_result": "公网地址：{r}", "stun_fail": "STUN 失败：{e}",
         "history_empty": "无历史记录", "history_entry": "[{t}] {f}（{s} 字节）receive={r}",
+        "history_cleared": "已清空历史记录", "history_deleted": "已删除：{f}",
+        "history_bad_index": "没有这条记录：{n}", "history_missing": "文件已不存在：{p}",
+        "not_zip": "不是 ZIP 文件：{p}",
         "cfg_title": "当前配置", "cfg_alias": "别名", "cfg_port": "端口", "cfg_savedir": "保存目录",
         "cfg_pin": "默认 PIN", "cfg_auto": "自动接受", "cfg_topic": "NTFY 话题", "cfg_fp": "指纹",
         "cfg_lang": "语言", "cfg_none": "（未启用）", "cfg_default": "（默认）",
@@ -305,6 +311,9 @@ I18N = {
         "pick_files_title": "Dateien auswählen", "yes": "ja", "no": "nein",
         "stun_probing": "STUN wird abgefragt...", "stun_result": "Öffentliche Adresse: {r}", "stun_fail": "STUN fehlgeschlagen: {e}",
         "history_empty": "Kein Verlauf", "history_entry": "[{t}] {f} ({s} Bytes) receive={r}",
+        "history_cleared": "Verlauf gelöscht", "history_deleted": "Gelöscht: {f}",
+        "history_bad_index": "Kein solcher Eintrag: {n}", "history_missing": "Datei fehlt: {p}",
+        "not_zip": "Keine ZIP-Datei: {p}",
         "cfg_title": "Aktuelle Konfiguration", "cfg_alias": "Alias", "cfg_port": "Port", "cfg_savedir": "Speicherordner",
         "cfg_pin": "Standard-PIN", "cfg_auto": "Automatisch annehmen", "cfg_topic": "NTFY-Thema", "cfg_fp": "Fingerabdruck",
         "cfg_lang": "Sprache", "cfg_none": "(keine)", "cfg_default": "(Standard)",
@@ -388,6 +397,9 @@ I18N = {
         "pick_files_title": "Sélectionner des fichiers", "yes": "oui", "no": "non",
         "stun_probing": "Interrogation STUN...", "stun_result": "Adresse publique : {r}", "stun_fail": "Échec STUN : {e}",
         "history_empty": "Historique vide", "history_entry": "[{t}] {f} ({s} octets) receive={r}",
+        "history_cleared": "Historique effacé", "history_deleted": "Supprimé : {f}",
+        "history_bad_index": "Entrée inexistante : {n}", "history_missing": "Fichier absent : {p}",
+        "not_zip": "Ce n'est pas un ZIP : {p}",
         "cfg_title": "Configuration actuelle", "cfg_alias": "Alias", "cfg_port": "Port", "cfg_savedir": "Dossier de réception",
         "cfg_pin": "PIN par défaut", "cfg_auto": "Acceptation automatique", "cfg_topic": "Sujet NTFY", "cfg_fp": "Empreinte",
         "cfg_lang": "Langue", "cfg_none": "(aucun)", "cfg_default": "(par défaut)",
@@ -471,6 +483,9 @@ I18N = {
         "pick_files_title": "ファイルを選択", "yes": "はい", "no": "いいえ",
         "stun_probing": "STUN を問い合わせ中...", "stun_result": "グローバルアドレス: {r}", "stun_fail": "STUN 失敗: {e}",
         "history_empty": "履歴はありません", "history_entry": "[{t}] {f}（{s} バイト）receive={r}",
+        "history_cleared": "履歴を消去しました", "history_deleted": "削除しました: {f}",
+        "history_bad_index": "その番号の記録はありません: {n}", "history_missing": "ファイルが見つかりません: {p}",
+        "not_zip": "ZIP ファイルではありません: {p}",
         "cfg_title": "現在の設定", "cfg_alias": "エイリアス", "cfg_port": "ポート", "cfg_savedir": "保存先",
         "cfg_pin": "既定の PIN", "cfg_auto": "自動受け取り", "cfg_topic": "NTFY トピック", "cfg_fp": "フィンガープリント",
         "cfg_lang": "言語", "cfg_none": "（なし）", "cfg_default": "（既定）",
@@ -554,6 +569,9 @@ I18N = {
         "pick_files_title": "파일 선택", "yes": "예", "no": "아니오",
         "stun_probing": "STUN 조회 중...", "stun_result": "공인 주소: {r}", "stun_fail": "STUN 실패: {e}",
         "history_empty": "기록 없음", "history_entry": "[{t}] {f} ({s} 바이트) receive={r}",
+        "history_cleared": "기록을 지웠습니다", "history_deleted": "삭제됨: {f}",
+        "history_bad_index": "해당 기록이 없습니다: {n}", "history_missing": "파일이 없습니다: {p}",
+        "not_zip": "ZIP 파일이 아닙니다: {p}",
         "cfg_title": "현재 설정", "cfg_alias": "별칭", "cfg_port": "포트", "cfg_savedir": "저장 경로",
         "cfg_pin": "기본 PIN", "cfg_auto": "자동 수락", "cfg_topic": "NTFY 토픽", "cfg_fp": "지문",
         "cfg_lang": "언어", "cfg_none": "(없음)", "cfg_default": "(기본)",
@@ -633,6 +651,9 @@ I18N = {
         "prompt_pick_device": "選擇 [1-{n}]: ", "pick_files_title": "選擇檔案", "yes": "是", "no": "否",
         "stun_probing": "STUN 探測...", "stun_result": "公網位址：{r}", "stun_fail": "STUN 失敗：{e}",
         "history_empty": "無歷史紀錄", "history_entry": "[{t}] {f}（{s} 位元組）receive={r}",
+        "history_cleared": "已清空歷史記錄", "history_deleted": "已刪除：{f}",
+        "history_bad_index": "沒有這筆記錄：{n}", "history_missing": "檔案已不存在：{p}",
+        "not_zip": "不是 ZIP 檔案：{p}",
         "cfg_title": "目前設定", "cfg_alias": "別名", "cfg_port": "連接埠", "cfg_savedir": "儲存目錄",
         "cfg_pin": "預設 PIN", "cfg_auto": "自動接受", "cfg_topic": "NTFY 主題", "cfg_fp": "指紋",
         "cfg_lang": "語言", "cfg_none": "（未啟用）", "cfg_default": "（預設）",
@@ -715,6 +736,9 @@ I18N = {
         "pick_files_title": "Seleccionar archivos", "yes": "sí", "no": "no",
         "stun_probing": "Consultando STUN...", "stun_result": "Dirección pública: {r}", "stun_fail": "Fallo de STUN: {e}",
         "history_empty": "Sin historial", "history_entry": "[{t}] {f} ({s} bytes) receive={r}",
+        "history_cleared": "Historial borrado", "history_deleted": "Eliminado: {f}",
+        "history_bad_index": "No existe esa entrada: {n}", "history_missing": "El archivo ya no existe: {p}",
+        "not_zip": "No es un ZIP: {p}",
         "cfg_title": "Configuración actual", "cfg_alias": "Alias", "cfg_port": "Puerto", "cfg_savedir": "Carpeta de destino",
         "cfg_pin": "PIN por defecto", "cfg_auto": "Aceptar automáticamente", "cfg_topic": "Tema NTFY", "cfg_fp": "Huella",
         "cfg_lang": "Idioma", "cfg_none": "(ninguno)", "cfg_default": "(por defecto)",
@@ -798,6 +822,9 @@ I18N = {
         "pick_files_title": "Выбор файлов", "yes": "да", "no": "нет",
         "stun_probing": "Запрос STUN...", "stun_result": "Публичный адрес: {r}", "stun_fail": "Ошибка STUN: {e}",
         "history_empty": "История пуста", "history_entry": "[{t}] {f} ({s} байт) receive={r}",
+        "history_cleared": "История очищена", "history_deleted": "Удалено: {f}",
+        "history_bad_index": "Нет такой записи: {n}", "history_missing": "Файл не найден: {p}",
+        "not_zip": "Это не ZIP-файл: {p}",
         "cfg_title": "Текущая конфигурация", "cfg_alias": "Псевдоним", "cfg_port": "Порт", "cfg_savedir": "Папка сохранения",
         "cfg_pin": "PIN по умолчанию", "cfg_auto": "Автоприём", "cfg_topic": "Тема NTFY", "cfg_fp": "Отпечаток",
         "cfg_lang": "Язык", "cfg_none": "(не задано)", "cfg_default": "(по умолчанию)",
@@ -881,6 +908,9 @@ I18N = {
         "pick_files_title": "Selecionar ficheiros", "yes": "sim", "no": "não",
         "stun_probing": "A consultar STUN...", "stun_result": "Endereço público: {r}", "stun_fail": "Falha STUN: {e}",
         "history_empty": "Sem histórico", "history_entry": "[{t}] {f} ({s} bytes) receive={r}",
+        "history_cleared": "Histórico apagado", "history_deleted": "Removido: {f}",
+        "history_bad_index": "Não existe essa entrada: {n}", "history_missing": "O ficheiro já não existe: {p}",
+        "not_zip": "Não é um ficheiro ZIP: {p}",
         "cfg_title": "Configuração atual", "cfg_alias": "Alias", "cfg_port": "Porta", "cfg_savedir": "Pasta de destino",
         "cfg_pin": "PIN predefinido", "cfg_auto": "Aceitar automaticamente", "cfg_topic": "Tópico NTFY", "cfg_fp": "Impressão digital",
         "cfg_lang": "Idioma", "cfg_none": "(nenhum)", "cfg_default": "(predefinido)",
@@ -932,6 +962,9 @@ if _MISSING_LANGS:
     raise RuntimeError(f"内置翻译缺失：{', '.join(_MISSING_LANGS)}")
 
 _current_lang = "en"
+# 调试键模式（移植自 watchsend 的 Debug Keys Mode）：打开后界面直接显示 i18n 原始键名，
+# 一眼就能看出哪些文案没翻译，比对着词表逐条数更省事。
+_debug_keys = False
 
 def _normalize_lang(code):
     if not code: return None
@@ -950,6 +983,31 @@ def _normalize_lang(code):
                        ("spanish", "es"), ("russian", "ru"), ("portuguese", "pt"), ("english", "en")):
         if word in code: return lang
     return None
+
+_WEB_LANG_TAG = {"zh": "zh-CN", "zh_TW": "zh-Hant", "en": "en", "ja": "ja", "ko": "ko",
+                 "de": "de", "fr": "fr", "es": "es", "ru": "ru", "pt": "pt"}
+
+def pick_accept_language(header, fallback=None):
+    """按 Accept-Language 的 q 权重挑一门内置语言；浏览器带了多门时优先高权重的那门。
+
+    移植自 watchsend 的「Web 10-Language Adaptive」：网页不该被服务端 CLI 的语言绑死。
+    """
+    if not header: return fallback
+    best, best_q = None, -1.0
+    for part in str(header).split(","):
+        bits = part.split(";")
+        tag = bits[0].strip()
+        q = 1.0
+        for b in bits[1:]:
+            b = b.strip().lower()
+            if b.startswith("q="):
+                try: q = float(b[2:])
+                except ValueError: q = 0.0
+        if q <= 0: continue
+        n = _normalize_lang(tag)
+        if n and (q > best_q or (q == best_q and best is None)):
+            best, best_q = n, q
+    return best or fallback
 
 def _lang_from_env():
     for var in ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
@@ -1005,13 +1063,18 @@ def init_lang():
     _current_lang = detect_lang()
     return _current_lang
 
-def t(key, **kwargs):
-    s = I18N.get(_current_lang, {}).get(key)
+def _t_for(lang, key, **kwargs):
+    """按指定语言取词条，不依赖全局 _current_lang；Web 页要按浏览器语言单独渲染。"""
+    s = I18N.get(lang, {}).get(key)
     if s is None: s = I18N["en"].get(key, key)
     if kwargs:
         try: return s.format(**kwargs)
         except Exception: return s
     return s
+
+def t(key, **kwargs):
+    if _debug_keys: return f"⟦{key}⟧"
+    return _t_for(_current_lang, key, **kwargs)
 
 # ================== 配置 ==================
 def load_config():
@@ -1074,6 +1137,11 @@ def ntfy_base():
     return f"https://ntfy.sh/{get_config('ntfy_topic')}"
 
 # ================== 历史 & 剪贴板 ==================
+def history_file_label(name):
+    """ZIP 在历史里标 📦（沿用 watchsend 的习惯），一眼看出这条能直接解压。"""
+    s = str(name or "")
+    return f"{s} 📦" if s.lower().endswith(".zip") else s
+
 def append_history(filename, path, size, received):
     if not get_config("history_enable"): return
     try:
@@ -1095,6 +1163,27 @@ def read_history(n=20):
                 except Exception: pass
         return list(reversed(out))
     except Exception: return []
+
+def history_entries_all():
+    """按列表顺序（最新在前）返回全部记录，供 --delete / --unzip 按序号定位。"""
+    return read_history(10 ** 9)
+
+def rewrite_history(entries):
+    """把「最新在前」的列表按旧到新写回；先写临时文件再替换，避免写一半把历史丢了。"""
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    tmp = HISTORY_FILE.with_name(HISTORY_FILE.name + ".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        for e in reversed(entries):
+            f.write(json.dumps(e, ensure_ascii=False) + "\n")
+    os.replace(tmp, HISTORY_FILE)
+
+def delete_history_entry(index):
+    """删除列表中第 index 条（1 基，最新在前），返回被删的记录；越界返回 None。"""
+    entries = history_entries_all()
+    if not 1 <= index <= len(entries): return None
+    removed = entries.pop(index - 1)
+    rewrite_history(entries)
+    return removed
 
 # ================== 文件处理 ==================
 _ILLEGAL_NAME_CHARS = '<>:"|?*'
@@ -1261,7 +1350,7 @@ def _clipboard_set(text):
     except Exception: return False
 
 
-_WEB_PAGE_TEMPLATE = """<!DOCTYPE html><html><head><meta charset="utf-8">
+_WEB_PAGE_TEMPLATE = """<!DOCTYPE html><html lang="@@LANG@@"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>@@TITLE@@</title><style>
 :root{--bg:#f6f7f9;--card:#ffffff;--line:#e5e7eb;--txt:#1f2430;--muted:#6b7280;--acc:#2563eb}
@@ -1622,7 +1711,10 @@ class LspyServer:
         except Exception as e:
             _log.warning("post-process failed: %s", e)
 
-    def _web_page_html(self):
+    def _web_page_html(self, lang=None):
+        # 按调用方选定的语言渲染，让浏览器语言与 CLI 语言互不干扰
+        lang = lang or _current_lang
+        def tr(key, **kw): return _t_for(lang, key, **kw)
         import html as _html
         info = build_self_info(port=self.bound_port,
                                protocol="https" if self._use_https else "http")
@@ -1631,33 +1723,34 @@ class LspyServer:
             rows.append(
                 "<tr><td>{}</td><td>{}</td><td><code>{}</code></td></tr>".format(
                     _html.escape(str(e.get("time", ""))),
-                    _html.escape(str(e.get("file", ""))),
+                    _html.escape(history_file_label(e.get("file", ""))),
                     _html.escape(str(e.get("path", "")))))
-        body = "".join(rows) or f"<tr><td colspan=3>{_html.escape(t('web_none'))}</td></tr>"
+        body = "".join(rows) or f"<tr><td colspan=3>{_html.escape(tr('web_none'))}</td></tr>"
         page = _WEB_PAGE_TEMPLATE
         for token, value in (
-            ("@@TITLE@@", _html.escape(t("web_title"))),
-            ("@@TAB_UP@@", _html.escape(t("web_tab_upload"))),
-            ("@@TAB_DOWN@@", _html.escape(t("web_tab_download"))),
-            ("@@TAB_TEXT@@", _html.escape(t("web_tab_text"))),
-            ("@@UP_HINT@@", _html.escape(t("web_upload_hint"))),
-            ("@@DL_EMPTY@@", _html.escape(t("web_download_empty"))),
-            ("@@TEXT_HINT@@", _html.escape(t("web_text_hint"))),
-            ("@@SEND@@", _html.escape(t("web_send"))),
-            ("@@CLIP@@", _html.escape(t("web_clip_btn"))),
-            ("@@PIN_PROMPT@@", _html.escape(t("web_pin_prompt"))),
-            ("@@UP_OK@@", _html.escape(t("web_up_ok"))),
-            ("@@TEXT_OK@@", _html.escape(t("web_text_ok"))),
-            ("@@PIN_BAD@@", _html.escape(t("web_pin_bad"))),
-            ("@@ALIAS@@", _html.escape(t("web_alias"))),
+            ("@@TITLE@@", _html.escape(tr("web_title"))),
+            ("@@TAB_UP@@", _html.escape(tr("web_tab_upload"))),
+            ("@@TAB_DOWN@@", _html.escape(tr("web_tab_download"))),
+            ("@@TAB_TEXT@@", _html.escape(tr("web_tab_text"))),
+            ("@@UP_HINT@@", _html.escape(tr("web_upload_hint"))),
+            ("@@DL_EMPTY@@", _html.escape(tr("web_download_empty"))),
+            ("@@TEXT_HINT@@", _html.escape(tr("web_text_hint"))),
+            ("@@SEND@@", _html.escape(tr("web_send"))),
+            ("@@CLIP@@", _html.escape(tr("web_clip_btn"))),
+            ("@@PIN_PROMPT@@", _html.escape(tr("web_pin_prompt"))),
+            ("@@UP_OK@@", _html.escape(tr("web_up_ok"))),
+            ("@@TEXT_OK@@", _html.escape(tr("web_text_ok"))),
+            ("@@PIN_BAD@@", _html.escape(tr("web_pin_bad"))),
+            ("@@ALIAS@@", _html.escape(tr("web_alias"))),
             ("@@ALIAS_V@@", _html.escape(str(info["alias"]))),
-            ("@@PORT@@", _html.escape(t("web_port"))),
+            ("@@PORT@@", _html.escape(tr("web_port"))),
             ("@@PORT_V@@", str(info["port"])),
-            ("@@FP@@", _html.escape(t("web_fp"))),
+            ("@@FP@@", _html.escape(tr("web_fp"))),
             ("@@FP_V@@", _html.escape(str(info["fingerprint"])[:32])),
+            ("@@LANG@@", _WEB_LANG_TAG.get(lang, "en")),
             ("@@VER@@", _html.escape(VERSION)),
-            ("@@HINT@@", _html.escape(t("web_hint"))),
-            ("@@RECENT@@", _html.escape(t("web_recent"))),
+            ("@@HINT@@", _html.escape(tr("web_hint"))),
+            ("@@RECENT@@", _html.escape(tr("web_recent"))),
             ("@@ROWS@@", body),
             ("@@PIN_REQ@@", "true" if self.pin else "false"),
         ):
@@ -1719,7 +1812,9 @@ class LspyServer:
                 self.close_connection = True
 
             def _html_page(self):
-                body = server._web_page_html().encode("utf-8")
+                # 浏览器语言优先：先看 Accept-Language，认不出来才回退到 CLI 当前语言
+                lang = pick_accept_language(self.headers.get("Accept-Language"), _current_lang)
+                body = server._web_page_html(lang).encode("utf-8")
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.send_header("Content-Length", str(len(body)))
@@ -2379,10 +2474,33 @@ def cmd_stun(args):
             except Exception: pass
 
 def cmd_history(args):
+    if getattr(args, "clear", False):
+        if not HISTORY_FILE.exists(): print(t("history_empty")); return
+        try:
+            HISTORY_FILE.unlink(); print("✅ " + t("history_cleared"))
+        except Exception as e: print("⚠️ " + t("input_error", e=e))
+        return
+    idx = getattr(args, "delete", None)
+    if idx is not None:
+        removed = delete_history_entry(idx)
+        if removed is None: print("⚠️ " + t("history_bad_index", n=idx)); return
+        print("✅ " + t("history_deleted", f=removed.get("file")))
+        return
+    idx = getattr(args, "unzip", None)
+    if idx is not None:
+        entries = history_entries_all()
+        if not 1 <= idx <= len(entries): print("⚠️ " + t("history_bad_index", n=idx)); return
+        src = Path(str(entries[idx - 1].get("path") or ""))
+        if not src.is_file(): print("⚠️ " + t("history_missing", p=src)); return
+        if src.suffix.lower() != ".zip": print("⚠️ " + t("not_zip", p=src)); return
+        out = src.parent / src.stem
+        if safe_unzip(src, out): print("✅ " + t("unzip_ok", d=out.resolve()))
+        return
     entries = read_history(args.n)
     if not entries: print(t("history_empty")); return
     for e in entries:
-        print(t("history_entry", t=e.get("time"), f=e.get("file"), s=e.get("size"), r=e.get("receive")))
+        print(t("history_entry", t=e.get("time"), f=history_file_label(e.get("file")),
+                s=e.get("size"), r=e.get("receive")))
 
 def cmd_cert(args):
     try:
@@ -2407,7 +2525,7 @@ def cmd_config(args):
                 v = int(v)
             elif k in ("auto_accept", "use_https", "web_enable", "organize_by_type",
                        "history_enable", "auto_unzip", "open_after_receive",
-                       "auto_accept_whitelist"):
+                       "auto_accept_whitelist", "debug_keys"):
                 v = v.lower() in ("1", "true", "yes", "on")
             elif k in ("whitelist", "blacklist"):
                 v = [x.strip() for x in v.split(",") if x.strip()]
@@ -2571,6 +2689,8 @@ def _build_parser():
         prog="lspy", description="lspy — LocalSend-compatible Python CLI")
     parser.add_argument("--version", action="version", version=f"lspy {VERSION}")
     parser.add_argument("-v", "--verbose", action="store_true")
+    parser.add_argument("--debug-keys", action="store_true",
+                        help="print raw i18n keys instead of translations (spot missing strings)")
     sub = parser.add_subparsers(dest="cmd")
 
     p = sub.add_parser("info", help="print this device's LocalSend info")
@@ -2607,8 +2727,11 @@ def _build_parser():
     p = sub.add_parser("stun", help="probe the public address via STUN")
     p.set_defaults(func=cmd_stun)
 
-    p = sub.add_parser("history", help="show transfer history")
-    p.add_argument("-n", type=int, default=20)
+    p = sub.add_parser("history", help="show / manage transfer history")
+    p.add_argument("-n", type=int, default=20, help="how many entries to list")
+    p.add_argument("--delete", type=int, metavar="N", help="delete entry N (1 = newest), like watchsend's long-press delete")
+    p.add_argument("--unzip", type=int, metavar="N", help="extract entry N if it is a ZIP (Zip Slip guarded)")
+    p.add_argument("--clear", action="store_true", help="wipe the whole history file")
     p.set_defaults(func=cmd_history)
 
     p = sub.add_parser("cert", help="generate a self-signed TLS certificate")
@@ -2624,10 +2747,13 @@ def _build_parser():
 
 
 def main(argv=None):
+    global _debug_keys
     parser = _build_parser()
     args = parser.parse_args(argv)
     _configure_stdio()
     init_lang(); setup_logging()
+    # 命令行开关只作用于本次运行；要长期打开就用 config --set debug_keys=true
+    _debug_keys = bool(getattr(args, "debug_keys", False)) or bool(get_config("debug_keys"))
     if args.verbose:
         _log.setLevel(logging.DEBUG)
     if not getattr(args, "cmd", None):
