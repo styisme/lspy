@@ -20,7 +20,7 @@
 
 ## 🤖 AI 深度参与的部分
 
-- **协议实现**：`LspyServer` 的 `/info`、`/register`、`prepare-upload`、`send-request`、`upload`、`send`、`cancel` 全路由；v2 与 v2.1 的共享协商逻辑；`401 + X-LocalSend-Pin` 的 PIN 语义。
+- **协议实现**：`LspyServer` 的 `/info`、`/register`、`prepare-upload`、`send-request`、`upload`、`send`、`cancel` 全路由；v2 与 v2.1 的共享协商逻辑；`401` / `429` 的 PIN 语义（同一 IP 连错 3 次限流，与官方 `pin.rs` 一致）。
 - **发现与探测**：组播 `224.0.0.167` 加入与收发、全网段广播、HTTP 深度扫描（多网卡遍历、双端口并发探测）、`scan --json`。
 - **文件落盘与安全**：`safe_filename`（非法字符、控制字符、超长名、保留名处理）、`unique_path`（同名同大小不再被"已接收"静默跳过）、`safe_unzip` 的 Zip Slip 拦截（绝对路径 / 盘符 / `..` / 符号链接）、逐文件扩展名过滤与指纹名单。
 - **续传逻辑**：会话内按已落盘偏移续传，修正了旧版把注册偏移重复计入的问题。

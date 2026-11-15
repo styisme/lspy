@@ -481,6 +481,23 @@ class TestProtocol(unittest.TestCase):
         except urllib.error.HTTPError as e:
             return e.code, None
 
+    def _raw_post(self, url, body):
+        """与 `_post` 相同，但把响应体也带回来（401/429 的 body 要断言）。"""
+        req = urllib.request.Request(url, data=json.dumps(body).encode(), method="POST")
+        req.add_header("Content-Type", "application/json")
+        try:
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                return resp.status, resp.read().decode()
+        except urllib.error.HTTPError as e:
+            return e.code, (e.read() or b"").decode()
+
+    def _raw_get(self, url):
+        try:
+            with urllib.request.urlopen(url, timeout=5) as resp:
+                return resp.status, resp.read().decode()
+        except urllib.error.HTTPError as e:
+            return e.code, (e.read() or b"").decode()
+
     def _files_body(self, name, size):
         return {"info": {"alias": "tester", "fingerprint": "fp-test"},
                 "files": {"f1": {"id": "f1", "fileName": name, "size": size,
@@ -613,6 +630,53 @@ class TestProtocol(unittest.TestCase):
             body["pad"] = "z" * 200000        # 把请求体撑到比内核缓冲大
             status, _ = self._post(f"{sp.base}/api/localsend/v2/prepare-upload", body)
             self.assertEqual(status, 401)
+
+    def test_pin_lockout_after_three_failures(self):
+        """官方 `server/common/pin.rs` 语义：同一 IP 连错 3 次，第 4 次起一律 429。
+
+        锁定期内即使 PIN 正确也照样 429（官方先判次数、后看 PIN）。
+        """
+        with ServerPair(pin="2468") as sp:
+            codes = [self._post(f"{sp.base}/api/localsend/v2/prepare-upload?pin=0000",
+                                self._files_body("lt.txt", 1))[0] for _ in range(3)]
+            self.assertEqual(codes, [401, 401, 401])
+            code, body = self._raw_post(f"{sp.base}/api/localsend/v2/prepare-upload?pin=2468",
+                                        self._files_body("lt.txt", 1))
+            self.assertEqual(code, 429)
+            self.assertIn("too many", body)
+
+    def test_pin_success_resets_failure_counter(self):
+        """成功一次会把该 IP 的失败计数清零，之后还能再错 3 次才锁。"""
+        with ServerPair(pin="2468") as sp:
+            for _ in range(2):
+                self.assertEqual(self._post(f"{sp.base}/api/localsend/v2/prepare-upload?pin=0000",
+                                            self._files_body("rs.txt", 1))[0], 401)
+            status, resp = self._post(f"{sp.base}/api/localsend/v2/prepare-upload?pin=2468",
+                                      self._files_body("rs.txt", 1))
+            self.assertEqual(status, 200)
+            self.assertIn("sessionId", resp)
+            codes = [self._post(f"{sp.base}/api/localsend/v2/prepare-upload?pin=0000",
+                                self._files_body("rs.txt", 1))[0] for _ in range(3)]
+            self.assertEqual(codes, [401, 401, 401])
+
+    def test_pin_401_body_distinguishes_required_from_invalid(self):
+        """401 带 body：没给 PIN 是 "pin required"，给错了是 "invalid pin"（同官方文案）。"""
+        with ServerPair(pin="2468") as sp:
+            code, body = self._raw_post(f"{sp.base}/api/localsend/v2/prepare-upload",
+                                        self._files_body("bd.txt", 1))
+            self.assertEqual(code, 401)
+            self.assertIn("pin required", body)
+            code, body = self._raw_post(f"{sp.base}/api/localsend/v2/prepare-upload?pin=0000",
+                                        self._files_body("bd.txt", 1))
+            self.assertEqual(code, 401)
+            self.assertIn("invalid pin", body)
+
+    def test_web_endpoints_share_pin_lockout(self):
+        """Web 分享页与协议端点共用同一份失败计数，不能各算各的。"""
+        with ServerPair(pin="2468") as sp:
+            for _ in range(3):
+                self.assertEqual(self._raw_get(f"{sp.base}/web/files?pin=bad")[0], 401)
+            self.assertEqual(self._raw_get(f"{sp.base}/web/files?pin=2468")[0], 429)
 
     def test_blacklist_rejects(self):
         lspy.set_config("blacklist", ["fp-bad"])

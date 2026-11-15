@@ -5,7 +5,7 @@
 > Реализация протокола LocalSend в командной строке. Один файл, без сторонних зависимостей: LocalSend на телефоне, одна команда на компьютере. Есть ретрансляция между сетями через ntfy.sh.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.28.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.28.1-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -22,7 +22,7 @@
 - **Два поколения протокола**: LocalSend `v2` (`prepare-upload`/`upload`/`cancel`) и `v2.1` (`send-request`/`send`); префикс `v1` тоже работает. Автоматический откат при 404/405.
 - **Тройное обнаружение**: multicast `224.0.0.167:53317`, широковещание подсети и **глубокое HTTP-сканирование** (все интерфейсы, оба порта параллельно).
 - **Докачка без перезаписи**: продолжение с дискового смещения; имена проходят `safe_filename` + `unique_path`, конфликты получают `(1)`.
-- **Контроль доступа**: PIN (`401` + `X-LocalSend-Pin`), белые/чёрные списки отпечатков, фильтр опасных расширений (пропуск по файлам).
+- **Контроль доступа**: PIN (`401` требуется/неверный, `429` после 3 ошибок с одного IP — как в LocalSend), белые/чёрные списки отпечатков, фильтр опасных расширений (пропуск по файлам).
 - **Защита от Zip Slip**: отклоняются абсолютные пути, буквы дисков, обход `..` и символические ссылки.
 - **TLS**: `lspy cert` создаёт самоподписанную пару; обе стороны могут работать через HTTPS.
 - **Между сетями**: через ntfy.sh, блоки по 2400 байт, 3 попытки, завершающий SHA-256.

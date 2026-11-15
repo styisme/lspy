@@ -5,7 +5,7 @@
 > Eine Kommandozeilen-Implementierung des LocalSend-Protokolls. Eine Datei, keine Fremdabhängigkeiten: LocalSend auf dem Handy, eine Zeile auf dem Rechner. Inklusive Relay über ntfy.sh für geräteübergreifende Netze.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.28.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.28.1-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -22,7 +22,7 @@ Dieses Projekt wurde stark mit KI-Unterstützung entwickelt. Anforderungen, Revi
 - **Zwei Protokollgenerationen**: LocalSend `v2` (`prepare-upload`/`upload`/`cancel`) und `v2.1` (`send-request`/`send`); `v1`-Präfix ebenfalls. Automatischer Fallback bei 404/405.
 - **Dreifache Erkennung**: Multicast `224.0.0.167:53317`, Subnet-Broadcast und **HTTP-Tiefenscan** (alle Interfaces, beide Ports parallel).
 - **Fortsetzen ohne Überschreiben**: Innerhalb einer Sitzung wird ab dem Plattenoffset weitergeschrieben; Namen laufen über `safe_filename` + `unique_path`, Konflikte werden zu `(1)`.
-- **Zugriffskontrolle**: PIN (`401` + `X-LocalSend-Pin`), Fingerprint-White-/Blacklist, Filter gefährlicher Endungen (pro Datei übersprungen).
+- **Zugriffskontrolle**: PIN (`401` wenn nötig oder falsch, `429` nach 3 Fehlversuchen einer IP — wie bei LocalSend), Fingerprint-White-/Blacklist, Filter gefährlicher Endungen (pro Datei übersprungen).
 - **Zip-Slip-Schutz**: absolute Pfade, Laufwerksbuchstaben, `..`-Traversal und Symlinks werden abgelehnt.
 - **TLS**: `lspy cert` erzeugt ein selbstsigniertes Paar; beide Seiten können HTTPS nutzen.
 - **Cross-Network**: über ntfy.sh, 2400-Byte-Chunks, 3 Versuche, SHA-256-Prüfsumme am Ende.

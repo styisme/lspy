@@ -5,7 +5,7 @@
 > LocalSend 프로토콜의 CLI 구현. 단일 파일, 서드파티 의존성 없음. 휴대폰은 LocalSend, PC는 명령 한 줄로 파일 송수신. ntfy.sh를 통한 크로스 네트워크 중계 지원.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.28.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.28.1-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -22,7 +22,7 @@
 - **두 가지 프로토콜**: LocalSend `v2`(`prepare-upload`/`upload`/`cancel`)와 `v2.1`(`send-request`/`send`), `v1` 프리픽스도 지원. 404/405 시 자동 폴백.
 - **세 가지 탐색**: 멀티캐스트 `224.0.0.167:53317`, 서브넷 브로드캐스트, **HTTP 심층 스캔**(모든 NIC·두 포트 병렬).
 - **이어받기와 덮어쓰기 방지**: 세션 내 디스크 오프셋부터 계속. 저장 이름은 `safe_filename` + `unique_path`, 충돌 시 `(1)` 부여.
-- **접근 제어**: PIN(`401` + `X-LocalSend-Pin`), 지문 화이트/블랙리스트, 위험 확장자 필터(파일 단위 건너뛰기).
+- **접근 제어**: PIN(`401` 요구/오류, 같은 IP 에서 3 회 연속 실패 시 `429` — LocalSend 와 동일), 지문 화이트/블랙리스트, 위험 확장자 필터(파일 단위 건너뛰기).
 - **Zip Slip 방어**: 절대 경로, 드라이브 문자, `..` 탈출, 심볼릭 링크 거부.
 - **TLS**: `lspy cert`로 자체 서명 인증서 생성, 양쪽 모두 HTTPS 사용 가능.
 - **크로스 네트워크**: ntfy.sh 경유, 2400바이트 청크, 3회 재시도, SHA-256 + 길이 꼬리 검증.

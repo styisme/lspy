@@ -5,7 +5,7 @@
 > LocalSend 協定的命令列實作。單檔、零第三方依賴：手機跑 LocalSend，電腦一行指令收發檔案；另可透過 ntfy.sh 做跨網中繼。
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.28.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.28.1-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -19,7 +19,7 @@
 
 ## 📦 版本與來源
 
-目前版本：**v1.28.0**（版本號唯一來源為 [CHANGELOG.md](CHANGELOG.md)，由 CI 驗證並注入）。
+目前版本：**v1.28.1**（版本號唯一來源為 [CHANGELOG.md](CHANGELOG.md)，由 CI 驗證並注入）。
 
 本專案為 LocalSend 協定的獨立命令列實作，自零撰寫，未複製官方 App 原始碼，僅於協定層互通。
 
@@ -30,7 +30,7 @@
 - **雙版本協定**：支援 `v2`（`prepare-upload`/`upload`/`cancel`）與 `v2.1`（`send-request`/`send`），`v1` 前綴亦相容；發送端優先 v2.1，遇 404/405 自動回退。
 - **三重發現**：組播 `224.0.0.167:53317`、網段廣播、**HTTP 深度掃描**（多網卡、雙埠並行），克服防火牆與 AP 隔離。
 - **斷點續傳與防覆寫**：會話內自磁碟偏移續傳；落地檔名經 `safe_filename` + `unique_path`，衝突自動加 `(1)`。
-- **存取控制**：PIN（`401` + `X-LocalSend-Pin`）、指紋黑白名單、危險副檔名過濾（逐檔跳過而非整個會話拒絕）。
+- **存取控制**：PIN（`401` 要求 PIN 或 PIN 不對，同一 IP 連錯 3 次後 `429`，與官方一致）、指紋黑白名單、危險副檔名過濾（逐檔跳過而非整個會話拒絕）。
 - **解壓防護**：拒絕絕對路徑、磁碟機代號、`..` 穿越與符號連結（Zip Slip）。
 - **TLS**：`lspy cert` 產生自簽憑證，雙端皆可走 HTTPS。
 - **跨網中繼**：`cross-send` / `cross-recv` 走 ntfy.sh，分塊 2400 位元組、3 次重試、尾包 SHA-256 與長度校驗。

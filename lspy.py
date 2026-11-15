@@ -42,11 +42,12 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.28.0"
+VERSION = "1.28.1"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
 V1_PREFIX = "/api/localsend/v1"
+MAX_PIN_ATTEMPTS = 3        # 官方 http/server/common/pin.rs：同一 IP 连错 3 次后一律 429
 
 CONFIG_DIR = Path.home() / ".lspy"
 CONFIG_FILE = CONFIG_DIR / "config.json"
@@ -165,7 +166,7 @@ I18N = {
         "ask_receive": "From [{a}] @ {ip}: {n} file(s). Accept? [Y/n]: ",
         "session_created": "Session {s} waiting {n} file(s)", "receive_done": "Received: {f} -> {p}",
         "receive_progress": "{f}: {p}% ({r}/{t})", "write_fail": "Write failed: {e}",
-        "send_preparing": "Sending {n} file(s) ({s} bytes) -> {d}", "pin_required": "Remote requires PIN (--pin)",
+        "send_preparing": "Sending {n} file(s) ({s} bytes) -> {d}", "pin_required": "Remote requires PIN (--pin)", "pin_locked": "Pin attempt limit reached for {ip}: 3 wrong PINs in a row, that IP is blocked for now (same rule as LocalSend)", "pin_locked_peer": "The receiver locked this machine's IP after 3 wrong PINs. Restart the receiver's service or try from another device.",
         "conn_fail": "Connection failed: {e}", "send_rejected": "Rejected (HTTP {c})",
         "no_session": "Invalid response: missing sessionId", "send_started": "Session {s}... uploading",
         "send_progress": "Upload: {p}% ({s}/{t})", "send_fail": "Upload failed {f}: {e}",
@@ -282,7 +283,7 @@ I18N = {
         "ask_receive": "来自 [{a}] @ {ip} 的 {n} 个文件，接收？[Y/n]：",
         "session_created": "会话 {s} 等待 {n} 个文件", "receive_done": "已接收：{f} -> {p}",
         "receive_progress": "{f}：{p}% ({r}/{t})", "write_fail": "写入失败：{e}",
-        "send_preparing": "发送 {n} 个文件（{s} 字节）→ {d}", "pin_required": "对方需要 PIN（--pin）",
+        "send_preparing": "发送 {n} 个文件（{s} 字节）→ {d}", "pin_required": "对方需要 PIN（--pin）", "pin_locked": "已拒绝 {ip}：PIN 连续输错 3 次，该 IP 暂时被锁定（与 LocalSend 官方一致）", "pin_locked_peer": "对方已锁定本机 IP（PIN 连续输错 3 次），重启对方服务或换台设备再试",
         "conn_fail": "连接失败：{e}", "send_rejected": "被拒绝（HTTP {c}）", "no_session": "响应缺少 sessionId",
         "send_started": "会话 {s}... 上传中", "send_progress": "上传：{p}% ({s}/{t})", "send_fail": "上传失败 {f}：{e}",
         "send_done": "完成 {a}/{b} 个", "https_unsupported": "目标 HTTPS（发送端暂不支持）",
@@ -398,7 +399,7 @@ I18N = {
         "ask_receive": "Von [{a}] @ {ip}: {n} Datei(en). Annehmen? [Y/n]: ",
         "session_created": "Sitzung {s} wartet auf {n} Datei(en)", "receive_done": "Empfangen: {f} -> {p}",
         "receive_progress": "{f}: {p}% ({r}/{t})", "write_fail": "Schreiben fehlgeschlagen: {e}",
-        "send_preparing": "Sende {n} Datei(en) ({s} Bytes) -> {d}", "pin_required": "Gegenstelle verlangt PIN (--pin)",
+        "send_preparing": "Sende {n} Datei(en) ({s} Bytes) -> {d}", "pin_required": "Gegenstelle verlangt PIN (--pin)", "pin_locked": "已拒絕 {ip}：PIN 連續輸入錯誤 3 次，該 IP 暫時被鎖定（與 LocalSend 官方一致）", "pin_locked_peer": "對方已鎖定本機 IP（PIN 連續輸入錯誤 3 次），重啟對方服務或換台裝置再試",
         "conn_fail": "Verbindung fehlgeschlagen: {e}", "send_rejected": "Abgelehnt (HTTP {c})",
         "no_session": "Ungültige Antwort: sessionId fehlt", "send_started": "Sitzung {s}... wird hochgeladen",
         "send_progress": "Upload: {p}% ({s}/{t})", "send_fail": "Upload fehlgeschlagen {f}: {e}",
@@ -517,7 +518,7 @@ I18N = {
         "ask_receive": "De [{a}] @ {ip} : {n} fichier(s). Accepter ? [Y/n] : ",
         "session_created": "Session {s} en attente de {n} fichier(s)", "receive_done": "Reçu : {f} -> {p}",
         "receive_progress": "{f} : {p}% ({r}/{t})", "write_fail": "Échec d'écriture : {e}",
-        "send_preparing": "Envoi de {n} fichier(s) ({s} octets) -> {d}", "pin_required": "La cible exige un PIN (--pin)",
+        "send_preparing": "Envoi de {n} fichier(s) ({s} octets) -> {d}", "pin_required": "La cible exige un PIN (--pin)", "pin_locked": "PIN-Versuche für {ip} erschöpft: 3 Fehleingaben in Folge, diese IP ist vorerst gesperrt (wie bei LocalSend)", "pin_locked_peer": "Die Gegenstelle hat diese IP nach 3 falschen PINs gesperrt. Dienst dort neu starten oder von einem anderen Gerät versuchen.",
         "conn_fail": "Connexion échouée : {e}", "send_rejected": "Refusé (HTTP {c})",
         "no_session": "Réponse invalide : sessionId manquant", "send_started": "Session {s}... envoi en cours",
         "send_progress": "Envoi : {p}% ({s}/{t})", "send_fail": "Échec de l'envoi de {f} : {e}",
@@ -636,7 +637,7 @@ I18N = {
         "ask_receive": "[{a}] @ {ip} から {n} ファイル。受け取りますか？ [Y/n]: ",
         "session_created": "セッション {s}、{n} ファイル待機中", "receive_done": "受信: {f} -> {p}",
         "receive_progress": "{f}: {p}% ({r}/{t})", "write_fail": "書き込み失敗: {e}",
-        "send_preparing": "{n} ファイル（{s} バイト）を送信 -> {d}", "pin_required": "相手は PIN を要求しています（--pin）",
+        "send_preparing": "{n} ファイル（{s} バイト）を送信 -> {d}", "pin_required": "相手は PIN を要求しています（--pin）", "pin_locked": "Trop de tentatives de PIN pour {ip} : 3 codes faux d'affilée, cette IP est bloquée pour un temps (règle identique à LocalSend)", "pin_locked_peer": "La cible a bloqué l'IP de cette machine après 3 codes PIN faux. Redémarrez son service ou essayez depuis un autre appareil.",
         "conn_fail": "接続失敗: {e}", "send_rejected": "拒否されました（HTTP {c}）",
         "no_session": "不正な応答: sessionId がありません", "send_started": "セッション {s}... アップロード中",
         "send_progress": "アップロード: {p}% ({s}/{t})", "send_fail": "アップロード失敗 {f}: {e}",
@@ -755,7 +756,7 @@ I18N = {
         "ask_receive": "[{a}] @ {ip} 에서 {n}개 파일. 받으시겠습니까? [Y/n]: ",
         "session_created": "세션 {s}, {n}개 파일 대기 중", "receive_done": "수신: {f} -> {p}",
         "receive_progress": "{f}: {p}% ({r}/{t})", "write_fail": "기록 실패: {e}",
-        "send_preparing": "{n}개 파일({s} 바이트) 전송 -> {d}", "pin_required": "상대가 PIN 을 요구합니다 (--pin)",
+        "send_preparing": "{n}개 파일({s} 바이트) 전송 -> {d}", "pin_required": "상대가 PIN 을 요구합니다 (--pin)", "pin_locked": "{ip} からの PIN 入力を拒否しました。3 回連続で誤っているため、この IP は一時的にブロックされます（LocalSend と同じ規則）", "pin_locked_peer": "相手は 3 回の PIN 誤入力でこのマシンの IP をブロックしました。相手のサービスを再起動するか、別の端末から試してください。",
         "conn_fail": "연결 실패: {e}", "send_rejected": "거부됨 (HTTP {c})",
         "no_session": "잘못된 응답: sessionId 없음", "send_started": "세션 {s}... 업로드 중",
         "send_progress": "업로드: {p}% ({s}/{t})", "send_fail": "업로드 실패 {f}: {e}",
@@ -872,7 +873,7 @@ I18N = {
         "ask_receive": "來自 [{a}] @ {ip} 的 {n} 個檔案，接收？[Y/n]：",
         "session_created": "工作階段 {s} 等待 {n} 個檔案", "receive_done": "已接收：{f} -> {p}",
         "receive_progress": "{f}：{p}% ({r}/{t})", "write_fail": "寫入失敗：{e}",
-        "send_preparing": "傳送 {n} 個檔案（{s} 位元組）→ {d}", "pin_required": "對方需要 PIN（--pin）",
+        "send_preparing": "傳送 {n} 個檔案（{s} 位元組）→ {d}", "pin_required": "對方需要 PIN（--pin）", "pin_locked": "{ip} 의 PIN 입력을 거부했습니다. 3회 연속 틀려 해당 IP 는 잠시 차단됩니다 (LocalSend 와 동일한 규칙)", "pin_locked_peer": "상대가 PIN 을 3회 틀려 이 기기의 IP 를 차단했습니다. 상대 서비스를 다시 시작하거나 다른 기기에서 시도하세요.",
         "conn_fail": "連線失敗：{e}", "send_rejected": "被拒絕（HTTP {c}）", "no_session": "回應缺少 sessionId",
         "send_started": "工作階段 {s}... 上傳中", "send_progress": "上傳：{p}% ({s}/{t})", "send_fail": "上傳失敗 {f}：{e}",
         "send_done": "完成 {a}/{b} 個", "https_unsupported": "目標為 HTTPS（傳送端暫不支援）",
@@ -988,7 +989,7 @@ I18N = {
         "ask_receive": "De [{a}] @ {ip}: {n} archivo(s). ¿Aceptar? [Y/n]: ",
         "session_created": "Sesión {s} esperando {n} archivo(s)", "receive_done": "Recibido: {f} -> {p}",
         "receive_progress": "{f}: {p}% ({r}/{t})", "write_fail": "Fallo de escritura: {e}",
-        "send_preparing": "Enviando {n} archivo(s) ({s} bytes) -> {d}", "pin_required": "El destino exige PIN (--pin)",
+        "send_preparing": "Enviando {n} archivo(s) ({s} bytes) -> {d}", "pin_required": "El destino exige PIN (--pin)", "pin_locked": "Intentos de PIN agotados para {ip}: 3 códigos erróneos seguidos, esa IP queda bloqueada por un tiempo (igual que LocalSend)", "pin_locked_peer": "El destino bloqueó la IP de esta máquina tras 3 PIN erróneos. Reinicia su servicio o prueba desde otro dispositivo.",
         "conn_fail": "Error de conexión: {e}", "send_rejected": "Rechazado (HTTP {c})",
         "no_session": "Respuesta no válida: falta sessionId", "send_started": "Sesión {s}... subiendo",
         "send_progress": "Subida: {p}% ({s}/{t})", "send_fail": "Fallo al subir {f}: {e}",
@@ -1107,7 +1108,7 @@ I18N = {
         "ask_receive": "От [{a}] @ {ip}: файлов — {n}. Принять? [Y/n]: ",
         "session_created": "Сеанс {s} ожидает файлов: {n}", "receive_done": "Получено: {f} -> {p}",
         "receive_progress": "{f}: {p}% ({r}/{t})", "write_fail": "Ошибка записи: {e}",
-        "send_preparing": "Отправка файлов ({n}) на {d}, {s} байт", "pin_required": "Удалённая сторона требует PIN (--pin)",
+        "send_preparing": "Отправка файлов ({n}) на {d}, {s} байт", "pin_required": "Удалённая сторона требует PIN (--pin)", "pin_locked": "Попытки ввода PIN с {ip} исчерпаны: 3 ошибки подряд, этот IP временно заблокирован (как в LocalSend)", "pin_locked_peer": "Получатель заблокировал IP этого компьютера после 3 неверных PIN. Перезапустите его службу или попробуйте с другого устройства.",
         "conn_fail": "Ошибка подключения: {e}", "send_rejected": "Отклонено (HTTP {c})",
         "no_session": "Некорректный ответ: нет sessionId", "send_started": "Сеанс {s}... загрузка",
         "send_progress": "Загрузка: {p}% ({s}/{t})", "send_fail": "Ошибка загрузки {f}: {e}",
@@ -1226,7 +1227,7 @@ I18N = {
         "ask_receive": "De [{a}] @ {ip}: {n} ficheiro(s). Aceitar? [Y/n]: ",
         "session_created": "Sessão {s} à espera de {n} ficheiro(s)", "receive_done": "Recebido: {f} -> {p}",
         "receive_progress": "{f}: {p}% ({r}/{t})", "write_fail": "Falha de escrita: {e}",
-        "send_preparing": "A enviar {n} ficheiro(s) ({s} bytes) -> {d}", "pin_required": "O destino exige PIN (--pin)",
+        "send_preparing": "A enviar {n} ficheiro(s) ({s} bytes) -> {d}", "pin_required": "O destino exige PIN (--pin)", "pin_locked": "Tentativas de PIN esgotadas para {ip}: 3 códigos errados seguidos, esse IP fica bloqueado por um tempo (igual ao LocalSend)", "pin_locked_peer": "O destino bloqueou o IP desta máquina após 3 PIN errados. Reinicie o serviço dele ou tente de outro dispositivo.",
         "conn_fail": "Falha na ligação: {e}", "send_rejected": "Rejeitado (HTTP {c})",
         "no_session": "Resposta inválida: falta sessionId", "send_started": "Sessão {s}... a enviar",
         "send_progress": "Envio: {p}% ({s}/{t})", "send_fail": "Falha ao enviar {f}: {e}",
@@ -2265,6 +2266,8 @@ class LspyServer:
         self.auto_accept = auto_accept if auto_accept is not None else get_config("auto_accept")
         self.pin = pin; self.verbose = verbose
         self.sessions = {}; self.lock = threading.Lock()
+        # 官方 LocalSend 的 PIN 失败计数：同一 IP 连续错 3 次后一律 429，成功一次清零
+        self.pin_attempts = {}
         self.quiet_receive = False      # 交互菜单在画「接收详情」时置 True，避免两处进度打架
         self.httpd = None; self._mc_running = True
         self.multicast = bool(multicast)
@@ -2417,15 +2420,46 @@ class LspyServer:
                 length = int(self.headers.get("Content-Length", "0") or 0)
                 return self.rfile.read(length) if length > 0 else b""
 
-            def _pin_ok(self, qs):
-                if not server.pin: return True
-                given = qs.get("pin", [None])[0] or self.headers.get("X-LocalSend-Pin")
-                return given == server.pin
+            def _pin_check(self, qs):
+                """按官方 `server/common/pin.rs` 的语义校验 PIN。
 
-            def _unauthorized(self):
+                返回 (ok, 状态码)：`ok` 为真时状态码无意义；失败时是 401（需要/错误 PIN）
+                或 429（该 IP 已连续失败 MAX_PIN_ATTEMPTS 次，官方同样先判次数再看 PIN）。
+                """
+                if not server.pin: return True, 0
+                ip = self.client_address[0]
+                with server.lock:
+                    count = server.pin_attempts.get(ip, 0)
+                if count >= MAX_PIN_ATTEMPTS:
+                    self._pin_supplied = bool(qs.get("pin", [None])[0] or self.headers.get("X-LocalSend-Pin"))
+                    return False, 429
+                given = qs.get("pin", [None])[0] or self.headers.get("X-LocalSend-Pin")
+                self._pin_supplied = bool(given)
+                if given == server.pin:
+                    with server.lock: server.pin_attempts.pop(ip, None)
+                    return True, 0
+                with server.lock:
+                    server.pin_attempts[ip] = count + 1
+                    if len(server.pin_attempts) > 200:
+                        server.pin_attempts.pop(next(iter(server.pin_attempts)), None)
+                return False, 401
+
+            def _pin_ok(self, qs):
+                return self._pin_check(qs)[0]
+
+            def _unauthorized(self, code=401):
+                """401 与官方一致地带上 JSON body；官方客户端只看状态码，
+                这里额外保留 `X-LocalSend-Pin: true` 供脚本识别。"""
+                if code == 429:
+                    self._json(429, {"error": "too many requests"})
+                    print("\n⛔ " + t("pin_locked", ip=self.client_address[0]))
+                    return
+                msg = "invalid pin" if getattr(self, "_pin_supplied", False) else "pin required"
                 self.send_response(401); self.send_header("X-LocalSend-Pin", "true")
-                self.send_header("Content-Length", "0"); self.send_header("Connection", "close")
-                self.end_headers(); self.close_connection = True
+                body = json.dumps({"error": msg}).encode("utf-8")
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(body))); self.send_header("Connection", "close")
+                self.end_headers(); self.wfile.write(body); self.close_connection = True
 
             def _text(self, body, ctype="text/plain; charset=utf-8"):
                 self.send_response(200)
@@ -2473,7 +2507,8 @@ class LspyServer:
                         info["web"] = True; info["pinRequired"] = bool(server.pin)
                         info["files"] = len(web_list_files(server.save_dir))
                         self._json(200, info); return
-                    if not self._pin_ok(peer_qs): self._unauthorized(); return
+                    ok, code = self._pin_check(peer_qs)
+                    if not ok: self._unauthorized(code); return
                     if path == "/web/files":
                         payload = server._web_files_payload()
                         payload.pop("pin", None)
@@ -2507,7 +2542,8 @@ class LspyServer:
 
                 if path.startswith("/web/"):
                     if not server.web_enable: self._json(404, {"error": "web disabled"}); return
-                    if not self._pin_ok(qs): self._unauthorized(); return
+                    ok, code = self._pin_check(qs)
+                    if not ok: self._unauthorized(code); return
                     if path == "/web/upload":
                         name = safe_filename(qs.get("name", [""])[0] or f"web_{int(time.time())}")
                         if _is_blocked_ext(name):
@@ -2574,7 +2610,8 @@ class LspyServer:
                     # 还在写 body，收到的是连接重置而不是 401，于是连 PIN 输入框都不弹。
                     try: o = json.loads(self._read_body().decode("utf-8") or "{}")
                     except Exception: o = None
-                    if not self._pin_ok(qs): self._unauthorized(); return
+                    ok, code = self._pin_check(qs)
+                    if not ok: self._unauthorized(code); return
                     if not isinstance(o, dict): self._json(400, {"error": "bad request"}); return
 
                     files = o.get("files") or {}; info = o.get("info") or {}
@@ -2800,6 +2837,7 @@ def _post_json(url, body, timeout=30):
             except Exception: return resp.status, {}
     except urllib.error.HTTPError as e:
         if e.code == 401: raise RuntimeError("PIN_REQUIRED")
+        if e.code == 429: raise RuntimeError("PIN_LOCKED")   # 已经连错 3 次，被对方拒到锁定期
         return e.code, None
 
 
@@ -2879,7 +2917,10 @@ def send_files(device, filepaths, pin=None, threads=3):
         _log.info("%s", t("reg_fail", e=e))
 
     try: endpoint, status, resp = _prepare_upload(device, files_info, pin)
-    except RuntimeError: print("🔒 " + t("pin_required")); return False
+    except RuntimeError as e:
+        if "PIN_LOCKED" in str(e): print("⛔ " + t("pin_locked_peer", d=device.alias or device.ip))
+        else: print("🔒 " + t("pin_required"))
+        return False
     except Exception as e: print("❌ " + t("conn_fail", e=e)); return False
 
     if status != 200 or not resp: print("❌ " + t("send_rejected", c=status)); return False

@@ -296,7 +296,7 @@ The sender prefers `send-request` → `send`, falling back to `prepare-upload` �
 
 **Checksums**: `FileDto.sha256` is the optional lowercase-hex field defined in the official `packages/core/src/model/transfer.rs`. With `send_checksum=true` the sender fills it from `_sha256_file()` per file; with `verify_checksum=true` the receiver recomputes and compares after writing, deletes the file on mismatch and answers `422 {"error": "checksum mismatch"}` — the same semantics as the official `SaveResult::HashMismatch` → `StatusCode::UNPROCESSABLE_ENTITY`.
 
-Web share page (the whole group 404s when `web_enable` is off; with a PIN set every call needs it as the `pin` query parameter or the `X-LocalSend-Pin` header):
+Web share page (the whole group 404s when `web_enable` is off; with a PIN set every call needs it as the `pin` query parameter — the official channel — and lspy additionally accepts the `X-LocalSend-Pin` header, which is its own compatibility channel):
 
 | Endpoint | Method | Purpose |
 |---|---|---|
@@ -316,7 +316,7 @@ Web share page (the whole group 404s when `web_enable` is off; with a PIN set ev
 A: In order: (1) allow TCP/UDP `53317` (Windows Firewall prompts on first run); (2) check router AP isolation; (3) try `lspy scan -t 5` — the HTTP deep scan often works where multicast is blocked; (4) on locked-down corporate networks, dial directly with `--ip`.
 
 **Q: The peer keeps answering 401 / asking for a PIN.**
-A: The receiver has `pin` set. Pass `--pin` when sending, or clear it on the receiver with `lspy config --set pin=""`. The `X-LocalSend-Pin` header means a PIN is required.
+A: The receiver has `pin` set. Pass `--pin` when sending, or clear it on the receiver with `lspy config --set pin=""`. `401` means a PIN is required or the PIN is wrong (the body says `pin required` / `invalid pin`); after 3 failures from one IP it becomes `429`, exactly like the official `pin.rs` — only a receiver restart or a different source IP gets you out. The `X-LocalSend-Pin: true` response header is lspy's own marker; the official protocol does not use it.
 
 **Q: One file is rejected and the whole batch fails.**
 A: Since v1.19.0 extension filtering and the blacklist are evaluated **per file**; only the offending entry is skipped. If the batch still fails, check the `403` reason in `lspy.log`.

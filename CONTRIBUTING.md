@@ -297,7 +297,7 @@ Closes #123
 
 **校验和**：`FileDto.sha256` 是官方 `packages/core/src/model/transfer.rs` 定义的可选字段（小写 hex）。发送端 `send_checksum=true` 时逐文件填 `_sha256_file()` 的结果，接收端 `verify_checksum=true` 时在文件写完后重算并比对，不符删文件并返回 `422 {"error": "checksum mismatch"}`，与官方 `SaveResult::HashMismatch` → `StatusCode::UNPROCESSABLE_ENTITY` 一致。
 
-Web 分享页（`web_enable` 关闭时整组 404；设了 PIN 时全部要求 `pin` 查询参数或 `X-LocalSend-Pin` 请求头）：
+Web 分享页（`web_enable` 关闭时整组 404；设了 PIN 时全部要求 `pin` 查询参数，官方通道；另接受 `X-LocalSend-Pin` 请求头，那是 lspy 自己的兼容通道）：
 
 | 端点 | 方法 | 作用 |
 |---|---|---|
@@ -318,7 +318,7 @@ Web 分享页（`web_enable` 关闭时整组 404；设了 PIN 时全部要求 `p
 A：按顺序排查：① 放通 TCP/UDP `53317`（Windows 防火墙首次运行会弹窗）；② 路由器是否开启 AP 隔离；③ 用 `lspy scan -t 5` 看是否能通过 HTTP 深扫发现；④ 企业网络常封组播，此时用 `--ip` 直连最稳。
 
 **Q：对方一直 401 / 提示需要 PIN？**
-A：接收端设置了 `pin`。发送时加 `--pin`，或在对方 `lspy config --set pin=""` 清空。响应头 `X-LocalSend-Pin` 表示对端要求 PIN。
+A：接收端设置了 `pin`。发送时加 `--pin`，或在对方 `lspy config --set pin=""` 清空。`401` 表示要求 PIN 或 PIN 不对（body 里分别是 `pin required` / `invalid pin`）；同一 IP 连错 3 次后变成 `429`，与官方 `pin.rs` 一致，只能等服务端重启或换来源 IP。响应头上的 `X-LocalSend-Pin: true` 是 lspy 自己的标记，官方协议不使用这个头。
 
 **Q：单个文件被拒收，整批都失败？**
 A：v1.19.0 起扩展名过滤与黑名单是**逐文件**判断，只会跳过命中项；若仍整批失败，看 `lspy.log` 里的 `403` 原因（多半是该文件命中 `filter_ext`）。

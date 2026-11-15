@@ -5,7 +5,7 @@
 > LocalSend プロトコルの CLI 実装。単一ファイル・サードパーティ依存ゼロ。スマホは LocalSend、PC はコマンド 1 本でファイル送受信。ntfy.sh 経由のクロスネットワーク中継にも対応。
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.28.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.28.1-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -22,7 +22,7 @@
 - **プロトコル両対応**: LocalSend `v2`（`prepare-upload`/`upload`/`cancel`）と `v2.1`（`send-request`/`send`）、`v1` プレフィックスも利用可。404/405 で自動フォールバック。
 - **3 種類の探索**: マルチキャスト `224.0.0.167:53317`、サブネットブロードキャスト、**HTTP ディープスキャン**（全 NIC・両ポート並列）。
 - **レジュームと上書き防止**: セッション内はディスク上のオフセットから継続。保存名は `safe_filename` + `unique_path` で衝突時に `(1)` を付与。
-- **アクセス制御**: PIN（`401` + `X-LocalSend-Pin`）、フィンガープリントのホワイト/ブラックリスト、危険拡張子フィルタ（ファイル単位でスキップ）。
+- **アクセス制御**: PIN（`401` は要求/誤り、同一 IP で 3 回連続失敗すると `429`。LocalSend と同じ規則）、フィンガープリントのホワイト/ブラックリスト、危険拡張子フィルタ（ファイル単位でスキップ）。
 - **Zip Slip 対策**: 絶対パス・ドライブレター・`..` トラバーサル・シンボリックリンクを拒否。
 - **TLS**: `lspy cert` で自己署名証明書を生成、送受信とも HTTPS 可。
 - **クロスネットワーク**: ntfy.sh 経由。2400 バイト分割、3 回リトライ、SHA-256 + 長さの末尾検証。

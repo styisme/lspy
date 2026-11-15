@@ -4,6 +4,24 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.28.1] - 2026-11-15
+
+### 修复
+
+- **PIN 可以无限试**：之前连续输错 PIN 永远回 401，等于把 PIN 摊开给暴力猜。现在对齐官方 `packages/core/src/http/server/common/pin.rs`：同一 IP 连错 3 次后**一律 429 `{"error": "too many requests"}`**，成功校验一次即清零。锁定期内即使 PIN 正确也照拒 —— 官方也是先判次数再看 PIN，不给自己开后门。
+- **Web 分享页与协议端点共用同一份失败计数**（官方 web.rs 同样复用 `pin_attempts`），不存在"从网页绕过 3 次限制继续猜"的缝。
+- **401 补上 JSON body**：没带 PIN 是 `{"error": "pin required"}`，带错是 `{"error": "invalid pin"}`（官方同一套文案）。官方客户端只看状态码（`send_provider.dart` 里 switch 401/403/409/429），所以老客户端行为不变，脚本和日志则能分清两种情况。
+- **发送端认 429**：被对方锁定后不再干巴巴报"需要 PIN"，而是打印"对方已锁定本机 IP（PIN 连错 3 次）"。
+
+### 文档
+
+- 修正 README / CONTRIBUTING 里「PIN 校验（`401` + `X-LocalSend-Pin`）」的说法：官方仓库里没有 `X-LocalSend-Pin` 这个头，它是 lspy 自己的兼容通道（请求头形式）与 401 响应上的标记，与官方协议的兼容点只有 query 参数 `pin` 和 401/429 状态码。
+
+### 验证
+
+- 本地与 Linux 真机同款结果：连错 3 次 `[401, 401, 401]`，第 4 次起 429，锁定期内带正确 PIN 仍 429；两次错 + 正确 PIN 得 200，计数清零后还能再错 3 次才锁。
+- 测试 109 → 113（新增限流、清零、401 body 区分、Web 共用计数四例）。
+
 ## [1.28.0] - 2026-11-15
 
 ### 新增（从 LocalSend 官方源码移植）

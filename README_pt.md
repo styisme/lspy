@@ -5,7 +5,7 @@
 > Uma implementação de linha de comando do protocolo LocalSend. Arquivo único, sem dependências de terceiros: LocalSend no celular, um comando no computador. Inclui retransmissão entre redes via ntfy.sh.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.28.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.28.1-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -22,7 +22,7 @@ Este projeto foi amplamente desenvolvido com auxílio de modelos de linguagem. R
 - **Duas gerações de protocolo**: LocalSend `v2` (`prepare-upload`/`upload`/`cancel`) e `v2.1` (`send-request`/`send`); o prefixo `v1` também funciona. Fallback automático em 404/405.
 - **Descoberta tripla**: multicast `224.0.0.167:53317`, broadcast de sub-rede e **varredura HTTP profunda** (todas as interfaces, duas portas em paralelo).
 - **Retomada sem sobrescrever**: continua a partir do deslocamento em disco; nomes passam por `safe_filename` + `unique_path`, conflitos viram `(1)`.
-- **Controle de acesso**: PIN (`401` + `X-LocalSend-Pin`), listas branca/negra de impressões digitais, filtro de extensões perigosas (ignoradas por arquivo).
+- **Controle de acesso**: PIN (`401` exigido/errado, `429` após 3 falhas do mesmo IP — igual ao LocalSend), listas branca/negra de impressões digitais, filtro de extensões perigosas (ignoradas por arquivo).
 - **Proteção Zip Slip**: caminhos absolutos, letras de unidade, travessia `..` e links simbólicos são recusados.
 - **TLS**: `lspy cert` gera um par autoassinado; ambos os lados podem usar HTTPS.
 - **Entre redes**: via ntfy.sh, blocos de 2400 bytes, 3 tentativas, SHA-256 final.
