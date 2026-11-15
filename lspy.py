@@ -41,7 +41,7 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.21.0"
+VERSION = "1.21.1"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
@@ -892,6 +892,13 @@ def _normalize_lang(code):
         return "zh"
     for prefix, lang in (("ja", "ja"), ("ko", "ko"), ("de", "de"), ("fr", "fr"), ("es", "es"), ("ru", "ru"), ("pt", "pt"), ("en", "en")):
         if code.startswith(prefix): return lang
+    # locale.getlocale() 在 Windows 上返回的是本地化长名（如 "Chinese (Simplified)_China"），
+    # 只有语言代码前缀匹配不到，这里按全名再认一次。
+    if "chinese" in code:
+        return "zh_TW" if any(x in code for x in ("traditional", "taiwan", "hong kong", "macau")) else "zh"
+    for word, lang in (("japanese", "ja"), ("korean", "ko"), ("german", "de"), ("french", "fr"),
+                       ("spanish", "es"), ("russian", "ru"), ("portuguese", "pt"), ("english", "en")):
+        if word in code: return lang
     return None
 
 def _lang_from_env():
@@ -904,18 +911,23 @@ def _lang_from_env():
     return None
 
 def _lang_from_locale():
-    try:
-        loc = locale.getlocale()[0] or locale.getdefaultlocale()[0]
-        return _normalize_lang(loc)
-    except Exception: return None
+    for getter in (lambda: locale.getlocale()[0], lambda: locale.getdefaultlocale()[0]):
+        try:
+            loc = getter()
+        except Exception:
+            continue
+        n = _normalize_lang(loc) if loc else None
+        if n: return n
+    return None
 
 def _lang_from_windows():
     if sys.platform != "win32": return None
     try:
         import winreg
-        k = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Control Panel\International")
-        try: loc = winreg.QueryValueEx(k, "LocaleName")[0]
-        finally: k.close()
+        # PyHKEY 只有 Close()，写成 k.close() 会抛 AttributeError 并被吞掉，曾导致
+        # Windows 上 auto 永远回退到英文。用 with 托管句柄，别手动关。
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Control Panel\International") as k:
+            loc = winreg.QueryValueEx(k, "LocaleName")[0]
         return _normalize_lang(loc)
     except Exception: return None
 

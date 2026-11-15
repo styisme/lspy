@@ -5,7 +5,7 @@
 > LocalSend 协议的命令行实现。单文件、零第三方依赖，手机上跑 LocalSend，电脑上一条命令收发文件；也能借 ntfy.sh 做跨网中继。
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.21.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.21.1-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-brightgreen)]()
@@ -22,7 +22,7 @@
 
 ## 📦 版本与来源
 
-当前版本：**v1.21.0**（版本号唯一来源为 [CHANGELOG.md](CHANGELOG.md)，由 CI 校验并注入）。
+当前版本：**v1.21.1**（版本号唯一来源为 [CHANGELOG.md](CHANGELOG.md)，由 CI 校验并注入）。
 
 本项目是 LocalSend 协议的**独立命令行实现**，从零编写，不复制官方 App（Apache-2.0）源码，仅在协议层与其互通，详见 [LICENSE-LocalSend](LICENSE-LocalSend)。同族的图形端实现见 [OldSend](https://github.com/styisme/oldsend) 与 [WatchSend](https://github.com/styisme/watchsend)，lspy 与其共享协议思路，代码互不依赖。
 

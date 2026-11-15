@@ -124,6 +124,37 @@ class TestConfigAndI18n(unittest.TestCase):
         self.assertEqual(lspy._normalize_lang("ja_JP.UTF-8"), "ja")
         self.assertIsNone(lspy._normalize_lang(""))
 
+    def test_lang_normalize_locale_long_names(self):
+        """locale.getlocale() 在 Windows 上给的是本地化长名，必须也认得出（回归：auto 曾永远回退 en）。"""
+        self.assertEqual(lspy._normalize_lang("Chinese (Simplified)_China"), "zh")
+        self.assertEqual(lspy._normalize_lang("Chinese (Traditional)_Taiwan"), "zh_TW")
+        self.assertEqual(lspy._normalize_lang("German_Austria"), "de")
+        self.assertEqual(lspy._normalize_lang("English_United States"), "en")
+        self.assertEqual(lspy._normalize_lang("Portuguese_Brazil"), "pt")
+
+    def test_lang_from_windows_uses_context_manager(self):
+        """winreg 的 PyHKEY 只有 Close()，旧实现 k.close() 抛错被吞 → auto 失效。"""
+        import types
+        from unittest import mock
+
+        class FakeKey:
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+            def close(self): raise AttributeError("no close()")   # 旧实现会踩这个
+
+        fake = types.ModuleType("winreg")
+        fake.HKEY_CURRENT_USER = object()
+        fake.OpenKey = lambda *a, **k: FakeKey()
+        fake.QueryValueEx = lambda k, name: ("zh-TW", 1)
+        with mock.patch.dict(sys.modules, {"winreg": fake}), \
+             mock.patch.object(lspy.sys, "platform", "win32"):
+            self.assertEqual(lspy._lang_from_windows(), "zh_TW")
+
+    def test_auto_lang_never_returns_none(self):
+        self.addCleanup(lspy.set_config, "lang", None)
+        lspy.set_config("lang", "auto")
+        self.assertIn(lspy.detect_lang(), lspy.SUPPORTED_LANGS)
+
     def test_every_supported_lang_has_own_catalog(self):
         """每个受支持语言都必须有独立完整词表，不能是英文副本（回归：语言菜单曾全部显示 English）。"""
         en = lspy.I18N["en"]
@@ -158,8 +189,9 @@ class TestConfigAndI18n(unittest.TestCase):
                     self.assertEqual(ph(lspy.I18N[lg][k]), ph(src), f"{lg}.{k} 占位符不一致")
 
     def test_switching_lang_changes_ui_text(self):
-        self.addCleanup(lspy.set_config, "lang", None)
+        # addCleanup 是后进先出：先登记 init_lang，才能保证清掉配置后再刷新语言
         self.addCleanup(lspy.init_lang)
+        self.addCleanup(lspy.set_config, "lang", None)
         lspy.set_config("lang", "ja")
         lspy.init_lang()
         self.assertEqual(lspy.t("menu_scan"), lspy.I18N["ja"]["menu_scan"])

@@ -4,6 +4,22 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.21.1] - 2026-11-15
+
+### 修复
+
+- `auto` 语言检测在 Windows 上从未生效，等于默认英文：`_lang_from_windows()` 用 `k.close()` 关闭 `winreg.PyHKEY`，而该对象只有 `Close()`，`AttributeError` 被 `except Exception` 吞掉，函数直接返回 `None`；`_lang_from_locale()` 则把 `locale.getlocale()` 的本地化长名（中文系统是 `Chinese (Simplified)_China`）当成语言代码，`_normalize_lang` 只认 `zh_/ja_/de_` 这类前缀，同样返回 `None`。两条兜底同时失效 → `detect_lang()` 一律落到 `"en"`，中文 Windows 上首启是英文界面。
+- `_lang_from_windows()` 改用 `with winreg.OpenKey(...)` 托管句柄，不再手动关闭。
+- `_lang_from_locale()` 依次尝试 `locale.getlocale()`、`locale.getdefaultlocale()`，任一取到有效值即返回。
+
+### 变更
+
+- `_normalize_lang()` 增补本地化全名映射：`Chinese (Traditional)`/`Taiwan`/`Hong Kong`/`Macau` → `zh_TW`，其余 Chinese → `zh`；Japanese / Korean / German / French / Spanish / Russian / Portuguese / English 全名同样可识别，`auto` 在中文、德文等系统上都能命中对应语言。
+
+### 新增
+
+- 3 个回归测试：本地化长名归一化、假 `winreg` 断言不再调用 `close()`（旧实现必挂）、`auto` 必须落在 `SUPPORTED_LANGS` 内。测试总数 33 → 36。
+
 ## [1.21.0] - 2026-11-15
 
 ### 修复
@@ -90,6 +106,7 @@
 
 - 初版：LocalSend v1/v2 收发、组播扫描、HTTP 深度扫描、ntfy.sh 跨网、多语言菜单。
 
+[1.21.1]: https://github.com/styisme/lspy/compare/v1.21.0...v1.21.1
 [1.21.0]: https://github.com/styisme/lspy/compare/v1.20.1...v1.21.0
 [1.20.1]: https://github.com/styisme/lspy/compare/v1.20.0...v1.20.1
 [1.20.0]: https://github.com/styisme/lspy/compare/v1.19.2...v1.20.0
