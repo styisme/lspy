@@ -41,7 +41,7 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.24.0"
+VERSION = "1.25.0"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
@@ -62,6 +62,7 @@ CONFIG_DEFAULTS = {
     "use_https": False, "web_enable": True, "organize_by_type": True,
     "history_enable": True, "auto_unzip": False, "history_max": 300,
     "clipboard_text": True, "open_after_receive": False, "log_level": "INFO",
+    "force_cfdialog": False,
 }
 
 SUPPORTED_LANGS = ["zh", "zh_TW", "en", "ja", "ko", "de", "fr", "es", "ru", "pt"]
@@ -148,6 +149,9 @@ I18N = {
         "ipv6_not_found": "No IPv6 address found",
         "cfg_invalid_number": "{k} must be a non-negative integer",
         "cfg_savedir_hint": "Type ? to browse folders",
+        "cfg_dialog": "File dialog",
+        "cfg_dialog_auto": "auto (tkinter → cfdialog)",
+        "cfg_dialog_force": "cfdialog only (skip tkinter)",
         "history_cleared": "History wiped", "history_deleted": "Deleted: {f}",
         "history_bad_index": "No such entry: {n}", "history_missing": "File is gone: {p}",
         "not_zip": "Not a ZIP file: {p}",
@@ -156,7 +160,7 @@ I18N = {
         "cfg_lang": "Language", "cfg_none": "(none)", "cfg_default": "(default)",
         "cfg_menu_alias": "Change alias", "cfg_menu_port": "Change port", "cfg_menu_savedir": "Change save dir",
         "cfg_menu_pin": "Change PIN", "cfg_menu_auto": "Toggle auto-accept", "cfg_menu_topic": "Change NTFY topic",
-        "cfg_menu_regen_fp": "Regenerate fingerprint", "cfg_menu_reset": "Reset config", "cfg_menu_lang": "Change language",
+        "cfg_menu_regen_fp": "Regenerate fingerprint", "cfg_menu_reset": "Reset config", "cfg_menu_lang": "Change language", "cfg_menu_force_cfdialog": "Force cfdialog file picker (on/off)",
         "cfg_menu_back": "Back", "cfg_prompt_alias": "New alias [{d}]: ", "cfg_prompt_port": "New port [{d}]: ",
         "cfg_prompt_savedir": "New dir [{d}]: ", "cfg_prompt_pin": "New PIN [{d}]: ",
         "cfg_prompt_topic": "New topic [{d}]: ", "cfg_confirm_reset": "Reset all? [y/N]: ",
@@ -234,6 +238,9 @@ I18N = {
         "ipv6_not_found": "未找到 IPv6 地址",
         "cfg_invalid_number": "{k} 必须是非负整数",
         "cfg_savedir_hint": "输入 ? 打开目录浏览器",
+        "cfg_dialog": "选文件方式",
+        "cfg_dialog_auto": "自动（tkinter → cfdialog）",
+        "cfg_dialog_force": "强制 cfdialog（跳过 tkinter）",
         "history_cleared": "已清空历史记录", "history_deleted": "已删除：{f}",
         "history_bad_index": "没有这条记录：{n}", "history_missing": "文件已不存在：{p}",
         "not_zip": "不是 ZIP 文件：{p}",
@@ -242,7 +249,7 @@ I18N = {
         "cfg_lang": "语言", "cfg_none": "（未启用）", "cfg_default": "（默认）",
         "cfg_menu_alias": "修改别名", "cfg_menu_port": "修改端口", "cfg_menu_savedir": "修改保存目录",
         "cfg_menu_pin": "修改 PIN", "cfg_menu_auto": "切换自动接受", "cfg_menu_topic": "修改 NTFY 话题",
-        "cfg_menu_regen_fp": "重新生成指纹", "cfg_menu_reset": "重置全部", "cfg_menu_lang": "修改语言",
+        "cfg_menu_regen_fp": "重新生成指纹", "cfg_menu_reset": "重置全部", "cfg_menu_lang": "修改语言", "cfg_menu_force_cfdialog": "强制使用 cfdialog 选文件（开/关）",
         "cfg_menu_back": "返回", "cfg_prompt_alias": "新别名 [{d}]: ", "cfg_prompt_port": "新端口 [{d}]: ",
         "cfg_prompt_savedir": "新目录 [{d}]: ", "cfg_prompt_pin": "新 PIN [{d}]: ",
         "cfg_prompt_topic": "新话题 [{d}]: ", "cfg_confirm_reset": "确认重置？[y/N]：",
@@ -323,6 +330,9 @@ I18N = {
         "ipv6_not_found": "Keine IPv6-Adresse gefunden",
         "cfg_invalid_number": "{k} muss eine nicht negative Ganzzahl sein",
         "cfg_savedir_hint": "? eingeben, um Ordner zu durchsuchen",
+        "cfg_dialog": "Dateidialog",
+        "cfg_dialog_auto": "auto (tkinter → cfdialog)",
+        "cfg_dialog_force": "nur cfdialog (tkinter überspringen)",
         "history_cleared": "Verlauf gelöscht", "history_deleted": "Gelöscht: {f}",
         "history_bad_index": "Kein solcher Eintrag: {n}", "history_missing": "Datei fehlt: {p}",
         "not_zip": "Keine ZIP-Datei: {p}",
@@ -331,7 +341,7 @@ I18N = {
         "cfg_lang": "Sprache", "cfg_none": "(keine)", "cfg_default": "(Standard)",
         "cfg_menu_alias": "Alias ändern", "cfg_menu_port": "Port ändern", "cfg_menu_savedir": "Speicherordner ändern",
         "cfg_menu_pin": "PIN ändern", "cfg_menu_auto": "Auto-Annehmen umschalten", "cfg_menu_topic": "NTFY-Thema ändern",
-        "cfg_menu_regen_fp": "Fingerabdruck neu erzeugen", "cfg_menu_reset": "Konfiguration zurücksetzen", "cfg_menu_lang": "Sprache ändern",
+        "cfg_menu_regen_fp": "Fingerabdruck neu erzeugen", "cfg_menu_reset": "Konfiguration zurücksetzen", "cfg_menu_lang": "Sprache ändern", "cfg_menu_force_cfdialog": "cfdialog erzwingen (ein/aus)",
         "cfg_menu_back": "Zurück", "cfg_prompt_alias": "Neuer Alias [{d}]: ", "cfg_prompt_port": "Neuer Port [{d}]: ",
         "cfg_prompt_savedir": "Neuer Ordner [{d}]: ", "cfg_prompt_pin": "Neue PIN [{d}]: ",
         "cfg_prompt_topic": "Neues Thema [{d}]: ", "cfg_confirm_reset": "Alles zurücksetzen? [y/N]: ",
@@ -413,6 +423,9 @@ I18N = {
         "ipv6_not_found": "Aucune adresse IPv6 trouvée",
         "cfg_invalid_number": "{k} doit être un entier positif ou nul",
         "cfg_savedir_hint": "Tapez ? pour parcourir les dossiers",
+        "cfg_dialog": "Sélecteur de fichiers",
+        "cfg_dialog_auto": "auto (tkinter → cfdialog)",
+        "cfg_dialog_force": "cfdialog uniquement (sans tkinter)",
         "history_cleared": "Historique effacé", "history_deleted": "Supprimé : {f}",
         "history_bad_index": "Entrée inexistante : {n}", "history_missing": "Fichier absent : {p}",
         "not_zip": "Ce n'est pas un ZIP : {p}",
@@ -421,7 +434,7 @@ I18N = {
         "cfg_lang": "Langue", "cfg_none": "(aucun)", "cfg_default": "(par défaut)",
         "cfg_menu_alias": "Changer l'alias", "cfg_menu_port": "Changer le port", "cfg_menu_savedir": "Changer le dossier de réception",
         "cfg_menu_pin": "Changer le PIN", "cfg_menu_auto": "Basculer l'acceptation automatique", "cfg_menu_topic": "Changer le sujet NTFY",
-        "cfg_menu_regen_fp": "Régénérer l'empreinte", "cfg_menu_reset": "Réinitialiser la configuration", "cfg_menu_lang": "Changer la langue",
+        "cfg_menu_regen_fp": "Régénérer l'empreinte", "cfg_menu_reset": "Réinitialiser la configuration", "cfg_menu_lang": "Changer la langue", "cfg_menu_force_cfdialog": "Forcer cfdialog (on/off)",
         "cfg_menu_back": "Retour", "cfg_prompt_alias": "Nouvel alias [{d}] : ", "cfg_prompt_port": "Nouveau port [{d}] : ",
         "cfg_prompt_savedir": "Nouveau dossier [{d}] : ", "cfg_prompt_pin": "Nouveau PIN [{d}] : ",
         "cfg_prompt_topic": "Nouveau sujet [{d}] : ", "cfg_confirm_reset": "Tout réinitialiser ? [y/N] : ",
@@ -503,6 +516,9 @@ I18N = {
         "ipv6_not_found": "IPv6 アドレスが見つかりません",
         "cfg_invalid_number": "{k} は 0 以上の整数である必要があります",
         "cfg_savedir_hint": "? でフォルダを参照できます",
+        "cfg_dialog": "ファイル選択",
+        "cfg_dialog_auto": "自動（tkinter → cfdialog）",
+        "cfg_dialog_force": "cfdialog を強制（tkinter を飛ばす）",
         "history_cleared": "履歴を消去しました", "history_deleted": "削除しました: {f}",
         "history_bad_index": "その番号の記録はありません: {n}", "history_missing": "ファイルが見つかりません: {p}",
         "not_zip": "ZIP ファイルではありません: {p}",
@@ -511,7 +527,7 @@ I18N = {
         "cfg_lang": "言語", "cfg_none": "（なし）", "cfg_default": "（既定）",
         "cfg_menu_alias": "エイリアスを変更", "cfg_menu_port": "ポートを変更", "cfg_menu_savedir": "保存先を変更",
         "cfg_menu_pin": "PIN を変更", "cfg_menu_auto": "自動受け取りを切り替え", "cfg_menu_topic": "NTFY トピックを変更",
-        "cfg_menu_regen_fp": "フィンガープリントを再生成", "cfg_menu_reset": "設定をリセット", "cfg_menu_lang": "言語を変更",
+        "cfg_menu_regen_fp": "フィンガープリントを再生成", "cfg_menu_reset": "設定をリセット", "cfg_menu_lang": "言語を変更", "cfg_menu_force_cfdialog": "cfdialog の使用を強制（オン/オフ）",
         "cfg_menu_back": "戻る", "cfg_prompt_alias": "新しいエイリアス [{d}]: ", "cfg_prompt_port": "新しいポート [{d}]: ",
         "cfg_prompt_savedir": "新しい保存先 [{d}]: ", "cfg_prompt_pin": "新しい PIN [{d}]: ",
         "cfg_prompt_topic": "新しいトピック [{d}]: ", "cfg_confirm_reset": "すべてリセットしますか？ [y/N]: ",
@@ -593,6 +609,9 @@ I18N = {
         "ipv6_not_found": "IPv6 주소를 찾을 수 없습니다",
         "cfg_invalid_number": "{k}은(는) 0 이상의 정수여야 합니다",
         "cfg_savedir_hint": "? 를 입력하면 폴더를 찾아볼 수 있습니다",
+        "cfg_dialog": "파일 선택",
+        "cfg_dialog_auto": "자동(tkinter → cfdialog)",
+        "cfg_dialog_force": "cfdialog 강제(tkinter 건너뜀)",
         "history_cleared": "기록을 지웠습니다", "history_deleted": "삭제됨: {f}",
         "history_bad_index": "해당 기록이 없습니다: {n}", "history_missing": "파일이 없습니다: {p}",
         "not_zip": "ZIP 파일이 아닙니다: {p}",
@@ -601,7 +620,7 @@ I18N = {
         "cfg_lang": "언어", "cfg_none": "(없음)", "cfg_default": "(기본)",
         "cfg_menu_alias": "별칭 변경", "cfg_menu_port": "포트 변경", "cfg_menu_savedir": "저장 경로 변경",
         "cfg_menu_pin": "PIN 변경", "cfg_menu_auto": "자동 수락 전환", "cfg_menu_topic": "NTFY 토픽 변경",
-        "cfg_menu_regen_fp": "지문 재생성", "cfg_menu_reset": "설정 초기화", "cfg_menu_lang": "언어 변경",
+        "cfg_menu_regen_fp": "지문 재생성", "cfg_menu_reset": "설정 초기화", "cfg_menu_lang": "언어 변경", "cfg_menu_force_cfdialog": "cfdialog 강제 사용(켜기/끄기)",
         "cfg_menu_back": "뒤로", "cfg_prompt_alias": "새 별칭 [{d}]: ", "cfg_prompt_port": "새 포트 [{d}]: ",
         "cfg_prompt_savedir": "새 경로 [{d}]: ", "cfg_prompt_pin": "새 PIN [{d}]: ",
         "cfg_prompt_topic": "새 토픽 [{d}]: ", "cfg_confirm_reset": "모두 초기화할까요? [y/N]: ",
@@ -679,6 +698,9 @@ I18N = {
         "ipv6_not_found": "找不到 IPv6 位址",
         "cfg_invalid_number": "{k} 必須是非負整數",
         "cfg_savedir_hint": "輸入 ? 開啟目錄瀏覽器",
+        "cfg_dialog": "選檔方式",
+        "cfg_dialog_auto": "自動（tkinter → cfdialog）",
+        "cfg_dialog_force": "強制 cfdialog（略過 tkinter）",
         "history_cleared": "已清空歷史記錄", "history_deleted": "已刪除：{f}",
         "history_bad_index": "沒有這筆記錄：{n}", "history_missing": "檔案已不存在：{p}",
         "not_zip": "不是 ZIP 檔案：{p}",
@@ -687,7 +709,7 @@ I18N = {
         "cfg_lang": "語言", "cfg_none": "（未啟用）", "cfg_default": "（預設）",
         "cfg_menu_alias": "修改別名", "cfg_menu_port": "修改連接埠", "cfg_menu_savedir": "修改儲存目錄",
         "cfg_menu_pin": "修改 PIN", "cfg_menu_auto": "切換自動接受", "cfg_menu_topic": "修改 NTFY 主題",
-        "cfg_menu_regen_fp": "重新產生指紋", "cfg_menu_reset": "重設全部", "cfg_menu_lang": "修改語言",
+        "cfg_menu_regen_fp": "重新產生指紋", "cfg_menu_reset": "重設全部", "cfg_menu_lang": "修改語言", "cfg_menu_force_cfdialog": "強制使用 cfdialog 選檔（開/關）",
         "cfg_menu_back": "返回", "cfg_prompt_alias": "新別名 [{d}]: ", "cfg_prompt_port": "新連接埠 [{d}]: ",
         "cfg_prompt_savedir": "新目錄 [{d}]: ", "cfg_prompt_pin": "新 PIN [{d}]: ",
         "cfg_prompt_topic": "新主題 [{d}]: ", "cfg_confirm_reset": "確認重設？[y/N]：",
@@ -768,6 +790,9 @@ I18N = {
         "ipv6_not_found": "No se encontró ninguna dirección IPv6",
         "cfg_invalid_number": "{k} debe ser un entero no negativo",
         "cfg_savedir_hint": "Escribe ? para explorar carpetas",
+        "cfg_dialog": "Selector de archivos",
+        "cfg_dialog_auto": "auto (tkinter → cfdialog)",
+        "cfg_dialog_force": "solo cfdialog (sin tkinter)",
         "history_cleared": "Historial borrado", "history_deleted": "Eliminado: {f}",
         "history_bad_index": "No existe esa entrada: {n}", "history_missing": "El archivo ya no existe: {p}",
         "not_zip": "No es un ZIP: {p}",
@@ -776,7 +801,7 @@ I18N = {
         "cfg_lang": "Idioma", "cfg_none": "(ninguno)", "cfg_default": "(por defecto)",
         "cfg_menu_alias": "Cambiar alias", "cfg_menu_port": "Cambiar puerto", "cfg_menu_savedir": "Cambiar carpeta de destino",
         "cfg_menu_pin": "Cambiar PIN", "cfg_menu_auto": "Alternar aceptación automática", "cfg_menu_topic": "Cambiar tema NTFY",
-        "cfg_menu_regen_fp": "Regenerar huella", "cfg_menu_reset": "Restablecer configuración", "cfg_menu_lang": "Cambiar idioma",
+        "cfg_menu_regen_fp": "Regenerar huella", "cfg_menu_reset": "Restablecer configuración", "cfg_menu_lang": "Cambiar idioma", "cfg_menu_force_cfdialog": "Forzar cfdialog (on/off)",
         "cfg_menu_back": "Volver", "cfg_prompt_alias": "Nuevo alias [{d}]: ", "cfg_prompt_port": "Nuevo puerto [{d}]: ",
         "cfg_prompt_savedir": "Nueva carpeta [{d}]: ", "cfg_prompt_pin": "Nuevo PIN [{d}]: ",
         "cfg_prompt_topic": "Nuevo tema [{d}]: ", "cfg_confirm_reset": "¿Restablecer todo? [y/N]: ",
@@ -858,6 +883,9 @@ I18N = {
         "ipv6_not_found": "Адрес IPv6 не найден",
         "cfg_invalid_number": "{k} должно быть целым неотрицательным числом",
         "cfg_savedir_hint": "Введите ? чтобы выбрать папку",
+        "cfg_dialog": "Выбор файлов",
+        "cfg_dialog_auto": "авто (tkinter → cfdialog)",
+        "cfg_dialog_force": "только cfdialog (без tkinter)",
         "history_cleared": "История очищена", "history_deleted": "Удалено: {f}",
         "history_bad_index": "Нет такой записи: {n}", "history_missing": "Файл не найден: {p}",
         "not_zip": "Это не ZIP-файл: {p}",
@@ -866,7 +894,7 @@ I18N = {
         "cfg_lang": "Язык", "cfg_none": "(не задано)", "cfg_default": "(по умолчанию)",
         "cfg_menu_alias": "Изменить псевдоним", "cfg_menu_port": "Изменить порт", "cfg_menu_savedir": "Изменить папку сохранения",
         "cfg_menu_pin": "Изменить PIN", "cfg_menu_auto": "Переключить автоприём", "cfg_menu_topic": "Изменить тему NTFY",
-        "cfg_menu_regen_fp": "Пересоздать отпечаток", "cfg_menu_reset": "Сбросить конфигурацию", "cfg_menu_lang": "Изменить язык",
+        "cfg_menu_regen_fp": "Пересоздать отпечаток", "cfg_menu_reset": "Сбросить конфигурацию", "cfg_menu_lang": "Изменить язык", "cfg_menu_force_cfdialog": "Принудительно cfdialog (вкл/выкл)",
         "cfg_menu_back": "Назад", "cfg_prompt_alias": "Новый псевдоним [{d}]: ", "cfg_prompt_port": "Новый порт [{d}]: ",
         "cfg_prompt_savedir": "Новая папка [{d}]: ", "cfg_prompt_pin": "Новый PIN [{d}]: ",
         "cfg_prompt_topic": "Новая тема [{d}]: ", "cfg_confirm_reset": "Сбросить всё? [y/N]: ",
@@ -948,6 +976,9 @@ I18N = {
         "ipv6_not_found": "Nenhum endereço IPv6 encontrado",
         "cfg_invalid_number": "{k} deve ser um inteiro não negativo",
         "cfg_savedir_hint": "Introduza ? para navegar pelas pastas",
+        "cfg_dialog": "Seleção de ficheiros",
+        "cfg_dialog_auto": "automático (tkinter → cfdialog)",
+        "cfg_dialog_force": "só cfdialog (sem tkinter)",
         "history_cleared": "Histórico apagado", "history_deleted": "Removido: {f}",
         "history_bad_index": "Não existe essa entrada: {n}", "history_missing": "O ficheiro já não existe: {p}",
         "not_zip": "Não é um ficheiro ZIP: {p}",
@@ -956,7 +987,7 @@ I18N = {
         "cfg_lang": "Idioma", "cfg_none": "(nenhum)", "cfg_default": "(predefinido)",
         "cfg_menu_alias": "Alterar alias", "cfg_menu_port": "Alterar porta", "cfg_menu_savedir": "Alterar pasta de destino",
         "cfg_menu_pin": "Alterar PIN", "cfg_menu_auto": "Alternar aceitação automática", "cfg_menu_topic": "Alterar tópico NTFY",
-        "cfg_menu_regen_fp": "Regenerar impressão digital", "cfg_menu_reset": "Repor configuração", "cfg_menu_lang": "Alterar idioma",
+        "cfg_menu_regen_fp": "Regenerar impressão digital", "cfg_menu_reset": "Repor configuração", "cfg_menu_lang": "Alterar idioma", "cfg_menu_force_cfdialog": "Forçar cfdialog (ligado/desligado)",
         "cfg_menu_back": "Voltar", "cfg_prompt_alias": "Novo alias [{d}]: ", "cfg_prompt_port": "Nova porta [{d}]: ",
         "cfg_prompt_savedir": "Nova pasta [{d}]: ", "cfg_prompt_pin": "Novo PIN [{d}]: ",
         "cfg_prompt_topic": "Novo tópico [{d}]: ", "cfg_confirm_reset": "Repor tudo? [y/N]: ",
@@ -2775,7 +2806,8 @@ def cmd_config(args):
                 v = int(v)
             elif k in ("auto_accept", "use_https", "web_enable", "organize_by_type",
                        "history_enable", "auto_unzip", "open_after_receive",
-                       "auto_accept_whitelist", "debug_keys", "clipboard_text"):
+                       "auto_accept_whitelist", "debug_keys", "clipboard_text",
+                       "force_cfdialog"):
                 v = v.lower() in ("1", "true", "yes", "on")
             elif k == "history_max":
                 if not v.isdigit():
@@ -2797,17 +2829,20 @@ def interactive_config():
         pin = cfg.get("pin") or t("cfg_none"); auto = cfg.get("auto_accept", True)
         fp = cfg.get("fingerprint", "?"); topic = cfg.get("ntfy_topic", CONFIG_DEFAULTS["ntfy_topic"])
         lang = I18N[_current_lang].get("lang_name", _current_lang)
+        force_cf = bool(cfg.get("force_cfdialog", CONFIG_DEFAULTS["force_cfdialog"]))
+        dialog_desc = t("cfg_dialog_force") if force_cf else t("cfg_dialog_auto")
 
         print("\n" + "─" * 50); print(" ⚙️  " + t("cfg_title")); print("─" * 50)
         print(f"  {t('cfg_lang'):<12}: {lang}\n  {t('cfg_alias'):<12}: {alias}\n  {t('cfg_port'):<12}: {port}")
         print(f"  {t('cfg_savedir'):<12}: {save_dir}\n  {t('cfg_pin'):<12}: {pin}\n  {t('cfg_auto'):<12}: {auto}")
+        print(f"  {t('cfg_dialog'):<12}: {dialog_desc}")
         print(f"  {t('cfg_topic'):<12}: {topic}\n  {t('cfg_fp'):<12}: {fp[:20]}...\n  {t('cfg_file'):<12}: {CONFIG_FILE}")
         print("─" * 50)
-        for i, k in enumerate(["cfg_menu_alias", "cfg_menu_port", "cfg_menu_savedir", "cfg_menu_pin", "cfg_menu_auto", "cfg_menu_topic", "cfg_menu_regen_fp", "cfg_menu_reset", "cfg_menu_lang"], 1):
+        for i, k in enumerate(["cfg_menu_alias", "cfg_menu_port", "cfg_menu_savedir", "cfg_menu_pin", "cfg_menu_auto", "cfg_menu_topic", "cfg_menu_regen_fp", "cfg_menu_reset", "cfg_menu_lang", "cfg_menu_force_cfdialog"], 1):
             print(f" {i}. {t(k)}")
         print(f" 0. {t('cfg_menu_back')}"); print("─" * 50)
 
-        try: choice = input(t("choose_prompt", choices="0-9")).strip()
+        try: choice = input(t("choose_prompt", choices="0-10")).strip()
         except (EOFError, KeyboardInterrupt): return
 
         if choice == "0": return
@@ -2839,6 +2874,9 @@ def interactive_config():
                 idx = int(input(t("cfg_lang_choice", choices=f"0-{len(codes)-1}")).strip())
                 if 0 <= idx < len(codes): set_config("lang", codes[idx]); init_lang()
             except Exception: pass
+        elif choice == "10":
+            set_config("force_cfdialog", not force_cf)
+            print("✅ " + t("cfg_dialog") + ": " + (t("cfg_dialog_force") if not force_cf else t("cfg_dialog_auto")) + " — " + t("cfg_set_done", k="force_cfdialog", v=str(not force_cf).lower()))
 
 _CFDIALOG = None      # None=未加载；False=这台机器上没有可用的 cfdialog
 
@@ -2901,13 +2939,16 @@ def _dialog_pick_folder(start_dir=None):
 
 
 def pick_files():
-    try:
-        import tkinter as tk
-        from tkinter import filedialog
-        root = tk.Tk(); root.withdraw()
-        paths = filedialog.askopenfilenames(title=t("pick_files_title")); root.destroy()
-        if paths: return list(paths)
-    except Exception: pass
+    """选文件：默认 tkinter → cfdialog → 手敲；force_cfdialog 打开时跳过 tkinter。"""
+    force = bool(get_config("force_cfdialog"))
+    if not force:
+        try:
+            import tkinter as tk
+            from tkinter import filedialog
+            root = tk.Tk(); root.withdraw()
+            paths = filedialog.askopenfilenames(title=t("pick_files_title")); root.destroy()
+            if paths: return list(paths)
+        except Exception: pass
     picked = _dialog_pick_files()
     if picked is not None: return [str(p) for p in picked]
     raw = input(t("prompt_files")).strip()

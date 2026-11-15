@@ -5,7 +5,7 @@
 > LocalSend 協定的命令列實作。單檔、零第三方依賴：手機跑 LocalSend，電腦一行指令收發檔案；另可透過 ntfy.sh 做跨網中繼。
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.24.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.25.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -19,7 +19,7 @@
 
 ## 📦 版本與來源
 
-目前版本：**v1.24.0**（版本號唯一來源為 [CHANGELOG.md](CHANGELOG.md)，由 CI 驗證並注入）。
+目前版本：**v1.25.0**（版本號唯一來源為 [CHANGELOG.md](CHANGELOG.md)，由 CI 驗證並注入）。
 
 本專案為 LocalSend 協定的獨立命令列實作，自零撰寫，未複製官方 App 原始碼，僅於協定層互通。
 
@@ -40,6 +40,7 @@
 - **IPv6 直連位址**（移植自 watchsend 的 `[IPv6]:53317` 顯示）：`info` 在協定 JSON 後追加本機 IPv6 的 `[位址]:埠`，跨網時可直接抄給對端；只列全球/唯一本地位址，連結本地位址不顯示。
 - **除錯鍵模式**（移植自 watchsend 的 Debug Keys Mode）：`--debug-keys` 讓介面顯示原始 i18n 鍵名，缺翻譯一眼可見；`config --set debug_keys=true` 可長期開啟。
 - **檔案選擇不再依賴 tkinter**：內建 [cfdialog](https://github.com/styisme/cfdialog) 0.3.0（MIT，單檔、純標準庫），選檔順序為 `tkinter` → cfdialog 終端瀏覽器 → 手動輸入路徑；可用數字進目錄、`g` 切分區、`h` 顯示隱藏檔、`a`/`c`/`d` 多選。`8. 設定` 的儲存目錄輸入 `?` 即可瀏覽挑選。
+- **可強制使用 cfdialog**：`config --set force_cfdialog=true`（或設定面板第 10 項）讓選檔直接走 cfdialog、略過 `tkinter`。有些環境 `tkinter` 能 import 卻彈不出視窗，自動順序會先卡在一個不回應的視窗，這時強制才派得上用場。
 - **10 種介面語言**。
 
 ---

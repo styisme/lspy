@@ -4,6 +4,22 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.25.0] - 2026-11-15
+
+### 新增
+
+- **强制使用 cfdialog 的开关**：新增配置键 `force_cfdialog`（默认 `false`），打开后选文件直接走 cfdialog 终端浏览器，**跳过 `tkinter`** —— 有些机器上 `tkinter` 能 `import` 却弹不出窗（缺 Tcl 数据、无 DISPLAY、或有窗口但被远程桌面吞掉焦点），此时自动降级顺序反而会先卡在一个不响应的窗口里。开关可在 `8. 设置` 的第 10 项一键切换，也可 `config --set force_cfdialog=true`（接受 `1/true/yes/on`）。
+- 设置面板新增「选文件方式」一行摘要：`自动（tkinter → cfdialog）` / `强制 cfdialog（跳过 tkinter）`，不用记配置文件里放过什么。
+
+### 变更
+
+- 词表新增 4 个键（`cfg_dialog`、`cfg_dialog_auto`、`cfg_dialog_force`、`cfg_menu_force_cfdialog`），10 种语言全覆盖，键数 184 → 188；设置菜单的选项从 9 项扩到 10 项，选择提示同步改为 `[0-10]`。
+- 强制只改变**尝试顺序**，不改变失败语义：`force_cfdialog` 打开但库不在（例如有人把 `cfdialog.py` 删了）时，仍然回退到「手敲逗号分隔路径」，不会把用户锁死在一个不可用的选择器上。
+
+### 测试
+
+- 新增 3 个用例：开着强制时即使 `tkinter` 可导入也不得调用它（用会在被调用时抛错的 stub 断言）、强制但缺库时仍能手敲路径、`force_cfdialog` 从 `CONFIG_DEFAULTS` 与 `config --set` 两个方向都能进来。测试总数 84 → 87。
+
 ## [1.24.0] - 2026-11-15
 
 ### 新增

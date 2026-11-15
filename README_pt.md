@@ -5,7 +5,7 @@
 > Uma implementação de linha de comando do protocolo LocalSend. Arquivo único, sem dependências de terceiros: LocalSend no celular, um comando no computador. Inclui retransmissão entre redes via ntfy.sh.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.24.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.25.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -29,7 +29,7 @@ Este projeto foi amplamente desenvolvido com auxílio de modelos de linguagem. R
 - **Página web de partilha** (envio / descarga / texto, portada do watchsend; a página segue o `Accept-Language` do navegador), **10 idiomas de interface**.
 - **Histórico e depuração** (também do watchsend): `history --delete N` / `--clear` / `--unzip N` (ZIP marcado 📦, proteção Zip Slip), `--debug-keys` mostra as chaves i18n em bruto.
 - **Detalhes na receção**: `.txt` recebidos até 10 KB vão direto para a área de transferência (desativável com `clipboard_text`), o histórico é limitado por `history_max` (300 por predefinição) e `info` mostra ainda `[IPv6]:porta`.
-- **Seleção de ficheiros sem tkinter**: o [cfdialog](https://github.com/styisme/cfdialog) 0.3.0 incluído (MIT, ficheiro único) substitui a caixa tkinter por um navegador de terminal (números, `g` partições, `h` ocultos, `a`/`c`/`d` seleção múltipla); `?` na pasta de receção abre o navegador de pastas.
+- **Seleção de ficheiros sem tkinter**: o [cfdialog](https://github.com/styisme/cfdialog) 0.3.0 incluído (MIT, ficheiro único) substitui a caixa tkinter por um navegador de terminal (números, `g` partições, `h` ocultos, `a`/`c`/`d` seleção múltipla); `?` na pasta de receção abre o navegador de pastas. `config --set force_cfdialog=true` força o navegador de terminal e ignora o tkinter.
 
 ---
 

@@ -937,5 +937,60 @@ class TestDialogPicker(unittest.TestCase):
             self.assertIn(code, packs)
 
 
+    def test_force_cfdialog_skips_tkinter(self):
+        """打开 force_cfdialog 后，即使 tkinter 能导入也不许弹它。"""
+        import types
+        stub = types.ModuleType("tkinter")
+
+        def _boom(*a, **k):
+            raise AssertionError("force_cfdialog 开着还去用 tkinter")
+
+        stub.Tk = _boom
+        fake_fd = types.ModuleType("tkinter.filedialog")
+        fake_fd.askopenfilenames = _boom
+        stub.filedialog = fake_fd
+
+        orig_tk = sys.modules.get("tkinter")
+        orig_fd = sys.modules.get("tkinter.filedialog")
+        sys.modules["tkinter"] = stub
+        sys.modules["tkinter.filedialog"] = fake_fd
+
+        def restore():
+            for name, old in (("tkinter", orig_tk), ("tkinter.filedialog", orig_fd)):
+                if old is None: sys.modules.pop(name, None)
+                else: sys.modules[name] = old
+
+        self.addCleanup(restore)
+        self._install(self._FakeCf(files=[Path("/a/one.txt")]))
+        lspy.set_config("force_cfdialog", True)
+        self.addCleanup(lspy.set_config, "force_cfdialog", None)
+        self.assertEqual(lspy.pick_files(), [str(Path("/a/one.txt"))])
+
+    def test_force_cfdialog_still_allows_typed_paths(self):
+        """强制 cfdialog 不等于把用户锁死：库没了照样能手敲。"""
+        import builtins
+        from unittest import mock
+        self._install(False)
+        orig_tk = sys.modules.get("tkinter")
+        sys.modules["tkinter"] = None
+        self.addCleanup(lambda: sys.modules.__setitem__("tkinter", orig_tk) if orig_tk else sys.modules.pop("tkinter", None))
+        lspy.set_config("force_cfdialog", True)
+        self.addCleanup(lspy.set_config, "force_cfdialog", None)
+        with mock.patch.object(builtins, "input", lambda prompt="": 'x.bin'):
+            self.assertEqual(lspy.pick_files(), ["x.bin"])
+
+    def test_force_cfdialog_is_a_real_config_key(self):
+        """开关得能从 CONFIG_DEFAULTS 和 config --set 两个方向进来。"""
+        self.assertFalse(lspy.CONFIG_DEFAULTS["force_cfdialog"])
+        args = type("A", (), {"reset": False, "show": False, "set": "force_cfdialog=1"})()
+        lspy.set_config("force_cfdialog", None)
+        orig_stdout = sys.stdout
+        sys.stdout = open(os.devnull, "w")
+        try: lspy.cmd_config(args)
+        finally:
+            sys.stdout.close(); sys.stdout = orig_stdout
+        self.assertTrue(lspy.get_config("force_cfdialog"))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

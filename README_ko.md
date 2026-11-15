@@ -5,7 +5,7 @@
 > LocalSend 프로토콜의 CLI 구현. 단일 파일, 서드파티 의존성 없음. 휴대폰은 LocalSend, PC는 명령 한 줄로 파일 송수신. ntfy.sh를 통한 크로스 네트워크 중계 지원.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.24.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.25.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -29,7 +29,7 @@
 - **Web 공유 페이지**(업로드 / 다운로드 / 텍스트, watchsend 이식; 페이지는 브라우저 `Accept-Language` 를 따름), **10개 UI 언어**.
 - **기록 및 디버그**(역시 watchsend 이식): `history --delete N` / `--clear` / `--unzip N`(ZIP 은 📦, Zip Slip 방지 포함), `--debug-keys` 로 i18n 원본 키 표시.
 - **수신 편의**: 10 KB 이하 `.txt`는 수신 즉시 클립보드로 복사되며(`clipboard_text`로 끌 수 있음), 기록은 `history_max`(기본 300)로 오래된 항목부터 정리되고 `info`는 `[IPv6]:포트`도 함께 출력합니다.
-- **tkinter 없이도 파일 선택**: 내장된 [cfdialog](https://github.com/styisme/cfdialog) 0.3.0(MIT, 단일 파일)이 tkinter 대화상자 대신 터미널 브라우저를 띄웁니다(번호 이동, `g` 파티션, `h` 숨김 파일, `a`/`c`/`d` 다중 선택). 저장 폴더 설정에서 `?`를 입력하면 폴더 탐색이 열립니다.
+- **tkinter 없이도 파일 선택**: 내장된 [cfdialog](https://github.com/styisme/cfdialog) 0.3.0(MIT, 단일 파일)이 tkinter 대화상자 대신 터미널 브라우저를 띄웁니다(번호 이동, `g` 파티션, `h` 숨김 파일, `a`/`c`/`d` 다중 선택). 저장 폴더 설정에서 `?`를 입력하면 폴더 탐색이 열립니다. `config --set force_cfdialog=true`로 터미널 브라우저를 강제할 수 있습니다(tkinter는 건너뜁니다).
 
 ---
 
