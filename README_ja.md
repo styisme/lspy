@@ -5,7 +5,7 @@
 > LocalSend プロトコルの CLI 実装。単一ファイル・サードパーティ依存ゼロ。スマホは LocalSend、PC はコマンド 1 本でファイル送受信。ntfy.sh 経由のクロスネットワーク中継にも対応。
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.27.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.28.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -27,6 +27,9 @@
 - **TLS**: `lspy cert` で自己署名証明書を生成、送受信とも HTTPS 可。
 - **クロスネットワーク**: ntfy.sh 経由。2400 バイト分割、3 回リトライ、SHA-256 + 長さの末尾検証。
 - **Web 共有ページ**（アップロード / ダウンロード / テキスト、watchsend 由来。ページはブラウザの `Accept-Language` に従う）と **10 言語 UI**。
+- **ファイル単位の sha256 検証**（公式の `createChecksums` / `verifyChecksums` に合わせる）: 送信側が `files[].sha256` に各ファイルのハッシュを入れ、`verify_checksum` を有効にした受信側が公式と同じ方法で検証します。不一致なら `422 Checksum mismatch` を返し、保存済みファイルを削除します。平文 HTTP 送信時は暗号化されていないことも表示します。
+- **ネットワーク診断**（公式 `troubleshoot_page` 由来）: `lspy troubleshoot` またはメニュー `9` で、ポートを待ち受けできるか、ローカルアドレス（IPv4 優先、`fe80` リンクローカルは除外）、Windows ファイアウォールの `netsh advfirewall ... localport=` ルールを表示し、AP 分離でマルチキャストが遮断されても HTTP スキャンは使えることを説明します。
+- **ランダム別名と設定可能なデバイス情報**（公式 `alias_generator` と `deviceType` / `deviceModel` に相当）: 初回起動時に「形容詞＋果物」の別名を生成して保存し、ホスト名を LAN に公開しません。`device_type` / `device_model` で `info` が通知する種類とモデルを決め、設定の 11・12 でも変更できます。
 - **履歴とデバッグ**（こちらも watchsend 由来）: `history --delete N` / `--clear` / `--unzip N`（ZIP は 📦、Zip Slip 対策込み）、`--debug-keys` で i18n の生キーを表示。
 - **受信まわりの小改善**: 10 KB 以下の `.txt` は受信時にクリップボードへ自動コピー（`clipboard_text` で無効化可）、履歴は `history_max`（既定 300）で古い順に切り捨て、`info` は `[IPv6]:ポート` も表示。
 - **tkinter なしでもファイル選択**: 同梱の [cfdialog](https://github.com/styisme/cfdialog) 0.3.0（MIT・単一ファイル）が tkinter の代わりに端末ブラウザを開きます（番号で移動、`g` でパーティション、`h` で隠しファイル、`a`/`c`/`d` で複数選択）。保存先の設定で `?` を入力するとフォルダ参照が開きます。 `config --set force_cfdialog=true` で端末ブラウザを強制できます（tkinter は使わない）。 Android では tkinter を飛ばして（Tk が入っていないことが多い）すぐ端末ブラウザを開きます。

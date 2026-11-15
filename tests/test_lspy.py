@@ -110,7 +110,26 @@ class TestConfigAndI18n(unittest.TestCase):
         lspy.set_config("alias", "unit-test")
         self.assertEqual(lspy.get_alias(), "unit-test")
         lspy.set_config("alias", None)
-        self.assertEqual(lspy.get_alias(), lspy.__dict__["socket"].gethostname())
+        # 1.28.0：未设别名时生成「形容词+水果」，不再直接广播主机名
+        alias = lspy.get_alias()
+        self.assertTrue(alias and alias.strip())
+        self.assertEqual(lspy.get_alias(), alias, "随机别名应当落盘，第二次读到同一个")
+        self.assertEqual(lspy.load_config()["alias"], alias)
+
+    def test_random_alias_shape_and_uniqueness(self):
+        """生成的别名用词表拼出来，随机多次不会永远是同一个。"""
+        lspy.set_config("alias", None)
+        seen = {lspy.generate_alias() for _ in range(30)}
+        self.assertGreater(len(seen), 3, seen)
+
+    def test_device_type_and_model_are_configurable(self):
+        """官方 deviceType/deviceModel 设置：广播出去的值要跟着配置走。"""
+        self.assertEqual(lspy.build_self_info()["deviceType"], "desktop")
+        lspy.set_config("device_type", "headless")
+        lspy.set_config("device_model", "lspy appliance")
+        info = lspy.build_self_info()
+        self.assertEqual(info["deviceType"], "headless")
+        self.assertEqual(info["deviceModel"], "lspy appliance")
 
     def test_fingerprint_is_stable(self):
         fp1 = lspy.get_fingerprint()
@@ -466,6 +485,70 @@ class TestProtocol(unittest.TestCase):
         return {"info": {"alias": "tester", "fingerprint": "fp-test"},
                 "files": {"f1": {"id": "f1", "fileName": name, "size": size,
                                  "fileType": "application/octet-stream"}}}
+
+    def _prepare(self, base, name, size, sha=None):
+        body = self._files_body(name, size)
+        if sha: body["files"]["f1"]["sha256"] = sha
+        return self._post(f"{base}/api/localsend/v2/prepare-upload", body)
+
+    def _upload(self, base, sid, fid, token, data):
+        url = (f"{base}/api/localsend/v2/upload?sessionId={sid}"
+               f"&fileId={fid}&token={token}&resume=0")
+        req = urllib.request.Request(url, data=data, method="POST")
+        req.add_header("Content-Type", "application/octet-stream")
+        try:
+            with urllib.request.urlopen(req, timeout=5) as r:
+                return r.status
+        except urllib.error.HTTPError as e:
+            return e.code
+
+    def test_receive_rejects_checksum_mismatch(self):
+        """官方语义：files[].sha256 不符时回 422，且不留下错误文件。"""
+        payload = b"checksum target payload"
+        bad = "0" * 64
+        with ServerPair() as sp:
+            _, resp = self._prepare(sp.base, "ck.txt", len(payload), sha=bad)
+            sid = resp["sessionId"]; tok = resp["files"]["f1"]
+            self.assertEqual(self._upload(sp.base, sid, "f1", tok, payload), 422)
+            self.assertEqual(list(Path(sp.tmp).rglob("ck.txt")), [])
+
+    def test_receive_accepts_matching_checksum(self):
+        import hashlib as _h
+        payload = b"checksum target payload"
+        good = _h.sha256(payload).hexdigest()
+        with ServerPair() as sp:
+            _, resp = self._prepare(sp.base, "ck2.txt", len(payload), sha=good)
+            sid = resp["sessionId"]; tok = resp["files"]["f1"]
+            self.assertEqual(self._upload(sp.base, sid, "f1", tok, payload), 200)
+            got = list(Path(sp.tmp).rglob("ck2.txt"))
+            self.assertTrue(got, "文件应当落盘")
+            self.assertEqual(got[0].read_bytes(), payload)
+
+    def test_send_carries_sha256_in_request(self):
+        """发送端要在 prepare-upload 的 files 里带上 sha256（官方 createChecksums 的对应）。"""
+        import hashlib as _h
+        payload = b"send checksum payload"
+        seen = {}
+        real = lspy._post_json
+
+        def spy(url, body=None, *a, **kw):
+            if "/prepare-upload" in url or "/send-request" in url:
+                seen.update(body or {})
+            return real(url, body, *a, **kw)
+
+        src = Path(tempfile.mkdtemp()) / "sck.bin"
+        src.write_bytes(payload)
+        lspy._post_json = spy
+        try:
+            with ServerPair() as sp:
+                self.assertTrue(lspy.send_files(sp.device(), [str(src)]))
+        finally:
+            lspy._post_json = real
+            shutil.rmtree(src.parent, ignore_errors=True)
+        files = seen["files"]
+        self.assertEqual(len(files), 1, files)
+        info = next(iter(files.values()))
+        self.assertEqual(info["sha256"], _h.sha256(payload).hexdigest())
 
     def test_send_request_v21_flow(self):
         with ServerPair() as sp:
@@ -1207,6 +1290,41 @@ class TestInteractiveInvite(unittest.TestCase):
         with mock.patch.object(sys, "stdin", _Piped()), \
              mock.patch.object(builtins, "input", lambda prompt="": "typed"):
             self.assertEqual(lspy._prompt("q: "), "typed")
+
+
+class TestTroubleshoot(unittest.TestCase):
+    """移植自官方 troubleshoot_page：端口、本机地址、防火墙提示都要给出来。"""
+
+    def setUp(self):
+        lspy.reset_config()
+
+    def _run(self):
+        import contextlib
+        import io
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            lspy.troubleshoot()
+        return buf.getvalue()
+
+    def test_reports_port_and_addresses(self):
+        out = self._run()
+        self.assertIn(lspy.t("ts_title"), out)
+        self.assertIn(str(lspy.DEFAULT_PORT), out)
+        self.assertTrue(lspy.t("ts_ifaces").split("{")[0].strip() in out)
+
+    def test_subcommand_is_wired(self):
+        import contextlib
+        import io
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            lspy.main(["troubleshoot"])
+        self.assertIn(lspy.t("ts_title"), buf.getvalue())
+
+    def test_windows_prints_netsh_rule(self):
+        if not sys.platform.startswith("win"):
+            self.skipTest("netsh 提示只在 Windows 上有")
+        out = self._run()
+        self.assertIn("netsh advfirewall firewall add rule", out)
 
 
 if __name__ == "__main__":

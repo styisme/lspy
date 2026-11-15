@@ -272,6 +272,10 @@ File: `~/.lspy/config.json`, edited via `lspy config --set k=v`.
 | `fingerprint` | generated | Device fingerprint, regenerated if removed |
 | `debug_keys` | `false` | Debug keys mode: render raw i18n keys in the UI |
 | `force_cfdialog` | `false` | Send file selection straight to cfdialog, skipping tkinter (still falls back to typed paths without the library) |
+| `send_checksum` | `true` | Put every file's sha256 into `files[].sha256` when sending |
+| `verify_checksum` | `true` | Check the peer's `sha256` on receive; mismatch answers `422` and drops the saved file |
+| `device_type` | `None` (inferred as `desktop`) | Advertised device type: `mobile/desktop/web/headless/server` |
+| `device_model` | `None` (`Python x.y on <platform>`) | Advertised device model string |
 
 ---
 
@@ -289,6 +293,8 @@ Server routes (prefix `/api/localsend/v2`, also mounted under `/v1`):
 | `/cancel` | POST | Abort a session and clean partial files |
 
 The sender prefers `send-request` → `send`, falling back to `prepare-upload` → `upload` on 404/405. The cross-network channel uses ntfy JSON messages, 2400-byte chunks, with a `__SHA256__:<hash>:<len>` trailer.
+
+**Checksums**: `FileDto.sha256` is the optional lowercase-hex field defined in the official `packages/core/src/model/transfer.rs`. With `send_checksum=true` the sender fills it from `_sha256_file()` per file; with `verify_checksum=true` the receiver recomputes and compares after writing, deletes the file on mismatch and answers `422 {"error": "checksum mismatch"}` — the same semantics as the official `SaveResult::HashMismatch` → `StatusCode::UNPROCESSABLE_ENTITY`.
 
 Web share page (the whole group 404s when `web_enable` is off; with a PIN set every call needs it as the `pin` query parameter or the `X-LocalSend-Pin` header):
 

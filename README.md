@@ -5,7 +5,7 @@
 > LocalSend 协议的命令行实现。单文件、零第三方依赖，手机上跑 LocalSend，电脑上一条命令收发文件；也能借 ntfy.sh 做跨网中继。
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.27.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.28.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-brightgreen)]()
@@ -22,7 +22,7 @@
 
 ## 📦 版本与来源
 
-当前版本：**v1.27.2**（版本号唯一来源为 [CHANGELOG.md](CHANGELOG.md)，由 CI 校验并注入）。
+当前版本：**v1.28.0**（版本号唯一来源为 [CHANGELOG.md](CHANGELOG.md)，由 CI 校验并注入）。
 
 本项目是 LocalSend 协议的**独立命令行实现**，从零编写，不复制官方 App（Apache-2.0）源码，仅在协议层与其互通，详见 [LICENSE-LocalSend](LICENSE-LocalSend)。同族的图形端实现见 [OldSend](https://github.com/styisme/oldsend) 与 [WatchSend](https://github.com/styisme/watchsend)，lspy 与其共享协议思路，代码互不依赖。
 
@@ -54,6 +54,9 @@
 - **文件选择器不必靠 tkinter**：内置 [cfdialog](https://github.com/styisme/cfdialog) 0.3.0（MIT，单文件、纯标准库），选文件顺序是 `tkinter` → cfdialog 的终端浏览器 → 手敲路径。没有 `tkinter` 数据文件的精简 Python 与单文件程序里，也能用数字进目录、`g` 切分区、`h` 显示隐藏文件、`a`/`c`/`d` 多选；`8. 设置` 的保存目录输入 `?` 即可浏览挑目录。 Android 上自动跳过 `tkinter`（手机上的 Python 基本不带 Tk），直接走 cfdialog。
 - **可强制使用 cfdialog**：`config --set force_cfdialog=true`（或 `8. 设置` 第 10 项）让选文件直接走 cfdialog、跳过 `tkinter`。有些机器 `tkinter` 能 import 却弹不出窗（缺 Tcl 数据、没有 DISPLAY、窗口被远程桌面吞掉焦点），自动顺序会先卡在一个不响应的窗口里，这时强制才靠谱。
 - **10 种界面语言**：简/繁中文、英、日、韩、德、法、西、俄、葡。
+- **文件 sha256 校验**（对齐官方 `createChecksums` / `verifyChecksums`）：发送时在 `files[].sha256` 里带上每个文件的哈希，接收端开着 `verify_checksum` 就按官方语义校验，不符回 `422 Checksum mismatch` 并把落盘文件删掉；纯 http 发送时会提示这段流量未加密。
+- **网络排查**（移植自官方 `troubleshoot_page`）：`lspy troubleshoot` 或菜单 `9` 检查端口能否监听、列出本机地址（IPv4 优先、隐去 fe80 链路本地）、给出 Windows 防火墙的 `netsh advfirewall ... localport=` 放行命令，并说明组播被 AP 隔离时 HTTP 扫描仍可用。
+- **随机别名与可配设备形态**（对齐官方 `alias_generator` 与 `deviceType` / `deviceModel`）：首次运行自动生成「形容词+水果」别名并落盘，不再把主机名广播到局域网；`device_type` / `device_model` 决定 `info` 里广播的设备类型与型号，设置面板第 11、12 项同样可改。
 
 ---
 - **任意界面接收**：菜单、设置、选文件等任何输入点都会盯着接收队列，一有设备发文件就立刻弹出接受申请；`auto_accept` 打开时不问直接进接收详情，收完按回车回到原来的界面。
@@ -113,7 +116,7 @@ lspy cross-recv 123456 -d ./incoming         # 另一端凭 PIN 接收
 | `lspy open FILES...` / `lspy cert` / `lspy stun` | 打开、证书、公网探测 |
 | `lspy config [--show] [--set k=v] [--reset]` | 配置管理 |
 
-配置文件位于 `~/.lspy/`（`config.json`、`history.jsonl`、`lspy.log`、`cert.pem` / `key.pem`）。常用键：`alias`、`port`、`save_dir`、`pin`、`auto_accept`、`filter_ext`、`whitelist` / `blacklist`、`auto_accept_whitelist`、`use_https`、`web_enable`、`organize_by_type`、`history_enable`、`auto_unzip`、`open_after_receive`、`lang`、`ntfy_topic`、`log_level`、`fingerprint`、`debug_keys`、`force_cfdialog`，完整说明见 [CONTRIBUTING.md](CONTRIBUTING.md#配置项)。
+配置文件位于 `~/.lspy/`（`config.json`、`history.jsonl`、`lspy.log`、`cert.pem` / `key.pem`）。常用键：`alias`、`port`、`save_dir`、`pin`、`auto_accept`、`filter_ext`、`whitelist` / `blacklist`、`auto_accept_whitelist`、`use_https`、`web_enable`、`organize_by_type`、`history_enable`、`auto_unzip`、`open_after_receive`、`lang`、`ntfy_topic`、`log_level`、`fingerprint`、`debug_keys`、`force_cfdialog`、`send_checksum` / `verify_checksum`、`device_type` / `device_model`，完整说明见 [CONTRIBUTING.md](CONTRIBUTING.md#配置项)。
 
 协议端点一览（`/api/localsend/{v1,v2}/…`）：`info`、`register`、`prepare-upload`、`send-request`、`upload`、`send`、`cancel`，以及 Web 分享页 `/` 与 `/web/info`、`/web/files`、`/web/download`、`/web/upload`、`/web/text`、`/web/clipboard`。细节见 [CONTRIBUTING.md](CONTRIBUTING.md#协议实现)。
 
@@ -125,7 +128,7 @@ lspy cross-recv 123456 -d ./incoming         # 另一端凭 PIN 接收
 
 ```bash
 pip install .                                  # 安装为 lspy
-python -m unittest discover -s tests -v        # 101 个用例：单元 + 端到端
+python -m unittest discover -s tests -v        # 109 个用例：单元 + 端到端
 python scripts/sync_version.py --check         # 校验版本号与 CHANGELOG 一致
 pip install pyinstaller && python scripts/build_binary.py   # 打包单文件可执行程序
 ```

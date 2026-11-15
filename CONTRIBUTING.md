@@ -273,6 +273,10 @@ Closes #123
 | `fingerprint` | 自动生成 | 设备指纹，删除后自动重建 |
 | `debug_keys` | `false` | 调试键模式：界面显示原始 i18n 键名 |
 | `force_cfdialog` | `false` | 选文件强制走 cfdialog，跳过 tkinter（库缺失时仍回退手敲路径） |
+| `send_checksum` | `true` | 发送时在 `files[].sha256` 里附上每个文件的 sha256 |
+| `verify_checksum` | `true` | 接收时校验对方给的 `sha256`，不符回 `422` 并删掉落盘文件 |
+| `device_type` | `None`（按平台推断 `desktop`） | 广播的设备类型：`mobile/desktop/web/headless/server` |
+| `device_model` | `None`（`Python x.y on <platform>`） | 广播的设备型号字符串 |
 
 ---
 
@@ -290,6 +294,8 @@ Closes #123
 | `/cancel` | POST | 取消会话，清理半成品 |
 
 发送端优先 `send-request` → `send`；遇 404/405 回退 `prepare-upload` → `upload`。跨网通道用 ntfy 消息 JSON，分块 2400 字节，尾包携带 `__SHA256__:<hash>:<len>`。
+
+**校验和**：`FileDto.sha256` 是官方 `packages/core/src/model/transfer.rs` 定义的可选字段（小写 hex）。发送端 `send_checksum=true` 时逐文件填 `_sha256_file()` 的结果，接收端 `verify_checksum=true` 时在文件写完后重算并比对，不符删文件并返回 `422 {"error": "checksum mismatch"}`，与官方 `SaveResult::HashMismatch` → `StatusCode::UNPROCESSABLE_ENTITY` 一致。
 
 Web 分享页（`web_enable` 关闭时整组 404；设了 PIN 时全部要求 `pin` 查询参数或 `X-LocalSend-Pin` 请求头）：
 

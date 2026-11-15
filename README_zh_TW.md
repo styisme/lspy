@@ -5,7 +5,7 @@
 > LocalSend 協定的命令列實作。單檔、零第三方依賴：手機跑 LocalSend，電腦一行指令收發檔案；另可透過 ntfy.sh 做跨網中繼。
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.27.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.28.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -19,7 +19,7 @@
 
 ## 📦 版本與來源
 
-目前版本：**v1.27.2**（版本號唯一來源為 [CHANGELOG.md](CHANGELOG.md)，由 CI 驗證並注入）。
+目前版本：**v1.28.0**（版本號唯一來源為 [CHANGELOG.md](CHANGELOG.md)，由 CI 驗證並注入）。
 
 本專案為 LocalSend 協定的獨立命令列實作，自零撰寫，未複製官方 App 原始碼，僅於協定層互通。
 
@@ -42,6 +42,9 @@
 - **檔案選擇不再依賴 tkinter**：內建 [cfdialog](https://github.com/styisme/cfdialog) 0.3.0（MIT，單檔、純標準庫），選檔順序為 `tkinter` → cfdialog 終端瀏覽器 → 手動輸入路徑；可用數字進目錄、`g` 切分區、`h` 顯示隱藏檔、`a`/`c`/`d` 多選。`8. 設定` 的儲存目錄輸入 `?` 即可瀏覽挑選。 Android 上自動略過 `tkinter`（手機上的 Python 通常不帶 Tk），直接走 cfdialog。
 - **可強制使用 cfdialog**：`config --set force_cfdialog=true`（或設定面板第 10 項）讓選檔直接走 cfdialog、略過 `tkinter`。有些環境 `tkinter` 能 import 卻彈不出視窗，自動順序會先卡在一個不回應的視窗，這時強制才派得上用場。
 - **10 種介面語言**。
+- **檔案 sha256 校驗**（對齊官方 `createChecksums` / `verifyChecksums`）：傳送時在 `files[].sha256` 裡帶上每個檔案的雜湊，接收端開啟 `verify_checksum` 就依官方語意校驗，不符回 `422 Checksum mismatch` 並刪掉落盤檔案；純 http 傳送時會提示這段流量未加密。
+- **網路排查**（移植自官方 `troubleshoot_page`）：`lspy troubleshoot` 或選單 `9` 檢查連接埠能否監聽、列出本機位址（IPv4 優先、隱去 fe80 鏈路本地位址）、給出 Windows 防火牆的 `netsh advfirewall ... localport=` 放行指令，並說明群播被 AP 隔離時 HTTP 掃描仍可用。
+- **隨機別名與可設定裝置形態**（對齊官方 `alias_generator` 與 `deviceType` / `deviceModel`）：首次執行自動產生「形容詞+水果」別名並落盤，不再把主機名廣播到區域網路；`device_type` / `device_model` 決定 `info` 裡廣播的裝置類型與型號，設定面板第 11、12 項同樣可改。
 
 ---
 - **任意介面接收**：選單、設定、選檔案等任何輸入點都會盯著接收佇列，一有裝置發檔案就立刻彈出接受申請；`auto_accept` 開啟時不問直接進接收詳情，收完按 Enter 回到原本的介面。

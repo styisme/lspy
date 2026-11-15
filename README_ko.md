@@ -5,7 +5,7 @@
 > LocalSend 프로토콜의 CLI 구현. 단일 파일, 서드파티 의존성 없음. 휴대폰은 LocalSend, PC는 명령 한 줄로 파일 송수신. ntfy.sh를 통한 크로스 네트워크 중계 지원.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.27.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.28.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -27,6 +27,9 @@
 - **TLS**: `lspy cert`로 자체 서명 인증서 생성, 양쪽 모두 HTTPS 사용 가능.
 - **크로스 네트워크**: ntfy.sh 경유, 2400바이트 청크, 3회 재시도, SHA-256 + 길이 꼬리 검증.
 - **Web 공유 페이지**(업로드 / 다운로드 / 텍스트, watchsend 이식; 페이지는 브라우저 `Accept-Language` 를 따름), **10개 UI 언어**.
+- **파일별 sha256 검증**（공식 `createChecksums` / `verifyChecksums` 와 동일）: 보내는 쪽이 `files[].sha256` 에 각 파일 해시를 넣고, `verify_checksum` 이 켜진 받는 쪽이 공식과 같은 방식으로 검증합니다. 불일치하면 `422 Checksum mismatch` 를 반환하고 저장된 파일을 삭제합니다. 평문 HTTP 전송 시 암호화되지 않았음을 알려 줍니다.
+- **네트워크 진단**（공식 `troubleshoot_page` 이식）: `lspy troubleshoot` 또는 메뉴 `9` 로 포트를 열 수 있는지 확인하고, 로컬 주소(IPv4 우선, `fe80` 링크 로컬 제외)를 나열하며, Windows 방화벽 `netsh advfirewall ... localport=` 규칙을 출력합니다. AP 격리로 멀티캐스트가 막혀도 HTTP 스캔은 동작한다는 점도 알려 줍니다.
+- **무작위 별칭과 설정 가능한 기기 정보**（공식 `alias_generator`, `deviceType` / `deviceModel` 대응）: 첫 실행 시 "형용사+과일" 별칭을 생성해 저장하므로 호스트 이름이 LAN 에 노출되지 않습니다. `device_type` / `device_model` 이 `info` 에 알리는 유형과 모델을 정하며 설정 11·12 번에서도 바꿀 수 있습니다.
 - **기록 및 디버그**(역시 watchsend 이식): `history --delete N` / `--clear` / `--unzip N`(ZIP 은 📦, Zip Slip 방지 포함), `--debug-keys` 로 i18n 원본 키 표시.
 - **수신 편의**: 10 KB 이하 `.txt`는 수신 즉시 클립보드로 복사되며(`clipboard_text`로 끌 수 있음), 기록은 `history_max`(기본 300)로 오래된 항목부터 정리되고 `info`는 `[IPv6]:포트`도 함께 출력합니다.
 - **tkinter 없이도 파일 선택**: 내장된 [cfdialog](https://github.com/styisme/cfdialog) 0.3.0(MIT, 단일 파일)이 tkinter 대화상자 대신 터미널 브라우저를 띄웁니다(번호 이동, `g` 파티션, `h` 숨김 파일, `a`/`c`/`d` 다중 선택). 저장 폴더 설정에서 `?`를 입력하면 폴더 탐색이 열립니다. `config --set force_cfdialog=true`로 터미널 브라우저를 강제할 수 있습니다(tkinter는 건너뜁니다). Android에서는 tkinter를 건너뛰고(Tk가 거의 없음) 바로 터미널 브라우저를 엽니다.

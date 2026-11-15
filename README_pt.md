@@ -5,7 +5,7 @@
 > Uma implementação de linha de comando do protocolo LocalSend. Arquivo único, sem dependências de terceiros: LocalSend no celular, um comando no computador. Inclui retransmissão entre redes via ntfy.sh.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.27.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.28.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -27,6 +27,9 @@ Este projeto foi amplamente desenvolvido com auxílio de modelos de linguagem. R
 - **TLS**: `lspy cert` gera um par autoassinado; ambos os lados podem usar HTTPS.
 - **Entre redes**: via ntfy.sh, blocos de 2400 bytes, 3 tentativas, SHA-256 final.
 - **Página web de partilha** (envio / descarga / texto, portada do watchsend; a página segue o `Accept-Language` do navegador), **10 idiomas de interface**.
+- **sha256 por ficheiro** (igual a `createChecksums` / `verifyChecksums`): o emissor coloca o hash de cada ficheiro em `files[].sha256` e o recetor com `verify_checksum` verifica-o como o oficial — se não coincidir devolve `422 Checksum mismatch` e o ficheiro guardado é descartado. Em http simples avisa também que o tráfego não vai cifrado.
+- **Diagnóstico de rede** (portado de `troubleshoot_page`): `lspy troubleshoot` ou a opção `9` do menu verifica se a porta pode ser escutada, lista os endereços locais (IPv4 primeiro, `fe80` oculto), imprime a regra de firewall do Windows `netsh advfirewall ... localport=` e lembra que o scan HTTP continua a funcionar quando o multicast é bloqueado por isolamento de AP.
+- **Alias aleatório e perfil de dispositivo configurável** (como `alias_generator` e `deviceType` / `deviceModel`): o primeiro arranque gera um alias «adjetivo + fruta» e guarda-o, pelo que o nome do host deixa de ser difundido na LAN; `device_type` / `device_model` definem o tipo e o modelo anunciados em `info`, também alteráveis nas opções 11 e 12 das definições.
 - **Histórico e depuração** (também do watchsend): `history --delete N` / `--clear` / `--unzip N` (ZIP marcado 📦, proteção Zip Slip), `--debug-keys` mostra as chaves i18n em bruto.
 - **Detalhes na receção**: `.txt` recebidos até 10 KB vão direto para a área de transferência (desativável com `clipboard_text`), o histórico é limitado por `history_max` (300 por predefinição) e `info` mostra ainda `[IPv6]:porta`.
 - **Seleção de ficheiros sem tkinter**: o [cfdialog](https://github.com/styisme/cfdialog) 0.3.0 incluído (MIT, ficheiro único) substitui a caixa tkinter por um navegador de terminal (números, `g` partições, `h` ocultos, `a`/`c`/`d` seleção múltipla); `?` na pasta de receção abre o navegador de pastas. `config --set force_cfdialog=true` força o navegador de terminal e ignora o tkinter. No Android o tkinter é ignorado (raramente inclui Tk) e o navegador arranca de imediato.

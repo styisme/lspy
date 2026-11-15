@@ -5,7 +5,7 @@
 > Eine Kommandozeilen-Implementierung des LocalSend-Protokolls. Eine Datei, keine Fremdabhängigkeiten: LocalSend auf dem Handy, eine Zeile auf dem Rechner. Inklusive Relay über ntfy.sh für geräteübergreifende Netze.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.27.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.28.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -27,6 +27,9 @@ Dieses Projekt wurde stark mit KI-Unterstützung entwickelt. Anforderungen, Revi
 - **TLS**: `lspy cert` erzeugt ein selbstsigniertes Paar; beide Seiten können HTTPS nutzen.
 - **Cross-Network**: über ntfy.sh, 2400-Byte-Chunks, 3 Versuche, SHA-256-Prüfsumme am Ende.
 - **Web-Freigabeseite** (Hochladen / Herunterladen / Text, aus watchsend portiert; die Seite folgt `Accept-Language` der Browsersprache), **10 UI-Sprachen**.
+- **sha256-Prüfsummen pro Datei** (wie `createChecksums` / `verifyChecksums`): der Sender legt den Hash jeder Datei in `files[].sha256` ab, ein Empfänger mit `verify_checksum` prüft ihn wie offiziell — bei Abweichung `422 Checksum mismatch`, die gespeicherte Datei wird verworfen. Bei reinem HTTP wird zusätzlich gewarnt, dass der Verkehr unverschlüsselt ist.
+- **Netzwerkdiagnose** (aus der offiziellen `troubleshoot_page`): `lspy troubleshoot` oder Menüpunkt `9` prüft, ob der Port belegt werden kann, listet lokale Adressen (IPv4 zuerst, `fe80`-Link-Local ausgeblendet), gibt die Windows-Firewall-Regel `netsh advfirewall ... localport=` aus und weist darauf hin, dass der HTTP-Scan bei AP-Isolation weiter funktioniert.
+- **Zufälliger Alias und konfigurierbares Geräteprofil** (wie `alias_generator` und `deviceType` / `deviceModel`): der erste Start erzeugt einen Alias aus Adjektiv und Frucht und speichert ihn, sodass der Hostname nicht mehr ins LAN gesendet wird; `device_type` / `device_model` bestimmen Typ und Modell in `info`, auch über die Einstellungen 11 und 12.
 - **Verlauf & Debug** (ebenfalls aus watchsend): `history --delete N` / `--clear` / `--unzip N` (ZIP mit 📦, Zip-Slip-Schutz), `--debug-keys` zeigt rohe i18n-Schlüssel.
 - **Kleine Empfangshilfen**: empfangene `.txt` bis 10 KB landen automatisch in der Zwischenablage (über `clipboard_text` abschaltbar), der Verlauf wird per `history_max` (Standard 300) gekürzt, und `info` zeigt zusätzlich `[IPv6]:Port`.
 - **Dateiauswahl ohne tkinter**: mitgeliefertes [cfdialog](https://github.com/styisme/cfdialog) 0.3.0 (MIT, eine Datei, nur Standardbibliothek) ersetzt den tkinter-Dialog durch einen Terminal-Browser (Nummern, `g` Partitionen, `h` versteckt, `a`/`c`/`d` Mehrfachauswahl); `?` beim Speicherordner öffnet den Ordner-Browser. Mit `config --set force_cfdialog=true` lässt sich der Terminal-Browser erzwingen (tkinter wird übersprungen). Unter Android wird tkinter übersprungen (dort fehlt Tk meist), der Browser startet sofort.

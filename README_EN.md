@@ -5,7 +5,7 @@
 > A command-line implementation of the LocalSend protocol. One file, zero third-party dependencies: LocalSend on your phone, one command on your desktop. Cross-network relay over ntfy.sh included.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.27.2-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.28.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-brightgreen)]()
@@ -22,7 +22,7 @@
 
 ## 📦 Version & Origin
 
-Current version: **v1.27.2** (single source of truth is [CHANGELOG.md](CHANGELOG.md), verified and injected by CI).
+Current version: **v1.28.0** (single source of truth is [CHANGELOG.md](CHANGELOG.md), verified and injected by CI).
 
 lspy is an **independent command-line implementation** of the LocalSend protocol, written from scratch. It does not copy the official app (Apache-2.0) sources and only interoperates at the protocol level — see [LICENSE-LocalSend](LICENSE-LocalSend). Sibling GUI implementations: [OldSend](https://github.com/styisme/oldsend) and [WatchSend](https://github.com/styisme/watchsend); they share protocol ideas but no code.
 
@@ -54,6 +54,9 @@ lspy is an **independent command-line implementation** of the LocalSend protocol
 - **File picker without tkinter**: bundled [cfdialog](https://github.com/styisme/cfdialog) 0.3.0 (MIT, one file, stdlib only) takes over when `tkinter` is missing — a terminal browser with numbered entries, `g` for partitions, `h` for hidden files, `a`/`c`/`d` for multi-select; typing `?` at the save-dir setting opens a folder browser. On Android `tkinter` is skipped altogether — mobile Python builds rarely ship Tk — and the picker goes straight to cfdialog.
 - **Force the cfdialog picker**: `config --set force_cfdialog=true` (or item 10 in `8. Settings`) sends file selection straight to cfdialog and skips `tkinter`. On machines where `tkinter` imports but never shows a window (missing Tcl data, no DISPLAY, a window swallowed by remote desktop), the automatic order stalls on a dead dialog first — this is the way out.
 - **10 UI languages**: zh, zh_TW, en, ja, ko, de, fr, es, ru, pt.
+- **Per-file sha256 checksums** (matching the official `createChecksums` / `verifyChecksums`): the sender puts each file's hash into `files[].sha256`, and a receiver with `verify_checksum` enabled checks it the official way — a mismatch returns `422 Checksum mismatch` and the saved file is discarded. Plain-http sends also warn that this traffic is unencrypted.
+- **Network troubleshoot** (ported from the official `troubleshoot_page`): `lspy troubleshoot` or menu item `9` checks whether the port can be listened on, lists local addresses (IPv4 first, `fe80` link-local hidden), prints the Windows firewall `netsh advfirewall ... localport=` rule, and notes that the HTTP scan still works when multicast is blocked by AP isolation.
+- **Random alias and configurable device shape** (matching the official `alias_generator` and `deviceType` / `deviceModel`): the first run generates an "adjective + fruit" alias and stores it, so the hostname is no longer broadcast to the LAN; `device_type` / `device_model` set the device type and model advertised in `info`, and settings items 11 and 12 change them too.
 
 ---
 - **Receive from any screen**: every input point (menu, settings, file picker) watches the invite queue, so an incoming transfer pops the accept prompt immediately. With `auto_accept` on it skips the prompt and goes straight to the receive detail; press Enter afterwards to return to the screen you came from.
@@ -113,7 +116,7 @@ lspy cross-recv 123456 -d ./incoming      # peer enters the PIN
 | `lspy open FILES...` / `lspy cert` / `lspy stun` | Open, certificates, public-IP probe |
 | `lspy config [--show] [--set k=v] [--reset]` | Manage settings |
 
-Runtime data lives in `~/.lspy/` (`config.json`, `history.jsonl`, `lspy.log`, `cert.pem`/`key.pem`). Common keys: `alias`, `port`, `save_dir`, `pin`, `auto_accept`, `filter_ext`, `whitelist`/`blacklist`, `auto_accept_whitelist`, `use_https`, `web_enable`, `organize_by_type`, `history_enable`, `auto_unzip`, `open_after_receive`, `lang`, `ntfy_topic`, `log_level`, `fingerprint`, `debug_keys`, `force_cfdialog`.
+Runtime data lives in `~/.lspy/` (`config.json`, `history.jsonl`, `lspy.log`, `cert.pem`/`key.pem`). Common keys: `alias`, `port`, `save_dir`, `pin`, `auto_accept`, `filter_ext`, `whitelist`/`blacklist`, `auto_accept_whitelist`, `use_https`, `web_enable`, `organize_by_type`, `history_enable`, `auto_unzip`, `open_after_receive`, `lang`, `ntfy_topic`, `log_level`, `fingerprint`, `debug_keys`, `force_cfdialog`, `send_checksum` / `verify_checksum`, `device_type` / `device_model`.
 
 Protocol endpoints (`/api/localsend/{v1,v2}/…`): `info`, `register`, `prepare-upload`, `send-request`, `upload`, `send`, `cancel`, plus the web share page at `/` and `/web/info`, `/web/files`, `/web/download`, `/web/upload`, `/web/text`, `/web/clipboard`.
 
@@ -125,7 +128,7 @@ A single-file Python project with no third-party dependencies; packaging uses th
 
 ```bash
 pip install .
-python -m unittest discover -s tests -v       # 101 cases: unit + end-to-end
+python -m unittest discover -s tests -v       # 109 cases: unit + end-to-end
 python scripts/sync_version.py --check         # version matches CHANGELOG.md
 pip install pyinstaller && python scripts/build_binary.py   # standalone executable
 ```

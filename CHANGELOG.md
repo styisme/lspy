@@ -4,6 +4,30 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.28.0] - 2026-11-15
+
+### 新增（从 LocalSend 官方源码移植）
+
+对照 `localsend-main` 的 `app/lib`（Flutter UI）与 `cli/src`，挑出 CLI 真正用得上的三处：
+
+- **文件级 sha256 校验**：官方 `FileDto` 带 `sha256` 字段（`packages/core/src/model/transfer.rs`），发送端开 `createChecksums` 时填，接收端开 `verifyChecksums` 时校验，不符返回 `422 Checksum mismatch`（`http/server/v2.rs`）。lspy 现在对齐这套语义：不是「有 sha256 就校验」而是按配置决定。
+- **网络排查**：移植官方 `pages/troubleshoot_page.dart` 的思路 —— 先看端口能否监听（`WinError 10013` / `EADDRINUSE` 是用户最常撞的墙），再列本机地址，最后给出官方同款的 `netsh advfirewall firewall add rule name="..." dir=in action=allow protocol=TCP localport=...` 命令。
+- **随机别名**：对应 `util/alias_generator.dart` 的「形容词+水果」组合（词表按界面语言切换）。**这是一处行为变化**：以前没设别名会直接广播主机名，现在首次运行生成别名并写进配置，主机名不再进局域网。
+
+### 变更
+
+- `files[].sha256`：`send_checksum`（默认开）控制发送时是否附哈希，`verify_checksum`（默认开）控制接收时是否校验；两者在设置面板第 13 项一起切换。
+- `device_type` / `device_model`：对应官方 `deviceType` / `deviceModel`，默认仍按平台推断为 `desktop` 与 `Python x.y on <platform>`，设置面板第 11、12 项可改，取值 `mobile` / `desktop` / `web` / `headless` / `server`。
+- 纯 http 发送时多一行未加密提示（官方 `encryption_disabled_notice` 的 CLI 版）。
+- `troubleshoot` 子命令 + 菜单第 `9` 项；`config --set` 认识 `send_checksum` / `verify_checksum`。
+- i18n 223 键 ×10 语言（新增 26 键）。测试 101 → 109。
+
+### 验证
+
+- 云主机真机：`serve --auto-accept` 起接收端，`send` 发 4 KB 文件 → 落盘、内容一致（说明发送端带的 sha256 被接收端校验通过）；手工构造 `sha256` 全 0 的 `prepare-upload` + `upload` → **422**，且落盘文件被删除。
+- Linux 上 `troubleshoot` 走非 Windows 分支，输出端口 / 地址 / 防火墙提示 / 组播四段；Windows 上额外打印两条 `netsh` 放行命令。
+- 清空 `alias` 后首跑 `info` 得到 `Brave Apple` 一类别名并写入配置文件。
+
 ## [1.27.2] - 2026-11-15
 
 ### 修复

@@ -42,7 +42,7 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.27.2"
+VERSION = "1.28.0"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
@@ -64,7 +64,22 @@ CONFIG_DEFAULTS = {
     "history_enable": True, "auto_unzip": False, "history_max": 300,
     "clipboard_text": True, "open_after_receive": False, "log_level": "INFO",
     "force_cfdialog": False,
+    # 与官方一致的完整性选项：发送时在 files[].sha256 里带上哈希，
+    # 接收端开着 verify_checksum 就会校验（官方 verifyChecksums 的语义）
+    "send_checksum": True, "verify_checksum": True,
+    # 对外广播的设备类型/型号（官方 deviceType/deviceModel 设置），None 表示按平台推断
+    "device_type": None, "device_model": None,
 }
+
+# 随机别名用的词表，仿 LocalSend 的「形容词 + 水果」组合，避免直接把主机名广播到局域网
+ALIAS_ADJECTIVES = ["安静的", "飞快的", "开心的", "机智的", "温柔的", "勇敢的",
+                    "闪亮的", "轻快的", "神秘的", "友好的"]
+ALIAS_FRUITS = ["苹果", "香蕉", "樱桃", "柠檬", "芒果", "桃子", "梨", "橙子",
+                "葡萄", "西瓜", "蓝莓", "猕猴桃"]
+ALIAS_ADJECTIVES_EN = ["Quiet", "Swift", "Cheerful", "Clever", "Gentle", "Brave",
+                       "Shiny", "Lively", "Mystic", "Friendly"]
+ALIAS_FRUITS_EN = ["Apple", "Banana", "Cherry", "Lemon", "Mango", "Peach", "Pear",
+                   "Orange", "Grape", "Melon", "Berry", "Kiwi"]
 
 SUPPORTED_LANGS = ["zh", "zh_TW", "en", "ja", "ko", "de", "fr", "es", "ru", "pt"]
 IS_IDLE = 'idlelib' in sys.modules
@@ -112,6 +127,32 @@ I18N = {
         "menu_serve": "Start receive service (foreground)", "menu_send": "Send files to device",
         "menu_cross_send": "Cross-network send (ntfy.sh)", "menu_cross_recv": "Cross-network receive (ntfy.sh)",
         "menu_history": "History", "menu_config": "Settings", "menu_exit": "Exit",
+        "menu_troubleshoot": "Troubleshoot network",
+        "ts_title": "Network troubleshoot",
+        "ts_port_ok": "Port {p} is free, the service can listen on it",
+        "ts_port_busy": "Cannot listen on port {p}: {e}",
+        "ts_port_own": "Port {p} is already listened on by another local program (often the official LocalSend desktop app)",
+        "ts_port_alt": "Change the port to {p} in settings first",
+        "ts_ifaces": "Local addresses: {a} (the phone must be on the same subnet)",
+        "ts_fw_rule": "A firewall rule for lspy already exists",
+        "ts_fw_hint": "The firewall may block inbound connections. Allow them with (admin required):",
+        "ts_fw_hint_nix": "If you cannot connect, check that the firewall allows TCP/UDP {p}",
+        "ts_mc": "Multicast {g}:{p} (AP isolation blocks discovery; the HTTP scan still works)",
+        "ts_net_tip": "Is the phone on the same Wi-Fi? Routers with AP isolation or a guest network block devices from seeing each other.",
+        "alias_combination": "{a} {f}",
+        "plain_http_send": "Unencrypted transfer: traffic to {d} travels as plaintext on the local network",
+        "checksum_bad": "sha256 mismatch, file discarded: {f}",
+        "cfg_on": "on",
+        "cfg_off": "off",
+        "cfg_devtype": "Device type",
+        "cfg_devmodel": "Device model",
+        "cfg_send_ck": "Send sha256",
+        "cfg_verify_ck": "Verify sha256",
+        "cfg_menu_devtype": "Change device type",
+        "cfg_menu_devmodel": "Change device model",
+        "cfg_menu_checksum": "Toggle sha256 checksums",
+        "cfg_devtype_choice": "Pick device type [{choices}]: ",
+        "cfg_prompt_devmodel": "Device model [{d}]: ",
         "choose_prompt": "Select [{choices}]: ", "invalid_option": "Invalid option",
         "bye": "Bye", "scanning_short": "Scanning LAN...", "scanning_long": "Scanning LAN (timeout {t}s)...",
         "scan_none": "No devices found", "scan_found_n": "Found {n} device(s):", "found_device": "Found: {d}",
@@ -204,6 +245,32 @@ I18N = {
         "menu_info": "显示本机信息", "menu_scan": "扫描附近设备", "menu_serve": "启动接收服务（前台）",
         "menu_send": "发送文件到设备", "menu_cross_send": "跨网发送（ntfy.sh）", "menu_cross_recv": "跨网接收（ntfy.sh）",
         "menu_history": "历史记录", "menu_config": "设置", "menu_exit": "退出",
+        "menu_troubleshoot": "网络排查",
+        "ts_title": "网络排查",
+        "ts_port_ok": "端口 {p} 可以监听（没有被占用）",
+        "ts_port_busy": "端口 {p} 无法监听：{e}",
+        "ts_port_own": "端口 {p} 已被本机另一个程序占用（常见：官方 LocalSend 桌面版）",
+        "ts_port_alt": "可以先在设置里把端口改成 {p}",
+        "ts_ifaces": "本机地址：{a}（手机需在同一网段）",
+        "ts_fw_rule": "防火墙里已经有 lspy 的放行规则",
+        "ts_fw_hint": "防火墙可能拦了入站连接，用下面的命令放行（需要管理员权限）：",
+        "ts_fw_hint_nix": "如果连不上，检查防火墙是否放行了 TCP/UDP {p}",
+        "ts_mc": "组播 {g}:{p}（被 AP 隔离时会搜不到设备，但 HTTP 扫描仍可用）",
+        "ts_net_tip": "手机连的是同一个 Wi‑Fi 吗？开了「AP 隔离」或访客网络的路由器会挡住设备互见。",
+        "alias_combination": "{a}{f}",
+        "plain_http_send": "未加密传输：与 {d} 之间的流量在局域网里是明文",
+        "checksum_bad": "sha256 校验不符，已丢弃该文件：{f}",
+        "cfg_on": "开",
+        "cfg_off": "关",
+        "cfg_devtype": "设备类型",
+        "cfg_devmodel": "设备型号",
+        "cfg_send_ck": "发送时附带 sha256",
+        "cfg_verify_ck": "接收时校验 sha256",
+        "cfg_menu_devtype": "修改设备类型",
+        "cfg_menu_devmodel": "修改设备型号",
+        "cfg_menu_checksum": "切换 sha256 校验",
+        "cfg_devtype_choice": "选择设备类型 [{choices}]: ",
+        "cfg_prompt_devmodel": "设备型号 [{d}]: ",
         "choose_prompt": "请选择 [{choices}]: ", "invalid_option": "无效选项", "bye": "已退出",
         "scanning_short": "正在扫描局域网...", "scanning_long": "扫描网络（超时 {t}s）...",
         "scan_none": "未发现设备", "scan_found_n": "共发现 {n} 个设备：", "found_device": "发现：{d}",
@@ -293,6 +360,32 @@ I18N = {
         "menu_serve": "Empfangsdienst starten (Vordergrund)", "menu_send": "Dateien an Gerät senden",
         "menu_cross_send": "Senden über Netzwerke hinweg (ntfy.sh)", "menu_cross_recv": "Empfangen über Netzwerke hinweg (ntfy.sh)",
         "menu_history": "Verlauf", "menu_config": "Einstellungen", "menu_exit": "Beenden",
+        "menu_troubleshoot": "Netzwerkdiagnose",
+        "ts_title": "Netzwerkdiagnose",
+        "ts_port_ok": "Port {p} ist frei, der Dienst kann darauf lauschen",
+        "ts_port_busy": "Port {p} kann nicht belegt werden: {e}",
+        "ts_port_own": "Port {p} wird bereits von einem anderen lokalen Programm belegt (oft die offizielle LocalSend-Desktop-App)",
+        "ts_port_alt": "Ändere den Port in den Einstellungen zuerst auf {p}",
+        "ts_ifaces": "Lokale Adressen: {a} (das Telefon muss im selben Subnetz sein)",
+        "ts_fw_rule": "Eine Firewall-Regel für lspy existiert bereits",
+        "ts_fw_hint": "Die Firewall blockiert eventuell eingehende Verbindungen. Freigeben mit (Administrator nötig):",
+        "ts_fw_hint_nix": "Wenn keine Verbindung zustande kommt, prüfe, ob die Firewall TCP/UDP {p} erlaubt",
+        "ts_mc": "Multicast {g}:{p} (AP-Isolation verhindert die Erkennung, der HTTP-Scan funktioniert weiter)",
+        "ts_net_tip": "Ist das Telefon im selben WLAN? Router mit AP-Isolation oder Gästenetz verhindern, dass sich Geräte sehen.",
+        "alias_combination": "{a} {f}",
+        "plain_http_send": "Unverschlüsselte Übertragung: der Verkehr zu {d} läuft im lokalen Netz als Klartext",
+        "checksum_bad": "sha256 stimmt nicht überein, Datei verworfen: {f}",
+        "cfg_on": "an",
+        "cfg_off": "aus",
+        "cfg_devtype": "Gerätetyp",
+        "cfg_devmodel": "Gerätemodell",
+        "cfg_send_ck": "sha256 mitsenden",
+        "cfg_verify_ck": "sha256 prüfen",
+        "cfg_menu_devtype": "Gerätetyp ändern",
+        "cfg_menu_devmodel": "Gerätemodell ändern",
+        "cfg_menu_checksum": "sha256-Prüfung umschalten",
+        "cfg_devtype_choice": "Gerätetyp wählen [{choices}]: ",
+        "cfg_prompt_devmodel": "Gerätemodell [{d}]: ",
         "choose_prompt": "Auswahl [{choices}]: ", "invalid_option": "Ungültige Auswahl",
         "bye": "Beendet", "scanning_short": "Suche im LAN...", "scanning_long": "Suche im LAN (Timeout {t}s)...",
         "scan_none": "Keine Geräte gefunden", "scan_found_n": "{n} Gerät(e) gefunden:", "found_device": "Gefunden: {d}",
@@ -386,6 +479,32 @@ I18N = {
         "menu_serve": "Démarrer le service de réception (premier plan)", "menu_send": "Envoyer des fichiers à un appareil",
         "menu_cross_send": "Envoi inter-réseaux (ntfy.sh)", "menu_cross_recv": "Réception inter-réseaux (ntfy.sh)",
         "menu_history": "Historique", "menu_config": "Paramètres", "menu_exit": "Quitter",
+        "menu_troubleshoot": "Diagnostic réseau",
+        "ts_title": "Diagnostic du réseau",
+        "ts_port_ok": "Le port {p} est libre, le service peut écouter dessus",
+        "ts_port_busy": "Impossible d'écouter sur le port {p} : {e}",
+        "ts_port_own": "Le port {p} est déjà écouté par un autre programme local (souvent l'app LocalSend officielle)",
+        "ts_port_alt": "Changez d'abord le port en {p} dans les réglages",
+        "ts_ifaces": "Adresses locales : {a} (le téléphone doit être sur le même sous-réseau)",
+        "ts_fw_rule": "Une règle de pare-feu pour lspy existe déjà",
+        "ts_fw_hint": "Le pare-feu bloque peut-être les connexions entrantes. Autorisez-les avec (admin requis) :",
+        "ts_fw_hint_nix": "Si la connexion échoue, vérifiez que le pare-feu autorise TCP/UDP {p}",
+        "ts_mc": "Multicast {g}:{p} (l'isolation AP bloque la découverte, le scan HTTP fonctionne encore)",
+        "ts_net_tip": "Le téléphone est-il sur le même Wi-Fi ? L'isolation AP ou un réseau invité empêche les appareils de se voir.",
+        "alias_combination": "{a} {f}",
+        "plain_http_send": "Transfert non chiffré : le trafic vers {d} circule en clair sur le réseau local",
+        "checksum_bad": "sha256 différent, fichier supprimé : {f}",
+        "cfg_on": "activé",
+        "cfg_off": "désactivé",
+        "cfg_devtype": "Type d'appareil",
+        "cfg_devmodel": "Modèle d'appareil",
+        "cfg_send_ck": "Envoyer le sha256",
+        "cfg_verify_ck": "Vérifier le sha256",
+        "cfg_menu_devtype": "Changer le type d'appareil",
+        "cfg_menu_devmodel": "Changer le modèle d'appareil",
+        "cfg_menu_checksum": "Basculer les sommes sha256",
+        "cfg_devtype_choice": "Choisir le type d'appareil [{choices}] : ",
+        "cfg_prompt_devmodel": "Modèle d'appareil [{d}] : ",
         "choose_prompt": "Choix [{choices}] : ", "invalid_option": "Option invalide",
         "bye": "Au revoir", "scanning_short": "Analyse du réseau local...", "scanning_long": "Analyse du réseau local (délai {t}s)...",
         "scan_none": "Aucun appareil trouvé", "scan_found_n": "{n} appareil(s) trouvé(s) :", "found_device": "Trouvé : {d}",
@@ -479,6 +598,32 @@ I18N = {
         "menu_serve": "受信サービスを起動（前面）", "menu_send": "ファイルを端末へ送信",
         "menu_cross_send": "ネットワーク越し送信（ntfy.sh）", "menu_cross_recv": "ネットワーク越し受信（ntfy.sh）",
         "menu_history": "履歴", "menu_config": "設定", "menu_exit": "終了",
+        "menu_troubleshoot": "ネットワーク診断",
+        "ts_title": "ネットワーク診断",
+        "ts_port_ok": "ポート {p} は空いており、待ち受けできます",
+        "ts_port_busy": "ポート {p} を待ち受けできません: {e}",
+        "ts_port_own": "ポート {p} は既に別のローカルプログラム（多くの場合 LocalSend 公式デスクトップ版）が使用中です",
+        "ts_port_alt": "先に設定でポートを {p} に変更してください",
+        "ts_ifaces": "ローカルアドレス: {a}（スマートフォンが同じサブネットにある必要があります）",
+        "ts_fw_rule": "lspy 用のファイアウォール規則は既にあります",
+        "ts_fw_hint": "ファイアウォールが受信接続を遮断している可能性があります。次のコマンドで許可してください（管理者権限が必要）:",
+        "ts_fw_hint_nix": "接続できない場合は、ファイアウォールが TCP/UDP {p} を許可しているか確認してください",
+        "ts_mc": "マルチキャスト {g}:{p}（AP 分離があると検出できませんが、HTTP スキャンは使えます）",
+        "ts_net_tip": "スマートフォンは同じ Wi-Fi に接続していますか？AP 分離やゲストネットワークでは互いが見えません。",
+        "alias_combination": "{a}{f}",
+        "plain_http_send": "暗号化なし: {d} との通信はローカルネットワーク上を平文で流れます",
+        "checksum_bad": "sha256 が一致しないためファイルを破棄しました: {f}",
+        "cfg_on": "オン",
+        "cfg_off": "オフ",
+        "cfg_devtype": "デバイスの種類",
+        "cfg_devmodel": "デバイスのモデル",
+        "cfg_send_ck": "sha256 を送信",
+        "cfg_verify_ck": "sha256 を検証",
+        "cfg_menu_devtype": "デバイスの種類を変更",
+        "cfg_menu_devmodel": "デバイスのモデルを変更",
+        "cfg_menu_checksum": "sha256 検証の切り替え",
+        "cfg_devtype_choice": "デバイスの種類を選択 [{choices}]: ",
+        "cfg_prompt_devmodel": "デバイスのモデル [{d}]: ",
         "choose_prompt": "選択 [{choices}]: ", "invalid_option": "無効な選択",
         "bye": "終了しました", "scanning_short": "LAN を検索中...", "scanning_long": "LAN を検索中（タイムアウト {t} 秒）...",
         "scan_none": "端末が見つかりません", "scan_found_n": "{n} 台の端末が見つかりました:", "found_device": "検出: {d}",
@@ -572,6 +717,32 @@ I18N = {
         "menu_serve": "수신 서비스 시작 (포그라운드)", "menu_send": "기기로 파일 보내기",
         "menu_cross_send": "네트워크 간 전송 (ntfy.sh)", "menu_cross_recv": "네트워크 간 수신 (ntfy.sh)",
         "menu_history": "기록", "menu_config": "설정", "menu_exit": "종료",
+        "menu_troubleshoot": "네트워크 진단",
+        "ts_title": "네트워크 진단",
+        "ts_port_ok": "포트 {p}를 사용할 수 있습니다",
+        "ts_port_busy": "포트 {p}에서 대기할 수 없습니다: {e}",
+        "ts_port_own": "포트 {p}는 이미 다른 로컬 프로그램(보통 공식 LocalSend 데스크톱 앱)이 사용 중입니다",
+        "ts_port_alt": "먼저 설정에서 포트를 {p}로 변경하세요",
+        "ts_ifaces": "로컬 주소: {a} (휴대폰이 같은 서브넷에 있어야 합니다)",
+        "ts_fw_rule": "lspy용 방화벽 규칙이 이미 있습니다",
+        "ts_fw_hint": "방화벽이 들어오는 연결을 차단할 수 있습니다. 다음 명령으로 허용하세요(관리자 권한 필요):",
+        "ts_fw_hint_nix": "연결할 수 없다면 방화벽이 TCP/UDP {p}를 허용하는지 확인하세요",
+        "ts_mc": "멀티캐스트 {g}:{p} (AP 격리 시 검색이 안 되지만 HTTP 스캔은 계속 작동합니다)",
+        "ts_net_tip": "휴대폰이 같은 Wi-Fi에 연결되어 있나요? AP 격리나 게스트 네트워크는 기기끼리 보이지 않게 합니다.",
+        "alias_combination": "{a}{f}",
+        "plain_http_send": "암호화되지 않은 전송: {d}와의 트래픽이 로컬 네트워크에서 평문으로 흐릅니다",
+        "checksum_bad": "sha256이 일치하지 않아 파일을 삭제했습니다: {f}",
+        "cfg_on": "켜짐",
+        "cfg_off": "꺼짐",
+        "cfg_devtype": "기기 유형",
+        "cfg_devmodel": "기기 모델",
+        "cfg_send_ck": "sha256 전송",
+        "cfg_verify_ck": "sha256 검증",
+        "cfg_menu_devtype": "기기 유형 변경",
+        "cfg_menu_devmodel": "기기 모델 변경",
+        "cfg_menu_checksum": "sha256 검증 전환",
+        "cfg_devtype_choice": "기기 유형 선택 [{choices}]: ",
+        "cfg_prompt_devmodel": "기기 모델 [{d}]: ",
         "choose_prompt": "선택 [{choices}]: ", "invalid_option": "잘못된 선택",
         "bye": "종료되었습니다", "scanning_short": "LAN 검색 중...", "scanning_long": "LAN 검색 중 (제한 시간 {t}초)...",
         "scan_none": "기기를 찾지 못했습니다", "scan_found_n": "{n}대의 기기를 찾았습니다:", "found_device": "발견: {d}",
@@ -664,6 +835,32 @@ I18N = {
         "menu_info": "顯示本機資訊", "menu_scan": "掃描附近裝置", "menu_serve": "啟動接收服務（前景）",
         "menu_send": "傳送檔案到裝置", "menu_cross_send": "跨網傳送（ntfy.sh）", "menu_cross_recv": "跨網接收（ntfy.sh）",
         "menu_history": "歷史紀錄", "menu_config": "設定", "menu_exit": "離開",
+        "menu_troubleshoot": "網路排查",
+        "ts_title": "網路排查",
+        "ts_port_ok": "連接埠 {p} 可以監聽（沒有被佔用）",
+        "ts_port_busy": "連接埠 {p} 無法監聽：{e}",
+        "ts_port_own": "連接埠 {p} 已被本機另一個程式佔用（常見：官方 LocalSend 桌面版）",
+        "ts_port_alt": "可以先在設定裡把連接埠改成 {p}",
+        "ts_ifaces": "本機位址：{a}（手機需在同一網段）",
+        "ts_fw_rule": "防火牆裡已經有 lspy 的放行規則",
+        "ts_fw_hint": "防火牆可能攔了入站連線，用下面的指令放行（需要管理員權限）：",
+        "ts_fw_hint_nix": "如果連不上，檢查防火牆是否放行了 TCP/UDP {p}",
+        "ts_mc": "群播 {g}:{p}（被 AP 隔離時會搜不到裝置，但 HTTP 掃描仍可用）",
+        "ts_net_tip": "手機連的是同一個 Wi‑Fi 嗎？開啟「AP 隔離」或訪客網路的分享器會擋住裝置互見。",
+        "alias_combination": "{a}{f}",
+        "plain_http_send": "未加密傳輸：與 {d} 之間的流量在區域網路裡是明文",
+        "checksum_bad": "sha256 校驗不符，已丟棄該檔案：{f}",
+        "cfg_on": "開",
+        "cfg_off": "關",
+        "cfg_devtype": "裝置類型",
+        "cfg_devmodel": "裝置型號",
+        "cfg_send_ck": "傳送時附帶 sha256",
+        "cfg_verify_ck": "接收時校驗 sha256",
+        "cfg_menu_devtype": "修改裝置類型",
+        "cfg_menu_devmodel": "修改裝置型號",
+        "cfg_menu_checksum": "切換 sha256 校驗",
+        "cfg_devtype_choice": "選擇裝置類型 [{choices}]: ",
+        "cfg_prompt_devmodel": "裝置型號 [{d}]: ",
         "choose_prompt": "請選擇 [{choices}]: ", "invalid_option": "無效選項", "bye": "已離開",
         "scanning_short": "正在掃描區域網路...", "scanning_long": "掃描網路（逾時 {t}s）...",
         "scan_none": "未發現裝置", "scan_found_n": "共發現 {n} 個裝置：", "found_device": "發現：{d}",
@@ -753,6 +950,32 @@ I18N = {
         "menu_serve": "Iniciar servicio de recepción (primer plano)", "menu_send": "Enviar archivos a un dispositivo",
         "menu_cross_send": "Envío entre redes (ntfy.sh)", "menu_cross_recv": "Recepción entre redes (ntfy.sh)",
         "menu_history": "Historial", "menu_config": "Ajustes", "menu_exit": "Salir",
+        "menu_troubleshoot": "Diagnóstico de red",
+        "ts_title": "Diagnóstico de red",
+        "ts_port_ok": "El puerto {p} está libre, el servicio puede escuchar en él",
+        "ts_port_busy": "No se puede escuchar en el puerto {p}: {e}",
+        "ts_port_own": "El puerto {p} ya está en uso por otro programa local (a menudo la app oficial de LocalSend)",
+        "ts_port_alt": "Cambia primero el puerto a {p} en los ajustes",
+        "ts_ifaces": "Direcciones locales: {a} (el teléfono debe estar en la misma subred)",
+        "ts_fw_rule": "Ya existe una regla de firewall para lspy",
+        "ts_fw_hint": "El firewall puede bloquear conexiones entrantes. Permítelas con (requiere administrador):",
+        "ts_fw_hint_nix": "Si no puedes conectar, comprueba que el firewall permita TCP/UDP {p}",
+        "ts_mc": "Multicast {g}:{p} (el aislamiento AP bloquea el descubrimiento, el escaneo HTTP sigue funcionando)",
+        "ts_net_tip": "¿El teléfono está en la misma Wi-Fi? El aislamiento AP o una red de invitados impide que los dispositivos se vean.",
+        "alias_combination": "{a} {f}",
+        "plain_http_send": "Transferencia sin cifrar: el tráfico hacia {d} viaja en claro por la red local",
+        "checksum_bad": "sha256 no coincide, archivo descartado: {f}",
+        "cfg_on": "activado",
+        "cfg_off": "desactivado",
+        "cfg_devtype": "Tipo de dispositivo",
+        "cfg_devmodel": "Modelo del dispositivo",
+        "cfg_send_ck": "Enviar sha256",
+        "cfg_verify_ck": "Verificar sha256",
+        "cfg_menu_devtype": "Cambiar tipo de dispositivo",
+        "cfg_menu_devmodel": "Cambiar modelo del dispositivo",
+        "cfg_menu_checksum": "Alternar comprobaciones sha256",
+        "cfg_devtype_choice": "Elige el tipo de dispositivo [{choices}]: ",
+        "cfg_prompt_devmodel": "Modelo del dispositivo [{d}]: ",
         "choose_prompt": "Selecciona [{choices}]: ", "invalid_option": "Opción no válida",
         "bye": "Adiós", "scanning_short": "Buscando en la LAN...", "scanning_long": "Buscando en la LAN (límite {t}s)...",
         "scan_none": "No se encontraron dispositivos", "scan_found_n": "{n} dispositivo(s) encontrados:", "found_device": "Encontrado: {d}",
@@ -846,6 +1069,32 @@ I18N = {
         "menu_serve": "Запустить службу приёма (передний план)", "menu_send": "Отправить файлы на устройство",
         "menu_cross_send": "Отправка между сетями (ntfy.sh)", "menu_cross_recv": "Приём между сетями (ntfy.sh)",
         "menu_history": "История", "menu_config": "Настройки", "menu_exit": "Выход",
+        "menu_troubleshoot": "Диагностика сети",
+        "ts_title": "Диагностика сети",
+        "ts_port_ok": "Порт {p} свободен, служба может его слушать",
+        "ts_port_busy": "Не удалось прослушать порт {p}: {e}",
+        "ts_port_own": "Порт {p} уже слушает другая локальная программа (обычно официальное приложение LocalSend)",
+        "ts_port_alt": "Сначала смените порт на {p} в настройках",
+        "ts_ifaces": "Локальные адреса: {a} (телефон должен быть в той же подсети)",
+        "ts_fw_rule": "Правило брандмауэра для lspy уже есть",
+        "ts_fw_hint": "Брандмауэр может блокировать входящие подключения. Разрешите их командой (нужны права администратора):",
+        "ts_fw_hint_nix": "Если подключиться не удаётся, проверьте, разрешает ли брандмауэр TCP/UDP {p}",
+        "ts_mc": "Мультикаст {g}:{p} (изоляция на точке доступа мешает обнаружению, HTTP-скан работает)",
+        "ts_net_tip": "Телефон в той же Wi-Fi? Изоляция AP или гостевая сеть не дают устройствам видеть друг друга.",
+        "alias_combination": "{a} {f}",
+        "plain_http_send": "Передача без шифрования: трафик к {d} идёт по локальной сети открытым текстом",
+        "checksum_bad": "sha256 не совпадает, файл отброшен: {f}",
+        "cfg_on": "вкл",
+        "cfg_off": "выкл",
+        "cfg_devtype": "Тип устройства",
+        "cfg_devmodel": "Модель устройства",
+        "cfg_send_ck": "Отправлять sha256",
+        "cfg_verify_ck": "Проверять sha256",
+        "cfg_menu_devtype": "Изменить тип устройства",
+        "cfg_menu_devmodel": "Изменить модель устройства",
+        "cfg_menu_checksum": "Переключить проверку sha256",
+        "cfg_devtype_choice": "Выберите тип устройства [{choices}]: ",
+        "cfg_prompt_devmodel": "Модель устройства [{d}]: ",
         "choose_prompt": "Выбор [{choices}]: ", "invalid_option": "Неверный вариант",
         "bye": "Выход выполнен", "scanning_short": "Сканирование локальной сети...", "scanning_long": "Сканирование сети (таймаут {t}с)...",
         "scan_none": "Устройства не найдены", "scan_found_n": "Найдено устройств: {n}", "found_device": "Найдено: {d}",
@@ -939,6 +1188,32 @@ I18N = {
         "menu_serve": "Iniciar serviço de receção (primeiro plano)", "menu_send": "Enviar ficheiros para um dispositivo",
         "menu_cross_send": "Envio entre redes (ntfy.sh)", "menu_cross_recv": "Receção entre redes (ntfy.sh)",
         "menu_history": "Histórico", "menu_config": "Definições", "menu_exit": "Sair",
+        "menu_troubleshoot": "Diagnóstico de rede",
+        "ts_title": "Diagnóstico de rede",
+        "ts_port_ok": "A porta {p} está livre, o serviço pode escutar nela",
+        "ts_port_busy": "Não é possível escutar na porta {p}: {e}",
+        "ts_port_own": "A porta {p} já está a ser escutada por outro programa local (normalmente a app oficial do LocalSend)",
+        "ts_port_alt": "Altere primeiro a porta para {p} nas definições",
+        "ts_ifaces": "Endereços locais: {a} (o telefone tem de estar na mesma sub-rede)",
+        "ts_fw_rule": "Já existe uma regra de firewall para o lspy",
+        "ts_fw_hint": "A firewall pode bloquear ligações de entrada. Permita com (requer administrador):",
+        "ts_fw_hint_nix": "Se não conseguir ligar, verifique se a firewall permite TCP/UDP {p}",
+        "ts_mc": "Multicast {g}:{p} (o isolamento de AP bloqueia a descoberta, o scan HTTP continua a funcionar)",
+        "ts_net_tip": "O telefone está na mesma Wi-Fi? O isolamento de AP ou uma rede de convidados impede que os dispositivos se vejam.",
+        "alias_combination": "{a} {f}",
+        "plain_http_send": "Transferência não cifrada: o tráfego para {d} viaja em texto simples na rede local",
+        "checksum_bad": "sha256 não coincide, ficheiro descartado: {f}",
+        "cfg_on": "ligado",
+        "cfg_off": "desligado",
+        "cfg_devtype": "Tipo de dispositivo",
+        "cfg_devmodel": "Modelo do dispositivo",
+        "cfg_send_ck": "Enviar sha256",
+        "cfg_verify_ck": "Verificar sha256",
+        "cfg_menu_devtype": "Alterar tipo de dispositivo",
+        "cfg_menu_devmodel": "Alterar modelo do dispositivo",
+        "cfg_menu_checksum": "Alternar verificações sha256",
+        "cfg_devtype_choice": "Escolha o tipo de dispositivo [{choices}]: ",
+        "cfg_prompt_devmodel": "Modelo do dispositivo [{d}]: ",
         "choose_prompt": "Escolha [{choices}]: ", "invalid_option": "Opção inválida",
         "bye": "Até à próxima", "scanning_short": "A procurar na LAN...", "scanning_long": "A procurar na LAN (limite {t}s)...",
         "scan_none": "Nenhum dispositivo encontrado", "scan_found_n": "{n} dispositivo(s) encontrados:", "found_device": "Encontrado: {d}",
@@ -1190,16 +1465,50 @@ def get_fingerprint():
         save_config(cfg)
     return fp
 
+def generate_alias():
+    """生成「形容词+水果」别名；中文界面用中文词表，其余用英文。"""
+    lang = _current_lang or "en"
+    if lang in ("zh", "zh_TW"):
+        adj, fruits = ALIAS_ADJECTIVES, ALIAS_FRUITS
+    else:
+        adj, fruits = ALIAS_ADJECTIVES_EN, ALIAS_FRUITS_EN
+    return t("alias_combination", a=random.choice(adj), f=random.choice(fruits))
+
 def get_alias():
+    """未设别名时生成一个随机别名并落盘，不再直接把主机名广播出去。"""
     a = get_config("alias")
-    return a or socket.gethostname()
+    if a: return a
+    a = generate_alias()
+    cfg = load_config(); cfg["alias"] = a; save_config(cfg)
+    return a
+
+def get_device_type():
+    """官方 deviceType 的对应设置；None 时按平台推断。"""
+    v = get_config("device_type")
+    if v: return str(v)
+    if sys.platform.startswith(("win", "linux", "darwin", "freebsd")):
+        return "desktop"
+    return "mobile"
+
+def get_device_model():
+    v = get_config("device_model")
+    if v: return str(v)
+    return f"Python {sys.version.split()[0]} on {sys.platform}"
+
+def _sha256_file(path):
+    """流式算文件 sha256，大文件也不会整份读进内存。"""
+    h = hashlib.sha256()
+    with open(path, "rb") as fp:
+        for chunk in iter(lambda: fp.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 def build_self_info(port=None, protocol=None, download=False):
     """构造对外广播的本机信息；port/protocol 用于反映实际监听配置。"""
     return {
         "alias": get_alias(), "version": VERSION,
-        "deviceModel": f"Python {sys.version.split()[0]} on {sys.platform}",
-        "deviceType": "desktop", "fingerprint": get_fingerprint(),
+        "deviceModel": get_device_model(),
+        "deviceType": get_device_type(), "fingerprint": get_fingerprint(),
         "port": int(port if port is not None else get_config("port")),
         "protocol": protocol or ("https" if get_config("use_https") else "http"),
         "download": bool(download),
@@ -2016,7 +2325,8 @@ class LspyServer:
             # unique_path 保证永不覆盖既有文件，也避免“同名同大小即视为已完成”的静默跳过
             target = unique_path(tdir, safe_name)
             sess.files[fid] = {"fileName": fname, "size": size, "token": token,
-                               "path": target, "received": 0}
+                               "path": target, "received": 0,
+                               "sha256": (meta.get("sha256") or None)}
             tokens[fid] = token; resume[fid] = 0
         with self.lock: self.sessions[sid] = sess
         if not self.quiet_receive:
@@ -2350,6 +2660,21 @@ class LspyServer:
                         print("❌ " + t("integrity_fail", f=entry["fileName"]))
                         self._json(500, {"error": "size mismatch"}); return
 
+                    # 发送端在 files[].sha256 里带了哈希时按官方语义校验，
+                    # 不符就回 422 Checksum mismatch（官方 v2 服务端同一状态码）
+                    want = entry.get("sha256")
+                    if want and get_config("verify_checksum"):
+                        try: actual = _sha256_file(target)
+                        except OSError as e:
+                            _log.warning("checksum read failed: %s", e); actual = None
+                        if actual and actual.lower() != str(want).lower():
+                            print("❌ " + t("checksum_bad", f=entry["fileName"]))
+                            _log.warning("checksum mismatch %s: want %s got %s",
+                                         entry["fileName"], want, actual)
+                            try: target.unlink()
+                            except OSError: pass
+                            self._json(422, {"error": "checksum mismatch"}); return
+
                     sess.done.add(fid)
                     print(f"✅ {t('receive_done', f=entry['fileName'], p=target)}")
                     append_history(entry["fileName"], target, received, True)
@@ -2528,17 +2853,23 @@ def _upload_one(url, filepath, offset, size, total_size, sent_counter, lock):
 
 def send_files(device, filepaths, pin=None, threads=3):
     files_info, file_ids, total_size = {}, [], 0
+    checksum = bool(get_config("send_checksum"))
     for fp in filepaths:
         if not os.path.isfile(fp): print("⚠️  " + t("skip_missing", p=fp)); continue
         fid = hashlib.md5(f"{fp}{time.time()}{random.random()}".encode()).hexdigest()[:16]
         file_ids.append((fid, fp)); size = os.path.getsize(fp)
         mime, _ = mimetypes.guess_type(fp)
-        files_info[fid] = {"id": fid, "fileName": os.path.basename(fp), "size": size,
-                           "fileType": mime or "application/octet-stream"}
+        info = {"id": fid, "fileName": os.path.basename(fp), "size": size,
+                "fileType": mime or "application/octet-stream"}
+        if checksum:
+            try: info["sha256"] = _sha256_file(fp)
+            except OSError as e: _log.warning("checksum skipped for %s: %s", fp, e)
+        files_info[fid] = info
         total_size += size
 
     if not file_ids: print("❌ " + t("no_files")); return False
     if device.https: print("🔒 " + t("https_send"))
+    else: print("⚠️  " + t("plain_http_send", d=device.alias or device.ip))
 
     print("📤 " + t("send_preparing", n=len(file_ids), s=total_size, d=device))
     # 先向对方注册身份（部分接收端会据此显示设备并刷新会话）
@@ -2854,6 +3185,9 @@ def cmd_cert(args):
 def cmd_open(args):
     for p in args.files: _open_path(p)
 
+def cmd_troubleshoot(args):
+    troubleshoot()
+
 def cmd_config(args):
     if args.reset:
         reset_config(); print("✅ " + t("cfg_reset_done")); return
@@ -2869,7 +3203,7 @@ def cmd_config(args):
             elif k in ("auto_accept", "use_https", "web_enable", "organize_by_type",
                        "history_enable", "auto_unzip", "open_after_receive",
                        "auto_accept_whitelist", "debug_keys", "clipboard_text",
-                       "force_cfdialog"):
+                       "force_cfdialog", "send_checksum", "verify_checksum"):
                 v = v.lower() in ("1", "true", "yes", "on")
             elif k == "history_max":
                 if not v.isdigit():
@@ -2883,6 +3217,84 @@ def cmd_config(args):
     interactive_config()
 
 # ================== 交互菜单 ==================
+def _lan_addresses():
+    """本机在局域网里的地址；「手机搜不到我」时最常看的就是这一行。"""
+    out = []
+    # UDP connect 不发包，只是让内核选默认出口地址，能拿到真实网卡 IP
+    for fam, target in ((socket.AF_INET, MULTICAST_GROUP), (socket.AF_INET6, "ff02::1")):
+        try:
+            s = socket.socket(fam, socket.SOCK_DGRAM)
+            try:
+                s.connect((target, DEFAULT_PORT)); addr = s.getsockname()[0]
+            finally: s.close()
+            if addr and addr not in out: out.insert(0, addr)
+        except OSError: pass
+    try:
+        for info in socket.getaddrinfo(socket.gethostname(), None):
+            addr = info[4][0]
+            if addr and not addr.startswith("127.") and addr != "::1" and addr not in out:
+                out.append(addr)
+    except OSError: pass
+    # 链路本地 IPv6（fe80::）只会让人困惑，手机用不上；IPv4 排前面
+    out = [a for a in out if not a.lower().startswith("fe80")]
+    out.sort(key=lambda a: (":" in a, a))
+    return out
+
+
+def _firewall_rule_exists(name="lspy"):
+    """Windows 上查有没有我们加的那条入站规则；其他平台没有 netsh，直接返回 None。"""
+    if not sys.platform.startswith("win"): return None
+    try:
+        r = subprocess.run(["netsh", "advfirewall", "firewall", "show", "rule", f"name={name}"],
+                           capture_output=True, text=True, timeout=10)
+        return r.returncode == 0 and name in (r.stdout or "")
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def troubleshoot():
+    """参照官方 troubleshoot_page 的三类症状，用 CLI 能查的都给查一遍。"""
+    port = int(get_config("port") or DEFAULT_PORT)
+    print("\n" + "─" * 50); print(" 🩺 " + t("ts_title")); print("─" * 50)
+
+    # 1) 端口能不能绑：绑不上说明被占（官方桌面版同端口最常见）或没有权限
+    probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        probe.bind(("0.0.0.0", port))
+        print("✅ " + t("ts_port_ok", p=port))
+    except OSError as e:
+        print("❌ " + t("ts_port_busy", p=port, e=e))
+        try:
+            socket.create_connection(("127.0.0.1", port), timeout=1).close()
+            print("ℹ️ " + t("ts_port_own", p=port))
+        except OSError: pass
+        print("ℹ️ " + t("ts_port_alt", p=port + 1))
+    finally:
+        probe.close()
+
+    # 2) 本机地址：手机要和这些地址在同一网段才可能互见
+    addrs = _lan_addresses()
+    print("🌐 " + t("ts_ifaces", a=" ".join(addrs) if addrs else "—"))
+
+    # 3) 防火墙：官方在 Windows 上用 netsh 加 TCP/UDP 两条入站规则，这里只照抄命令
+    rule = _firewall_rule_exists()
+    if sys.platform.startswith("win"):
+        if rule: print("✅ " + t("ts_fw_rule"))
+        else: print("🔥 " + t("ts_fw_hint"))
+        print('    netsh advfirewall firewall add rule name="lspy" dir=in action=allow '
+              f'protocol=TCP localport={port}')
+        print('    netsh advfirewall firewall add rule name="lspy" dir=in action=allow '
+              f'protocol=UDP localport={port}')
+    else:
+        print("🔥 " + t("ts_fw_hint_nix", p=port))
+
+    # 4) 组播：搜不到设备常常是组播被交换机/AP 隔离拦了，HTTP 扫描仍可用
+    print("📡 " + t("ts_mc", g=MULTICAST_GROUP, p=DEFAULT_PORT))
+    print("ℹ️  " + t("ts_net_tip"))
+    print("─" * 50)
+
+
 def _apply_server_config(server):
     """把设置面板里的改动立刻作用到正在运行的接收服务。
 
@@ -2903,25 +3315,31 @@ def interactive_config(server=None):
     while True:
         _apply_server_config(server)
         cfg = load_config()
-        alias = cfg.get("alias") or f"{socket.gethostname()} {t('cfg_default')}"
+        alias = get_alias()
         port = cfg.get("port", DEFAULT_PORT); save_dir = cfg.get("save_dir", "./downloads")
         pin = cfg.get("pin") or t("cfg_none"); auto = cfg.get("auto_accept", True)
         fp = cfg.get("fingerprint", "?"); topic = cfg.get("ntfy_topic", CONFIG_DEFAULTS["ntfy_topic"])
         lang = I18N[_current_lang].get("lang_name", _current_lang)
         force_cf = bool(cfg.get("force_cfdialog", CONFIG_DEFAULTS["force_cfdialog"]))
         dialog_desc = t("cfg_dialog_force") if force_cf else t("cfg_dialog_auto")
+        dtype = get_device_type(); dmodel = get_device_model()
+        send_ck = bool(cfg.get("send_checksum", CONFIG_DEFAULTS["send_checksum"]))
+        verify_ck = bool(cfg.get("verify_checksum", CONFIG_DEFAULTS["verify_checksum"]))
+        onoff = lambda b: t("cfg_on") if b else t("cfg_off")
 
         print("\n" + "─" * 50); print(" ⚙️  " + t("cfg_title")); print("─" * 50)
         print(f"  {t('cfg_lang'):<12}: {lang}\n  {t('cfg_alias'):<12}: {alias}\n  {t('cfg_port'):<12}: {port}")
         print(f"  {t('cfg_savedir'):<12}: {save_dir}\n  {t('cfg_pin'):<12}: {pin}\n  {t('cfg_auto'):<12}: {auto}")
         print(f"  {t('cfg_dialog'):<12}: {dialog_desc}")
+        print(f"  {t('cfg_devtype'):<12}: {dtype}\n  {t('cfg_devmodel'):<12}: {dmodel}")
+        print(f"  {t('cfg_send_ck'):<12}: {onoff(send_ck)}\n  {t('cfg_verify_ck'):<12}: {onoff(verify_ck)}")
         print(f"  {t('cfg_topic'):<12}: {topic}\n  {t('cfg_fp'):<12}: {fp[:20]}...\n  {t('cfg_file'):<12}: {CONFIG_FILE}")
         print("─" * 50)
-        for i, k in enumerate(["cfg_menu_alias", "cfg_menu_port", "cfg_menu_savedir", "cfg_menu_pin", "cfg_menu_auto", "cfg_menu_topic", "cfg_menu_regen_fp", "cfg_menu_reset", "cfg_menu_lang", "cfg_menu_force_cfdialog"], 1):
+        for i, k in enumerate(["cfg_menu_alias", "cfg_menu_port", "cfg_menu_savedir", "cfg_menu_pin", "cfg_menu_auto", "cfg_menu_topic", "cfg_menu_regen_fp", "cfg_menu_reset", "cfg_menu_lang", "cfg_menu_force_cfdialog", "cfg_menu_devtype", "cfg_menu_devmodel", "cfg_menu_checksum"], 1):
             print(f" {i}. {t(k)}")
         print(f" 0. {t('cfg_menu_back')}"); print("─" * 50)
 
-        try: choice = _prompt(t("choose_prompt", choices="0-10")).strip()
+        try: choice = _prompt(t("choose_prompt", choices="0-13")).strip()
         except (EOFError, KeyboardInterrupt): return
 
         if choice == "0": return
@@ -2956,6 +3374,23 @@ def interactive_config(server=None):
         elif choice == "10":
             set_config("force_cfdialog", not force_cf)
             print("✅ " + t("cfg_dialog") + ": " + (t("cfg_dialog_force") if not force_cf else t("cfg_dialog_auto")) + " — " + t("cfg_set_done", k="force_cfdialog", v=str(not force_cf).lower()))
+        elif choice == "11":
+            # 官方 DeviceType：mobile / desktop / web / headless / server
+            types = ["mobile", "desktop", "web", "headless", "server"]
+            for i, c in enumerate(types, 1):
+                print(f" {i}. {c}" + (f" — {t('cfg_default')}" if c == "desktop" else ""))
+            try:
+                idx = int(_prompt(t("cfg_devtype_choice", choices=f"1-{len(types)}")).strip())
+                if 1 <= idx <= len(types): set_config("device_type", types[idx - 1])
+            except Exception: pass
+        elif choice == "12":
+            v = _prompt(t("cfg_prompt_devmodel", d=get_device_model())).strip()
+            set_config("device_model", v or None)
+        elif choice == "13":
+            send_ck = not send_ck
+            set_config("send_checksum", send_ck)
+            set_config("verify_checksum", send_ck)   # 两个开关一起翻，避免一个开一个关的困惑
+            print("✅ " + t("cfg_send_ck") + " / " + t("cfg_verify_ck") + ": " + onoff(send_ck))
 
 _CFDIALOG = None      # None=未加载；False=这台机器上没有可用的 cfdialog
 
@@ -3251,9 +3686,10 @@ def interactive_menu():
     while True:
         print("\n 1. " + t("menu_info") + "\n 2. " + t("menu_scan") + "\n 3. " + t("menu_serve_fg"))
         print(" 4. " + t("menu_send") + "\n 5. " + t("menu_cross_send") + "\n 6. " + t("menu_cross_recv"))
-        print(" 7. " + t("menu_history") + "\n 8. " + t("menu_config") + "\n 0. " + t("menu_exit"))
+        print(" 7. " + t("menu_history") + "\n 8. " + t("menu_config") + "\n 9. " + t("menu_troubleshoot"))
+        print(" 0. " + t("menu_exit"))
         try:
-            choice = _prompt(t("choose_prompt", choices="0-8")).strip()
+            choice = _prompt(t("choose_prompt", choices="0-9")).strip()
         except (EOFError, KeyboardInterrupt):
             print("\n👋 " + t("bye"))
             INTERACTIVE = False
@@ -3342,6 +3778,8 @@ def interactive_menu():
                     print("✅ " + t("cfg_port") + ": " + str(want))
                 except Exception as e:
                     print("❌ " + t("auto_start_fail", e=e))
+        elif choice == "9":
+            troubleshoot()
         else:
             print("⚠️ " + t("invalid_option"))
 
@@ -3405,6 +3843,9 @@ def _build_parser():
     p = sub.add_parser("config", help="show / set / reset configuration")
     p.add_argument("--show", action="store_true"); p.add_argument("--set")
     p.add_argument("--reset", action="store_true"); p.set_defaults(func=cmd_config)
+
+    p = sub.add_parser("troubleshoot", help="check port, addresses, firewall and multicast")
+    p.set_defaults(func=cmd_troubleshoot)
     return parser
 
 
