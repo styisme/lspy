@@ -5,7 +5,7 @@
 > LocalSend 프로토콜의 CLI 구현. 단일 파일, 서드파티 의존성 없음. 휴대폰은 LocalSend, PC는 명령 한 줄로 파일 송수신. ntfy.sh를 통한 크로스 네트워크 중계 지원.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.28.1-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.28.2-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 

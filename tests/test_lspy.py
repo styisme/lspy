@@ -529,6 +529,36 @@ class TestProtocol(unittest.TestCase):
             self.assertEqual(self._upload(sp.base, sid, "f1", tok, payload), 422)
             self.assertEqual(list(Path(sp.tmp).rglob("ck.txt")), [])
 
+    def test_receive_decodes_chunked_upload(self):
+        """官方客户端用 chunked 编码上传，块长度行不能写进文件。
+
+        手机（LocalSend 1.18）发送 19 字节文本时，实体是
+        `13\\r\\nhello from redmi 3x\\r\\n0\\r\\n\\r\\n`。修复前落盘内容成了
+        `13\\r\\nhello from redm`，随即因 sha256 不符被丢弃（真机实测）。
+        """
+        import hashlib as _h
+        import http.client
+        payload = b"hello from redmi 3x"
+        good = _h.sha256(payload).hexdigest()
+        with ServerPair() as sp:
+            _, resp = self._prepare(sp.base, "chunky.txt", len(payload), sha=good)
+            sid = resp["sessionId"]; tok = resp["files"]["f1"]
+            url = (f"/api/localsend/v2/upload?sessionId={sid}"
+                   f"&fileId=f1&token={tok}&resume=0")
+            conn = http.client.HTTPConnection("127.0.0.1", sp.server.bound_port, timeout=5)
+            conn.putrequest("POST", url)
+            conn.putheader("Content-Type", "application/octet-stream")
+            conn.putheader("Transfer-Encoding", "chunked")
+            conn.endheaders()
+            for piece in (payload[:10], payload[10:]):
+                conn.send(b"%x\r\n" % len(piece) + piece + b"\r\n")
+            conn.send(b"0\r\n\r\n")
+            r = conn.getresponse(); status = r.status; r.read(); conn.close()
+            self.assertEqual(status, 200)
+            files = list(Path(sp.tmp).rglob("chunky.txt"))
+            self.assertEqual(len(files), 1)
+            self.assertEqual(files[0].read_bytes(), payload)
+
     def test_receive_accepts_matching_checksum(self):
         import hashlib as _h
         payload = b"checksum target payload"
@@ -1389,6 +1419,77 @@ class TestTroubleshoot(unittest.TestCase):
             self.skipTest("netsh 提示只在 Windows 上有")
         out = self._run()
         self.assertIn("netsh advfirewall firewall add rule", out)
+
+    def test_firewall_check_decodes_netsh_output_safely(self):
+        """中文 Windows 上 netsh 输出不是 GBK 时，text=True 的默认解码会在读线程里抛
+        UnicodeDecodeError；所以必须显式给 encoding + errors。"""
+        if not sys.platform.startswith("win"):
+            self.skipTest("netsh 只在 Windows 上有")
+        from unittest import mock
+
+        seen = {}
+
+        class FakeResult:
+            returncode = 0
+            stdout = "Rule lspy"
+
+        def fake_run(args, **kwargs):
+            seen.update(kwargs)
+            return FakeResult()
+
+        with mock.patch.object(lspy.subprocess, "run", fake_run):
+            self.assertTrue(lspy._firewall_rule_exists("lspy"))
+        self.assertEqual(seen.get("encoding"), "utf-8")
+        self.assertEqual(seen.get("errors"), "replace")
+
+
+class TestCrossSendPayload(unittest.TestCase):
+    """跨网发送的分块必须是 base64 的 bytes：曾经写成 b64encode(...).encode() 会直接 AttributeError。"""
+
+    def test_chunks_are_base64_bytes(self):
+        import base64
+        from contextlib import redirect_stdout
+        import io
+        from unittest import mock
+
+        src = os.path.join(TEST_HOME, "cross_src.txt")
+        with open(src, "w", encoding="utf-8") as f:
+            f.write("cross payload line\n")
+
+        posted = []
+        with mock.patch.object(lspy, "_ntfy_post", lambda url, body, timeout=15: posted.append(body)), \
+             mock.patch.object(lspy.time, "sleep", lambda s: None), \
+             redirect_stdout(io.StringIO()):
+            ok = lspy.cross_send([src], pin="unitpin")
+
+        self.assertTrue(ok)
+        self.assertGreaterEqual(len(posted), 3)          # 至少 1 个数据块 + SHA256 尾包 + END
+        self.assertTrue(all(isinstance(b, (bytes, bytearray)) for b in posted))
+        self.assertEqual(posted[-1], b"__END__")
+        self.assertTrue(any(b.startswith(b"__SHA256__:") for b in posted))
+        # 第一个数据块必须能被接收端按 base64 解出来
+        decoded = base64.b64decode(posted[0], validate=True)
+        self.assertTrue(len(decoded) > 0)
+
+
+class TestCertCommand(unittest.TestCase):
+    """cert 曾经硬依赖 PATH 里的 openssl，Windows 上直接 WinError 2。"""
+
+    def test_without_openssl_prints_hint(self):
+        from contextlib import redirect_stdout
+        import io
+        from unittest import mock
+
+        buf = io.StringIO()
+        with mock.patch.object(lspy, "openssl_exe", lambda: None), redirect_stdout(buf):
+            lspy.cmd_cert(None)
+        out = buf.getvalue()
+        self.assertIn("openssl", out)
+        self.assertIn(lspy.t("cert_no_openssl"), out)
+
+    def test_every_language_has_cert_hint(self):
+        for lang, table in lspy.I18N.items():
+            self.assertIn("cert_no_openssl", table, lang)
 
 
 if __name__ == "__main__":

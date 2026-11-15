@@ -4,6 +4,25 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.28.2] - 2026-11-15
+
+### 修复
+
+- **接收端不认 `Transfer-Encoding: chunked`**（真机实测撞出来的）：官方 LocalSend 安卓客户端上传走 chunked，之前只按 `Content-Length` 读，块长度行（如 `13\r\n`）被当成文件内容写进磁盘 —— 于是 sha256 必然不符，开着校验就把整个文件丢掉（`❌ sha256 校验不符，已丢弃该文件`）。现在两种编码统一走 `iter_request_body()`，chunked 逐块解码后再落盘。
+- **跨网发送必崩**：`cross_send` 里 `base64.b64encode(piece).encode()` 对已经是 `bytes` 的结果再调 `.encode()`，第一块就 `AttributeError: 'bytes' object has no attribute 'encode'` —— `cross-send` 从来没成功过。去掉多余的 `.encode()`。
+- **`cert` 硬依赖 PATH 里的 openssl**：Windows 默认没有 openssl，`lspy cert` 直接 `WinError 2`，HTTPS 这条路等于打不开。现在依次查 PATH、Git for Windows、OpenSSL 的常见安装位置；都找不到时按界面语言给出提示（新增 `cert_no_openssl` 键）。
+- **五个语种的 PIN 提示错位**（1.28.1 引入）：`de` / `fr` / `ja` / `ko` / `zh_TW` 的 `pin_locked` 与 `pin_locked_peer` 整体错开了一个语种（德语界面显示繁体中文、法语界面显示德语、日语界面显示法语、韩语界面显示日语、繁体界面显示韩语），已按语种归位。
+- **`troubleshoot` 的 netsh 检查在中文 Windows 上崩读线程**：`_firewall_rule_exists()` 用 `text=True` 不指定编码，netsh 输出按系统 GBK 解码时报 `UnicodeDecodeError: 'gbk' codec can't decode byte 0xa7`（打包成 exe 后在菜单 9 里能看到 `Exception in thread Thread-3 (_readerthread)`）。现在固定 `encoding="utf-8", errors="replace"`。
+
+### 验证
+
+- 真机 Redmi 3X（LocalSend 1.18.2，PIN 1234）：电脑 → 手机 2 个文件（29 B + 2 MB）落盘 MD5 一致；手机 → 电脑 19 B 文本与 504 KB 照片都通过 sha256 落盘，MD5 与手机原件一致，照片按 `organize_by_type` 归进 `Pictures/`。
+- 本地 chunked 压测：2 MB / 64 块 → `upload: 200`、落盘 2,000,000 字节、内容与 sha256 全对。
+- 跨网自测（ntfy.sh）：`cross-send` 两个文件，`cross-recv` 收齐后解出 `hello.txt` + `zipack.zip`。
+- `cert` 在 Windows 上自动找到 `C:\Program Files\Git\usr\bin\openssl.exe`，生成 `cert.pem` / `key.pem`。
+- 交互菜单实测（`lspy-1.28.2-windows-x64.exe`）：主菜单 0–9 齐全，`1` 打出 info JSON（随机别名「机智的桃子」、version 1.28.2），`8` 设置面板 13 项与 13 个修改项全部列出，`9` 网络排查四项结论正常（端口可监听 / 本机地址 / netsh 两条命令 / 组播提示）。
+- 测试 113 → 118（新增 chunked 解码、跨网分块编码、cert 缺失提示、i18n 键完整性、netsh 输出编码五例）。
+
 ## [1.28.1] - 2026-11-15
 
 ### 修复

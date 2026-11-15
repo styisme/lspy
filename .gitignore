@@ -15,6 +15,9 @@ venv/
 downloads/
 *.log
 
+# 本机测试用的临时目录（脚本、截图、临时 HOME）
+_guitest/
+
 # OS
 .DS_Store
 Thumbs.db

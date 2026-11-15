@@ -42,7 +42,7 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.28.1"
+VERSION = "1.28.2"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
@@ -166,7 +166,7 @@ I18N = {
         "ask_receive": "From [{a}] @ {ip}: {n} file(s). Accept? [Y/n]: ",
         "session_created": "Session {s} waiting {n} file(s)", "receive_done": "Received: {f} -> {p}",
         "receive_progress": "{f}: {p}% ({r}/{t})", "write_fail": "Write failed: {e}",
-        "send_preparing": "Sending {n} file(s) ({s} bytes) -> {d}", "pin_required": "Remote requires PIN (--pin)", "pin_locked": "Pin attempt limit reached for {ip}: 3 wrong PINs in a row, that IP is blocked for now (same rule as LocalSend)", "pin_locked_peer": "The receiver locked this machine's IP after 3 wrong PINs. Restart the receiver's service or try from another device.",
+        "send_preparing": "Sending {n} file(s) ({s} bytes) -> {d}", "pin_required": "Remote requires PIN (--pin)", "pin_locked": "Pin attempt limit reached for {ip}: 3 wrong PINs in a row, that IP is blocked for now (same rule as LocalSend)", "pin_locked_peer": "The receiver locked this machine's IP after 3 wrong PINs. Restart the receiver's service or try from another device.", "cert_no_openssl": "openssl not found. Install OpenSSL or Git for Windows (which bundles openssl), then retry.",
         "conn_fail": "Connection failed: {e}", "send_rejected": "Rejected (HTTP {c})",
         "no_session": "Invalid response: missing sessionId", "send_started": "Session {s}... uploading",
         "send_progress": "Upload: {p}% ({s}/{t})", "send_fail": "Upload failed {f}: {e}",
@@ -283,7 +283,7 @@ I18N = {
         "ask_receive": "来自 [{a}] @ {ip} 的 {n} 个文件，接收？[Y/n]：",
         "session_created": "会话 {s} 等待 {n} 个文件", "receive_done": "已接收：{f} -> {p}",
         "receive_progress": "{f}：{p}% ({r}/{t})", "write_fail": "写入失败：{e}",
-        "send_preparing": "发送 {n} 个文件（{s} 字节）→ {d}", "pin_required": "对方需要 PIN（--pin）", "pin_locked": "已拒绝 {ip}：PIN 连续输错 3 次，该 IP 暂时被锁定（与 LocalSend 官方一致）", "pin_locked_peer": "对方已锁定本机 IP（PIN 连续输错 3 次），重启对方服务或换台设备再试",
+        "send_preparing": "发送 {n} 个文件（{s} 字节）→ {d}", "pin_required": "对方需要 PIN（--pin）", "pin_locked": "已拒绝 {ip}：PIN 连续输错 3 次，该 IP 暂时被锁定（与 LocalSend 官方一致）", "pin_locked_peer": "对方已锁定本机 IP（PIN 连续输错 3 次），重启对方服务或换台设备再试", "cert_no_openssl": "找不到 openssl 命令，无法生成自签证书；安装 OpenSSL 或 Git for Windows（自带 openssl）后重试",
         "conn_fail": "连接失败：{e}", "send_rejected": "被拒绝（HTTP {c}）", "no_session": "响应缺少 sessionId",
         "send_started": "会话 {s}... 上传中", "send_progress": "上传：{p}% ({s}/{t})", "send_fail": "上传失败 {f}：{e}",
         "send_done": "完成 {a}/{b} 个", "https_unsupported": "目标 HTTPS（发送端暂不支持）",
@@ -399,7 +399,7 @@ I18N = {
         "ask_receive": "Von [{a}] @ {ip}: {n} Datei(en). Annehmen? [Y/n]: ",
         "session_created": "Sitzung {s} wartet auf {n} Datei(en)", "receive_done": "Empfangen: {f} -> {p}",
         "receive_progress": "{f}: {p}% ({r}/{t})", "write_fail": "Schreiben fehlgeschlagen: {e}",
-        "send_preparing": "Sende {n} Datei(en) ({s} Bytes) -> {d}", "pin_required": "Gegenstelle verlangt PIN (--pin)", "pin_locked": "已拒絕 {ip}：PIN 連續輸入錯誤 3 次，該 IP 暫時被鎖定（與 LocalSend 官方一致）", "pin_locked_peer": "對方已鎖定本機 IP（PIN 連續輸入錯誤 3 次），重啟對方服務或換台裝置再試",
+        "send_preparing": "Sende {n} Datei(en) ({s} Bytes) -> {d}", "pin_required": "Gegenstelle verlangt PIN (--pin)", "pin_locked": "PIN-Versuche für {ip} erschöpft: 3 Fehleingaben in Folge, diese IP ist vorerst gesperrt (wie bei LocalSend)", "pin_locked_peer": "Die Gegenstelle hat diese IP nach 3 falschen PINs gesperrt. Dienst dort neu starten oder von einem anderen Gerät versuchen.", "cert_no_openssl": "openssl wurde nicht gefunden. OpenSSL oder Git für Windows (enthält openssl) installieren und erneut versuchen.",
         "conn_fail": "Verbindung fehlgeschlagen: {e}", "send_rejected": "Abgelehnt (HTTP {c})",
         "no_session": "Ungültige Antwort: sessionId fehlt", "send_started": "Sitzung {s}... wird hochgeladen",
         "send_progress": "Upload: {p}% ({s}/{t})", "send_fail": "Upload fehlgeschlagen {f}: {e}",
@@ -518,7 +518,7 @@ I18N = {
         "ask_receive": "De [{a}] @ {ip} : {n} fichier(s). Accepter ? [Y/n] : ",
         "session_created": "Session {s} en attente de {n} fichier(s)", "receive_done": "Reçu : {f} -> {p}",
         "receive_progress": "{f} : {p}% ({r}/{t})", "write_fail": "Échec d'écriture : {e}",
-        "send_preparing": "Envoi de {n} fichier(s) ({s} octets) -> {d}", "pin_required": "La cible exige un PIN (--pin)", "pin_locked": "PIN-Versuche für {ip} erschöpft: 3 Fehleingaben in Folge, diese IP ist vorerst gesperrt (wie bei LocalSend)", "pin_locked_peer": "Die Gegenstelle hat diese IP nach 3 falschen PINs gesperrt. Dienst dort neu starten oder von einem anderen Gerät versuchen.",
+        "send_preparing": "Envoi de {n} fichier(s) ({s} octets) -> {d}", "pin_required": "La cible exige un PIN (--pin)", "pin_locked": "Trop de tentatives de PIN pour {ip} : 3 codes faux d'affilée, cette IP est bloquée pour un temps (règle identique à LocalSend)", "pin_locked_peer": "La cible a bloqué l'IP de cette machine après 3 codes PIN faux. Redémarrez son service ou essayez depuis un autre appareil.", "cert_no_openssl": "openssl introuvable. Installez OpenSSL ou Git pour Windows (fournit openssl), puis réessayez.",
         "conn_fail": "Connexion échouée : {e}", "send_rejected": "Refusé (HTTP {c})",
         "no_session": "Réponse invalide : sessionId manquant", "send_started": "Session {s}... envoi en cours",
         "send_progress": "Envoi : {p}% ({s}/{t})", "send_fail": "Échec de l'envoi de {f} : {e}",
@@ -637,7 +637,7 @@ I18N = {
         "ask_receive": "[{a}] @ {ip} から {n} ファイル。受け取りますか？ [Y/n]: ",
         "session_created": "セッション {s}、{n} ファイル待機中", "receive_done": "受信: {f} -> {p}",
         "receive_progress": "{f}: {p}% ({r}/{t})", "write_fail": "書き込み失敗: {e}",
-        "send_preparing": "{n} ファイル（{s} バイト）を送信 -> {d}", "pin_required": "相手は PIN を要求しています（--pin）", "pin_locked": "Trop de tentatives de PIN pour {ip} : 3 codes faux d'affilée, cette IP est bloquée pour un temps (règle identique à LocalSend)", "pin_locked_peer": "La cible a bloqué l'IP de cette machine après 3 codes PIN faux. Redémarrez son service ou essayez depuis un autre appareil.",
+        "send_preparing": "{n} ファイル（{s} バイト）を送信 -> {d}", "pin_required": "相手は PIN を要求しています（--pin）", "pin_locked": "{ip} からの PIN 入力を拒否しました。3 回連続で誤っているため、この IP は一時的にブロックされます（LocalSend と同じ規則）", "pin_locked_peer": "相手は 3 回の PIN 誤入力でこのマシンの IP をブロックしました。相手のサービスを再起動するか、別の端末から試してください。", "cert_no_openssl": "openssl コマンドが見つかりません。OpenSSL または Git for Windows（openssl 同梱）を入れてから再実行してください",
         "conn_fail": "接続失敗: {e}", "send_rejected": "拒否されました（HTTP {c}）",
         "no_session": "不正な応答: sessionId がありません", "send_started": "セッション {s}... アップロード中",
         "send_progress": "アップロード: {p}% ({s}/{t})", "send_fail": "アップロード失敗 {f}: {e}",
@@ -756,7 +756,7 @@ I18N = {
         "ask_receive": "[{a}] @ {ip} 에서 {n}개 파일. 받으시겠습니까? [Y/n]: ",
         "session_created": "세션 {s}, {n}개 파일 대기 중", "receive_done": "수신: {f} -> {p}",
         "receive_progress": "{f}: {p}% ({r}/{t})", "write_fail": "기록 실패: {e}",
-        "send_preparing": "{n}개 파일({s} 바이트) 전송 -> {d}", "pin_required": "상대가 PIN 을 요구합니다 (--pin)", "pin_locked": "{ip} からの PIN 入力を拒否しました。3 回連続で誤っているため、この IP は一時的にブロックされます（LocalSend と同じ規則）", "pin_locked_peer": "相手は 3 回の PIN 誤入力でこのマシンの IP をブロックしました。相手のサービスを再起動するか、別の端末から試してください。",
+        "send_preparing": "{n}개 파일({s} 바이트) 전송 -> {d}", "pin_required": "상대가 PIN 을 요구합니다 (--pin)", "pin_locked": "{ip} 의 PIN 입력을 거부했습니다. 3회 연속 틀려 해당 IP 는 잠시 차단됩니다 (LocalSend 와 동일한 규칙)", "pin_locked_peer": "상대가 PIN 을 3회 틀려 이 기기의 IP 를 차단했습니다. 상대 서비스를 다시 시작하거나 다른 기기에서 시도하세요.", "cert_no_openssl": "openssl 명령을 찾을 수 없습니다. OpenSSL 또는 Git for Windows(openssl 포함)를 설치한 뒤 다시 시도하세요",
         "conn_fail": "연결 실패: {e}", "send_rejected": "거부됨 (HTTP {c})",
         "no_session": "잘못된 응답: sessionId 없음", "send_started": "세션 {s}... 업로드 중",
         "send_progress": "업로드: {p}% ({s}/{t})", "send_fail": "업로드 실패 {f}: {e}",
@@ -873,7 +873,7 @@ I18N = {
         "ask_receive": "來自 [{a}] @ {ip} 的 {n} 個檔案，接收？[Y/n]：",
         "session_created": "工作階段 {s} 等待 {n} 個檔案", "receive_done": "已接收：{f} -> {p}",
         "receive_progress": "{f}：{p}% ({r}/{t})", "write_fail": "寫入失敗：{e}",
-        "send_preparing": "傳送 {n} 個檔案（{s} 位元組）→ {d}", "pin_required": "對方需要 PIN（--pin）", "pin_locked": "{ip} 의 PIN 입력을 거부했습니다. 3회 연속 틀려 해당 IP 는 잠시 차단됩니다 (LocalSend 와 동일한 규칙)", "pin_locked_peer": "상대가 PIN 을 3회 틀려 이 기기의 IP 를 차단했습니다. 상대 서비스를 다시 시작하거나 다른 기기에서 시도하세요.",
+        "send_preparing": "傳送 {n} 個檔案（{s} 位元組）→ {d}", "pin_required": "對方需要 PIN（--pin）", "pin_locked": "已拒絕 {ip}：PIN 連續輸入錯誤 3 次，該 IP 暫時被鎖定（與 LocalSend 官方一致）", "pin_locked_peer": "對方已鎖定本機 IP（PIN 連續輸入錯誤 3 次），重啟對方服務或換台裝置再試", "cert_no_openssl": "找不到 openssl 指令，無法產生自簽憑證；安裝 OpenSSL 或 Git for Windows（內含 openssl）後重試",
         "conn_fail": "連線失敗：{e}", "send_rejected": "被拒絕（HTTP {c}）", "no_session": "回應缺少 sessionId",
         "send_started": "工作階段 {s}... 上傳中", "send_progress": "上傳：{p}% ({s}/{t})", "send_fail": "上傳失敗 {f}：{e}",
         "send_done": "完成 {a}/{b} 個", "https_unsupported": "目標為 HTTPS（傳送端暫不支援）",
@@ -989,7 +989,7 @@ I18N = {
         "ask_receive": "De [{a}] @ {ip}: {n} archivo(s). ¿Aceptar? [Y/n]: ",
         "session_created": "Sesión {s} esperando {n} archivo(s)", "receive_done": "Recibido: {f} -> {p}",
         "receive_progress": "{f}: {p}% ({r}/{t})", "write_fail": "Fallo de escritura: {e}",
-        "send_preparing": "Enviando {n} archivo(s) ({s} bytes) -> {d}", "pin_required": "El destino exige PIN (--pin)", "pin_locked": "Intentos de PIN agotados para {ip}: 3 códigos erróneos seguidos, esa IP queda bloqueada por un tiempo (igual que LocalSend)", "pin_locked_peer": "El destino bloqueó la IP de esta máquina tras 3 PIN erróneos. Reinicia su servicio o prueba desde otro dispositivo.",
+        "send_preparing": "Enviando {n} archivo(s) ({s} bytes) -> {d}", "pin_required": "El destino exige PIN (--pin)", "pin_locked": "Intentos de PIN agotados para {ip}: 3 códigos erróneos seguidos, esa IP queda bloqueada por un tiempo (igual que LocalSend)", "pin_locked_peer": "El destino bloqueó la IP de esta máquina tras 3 PIN erróneos. Reinicia su servicio o prueba desde otro dispositivo.", "cert_no_openssl": "No se encontró openssl. Instala OpenSSL o Git para Windows (incluye openssl) y vuelve a intentarlo.",
         "conn_fail": "Error de conexión: {e}", "send_rejected": "Rechazado (HTTP {c})",
         "no_session": "Respuesta no válida: falta sessionId", "send_started": "Sesión {s}... subiendo",
         "send_progress": "Subida: {p}% ({s}/{t})", "send_fail": "Fallo al subir {f}: {e}",
@@ -1108,7 +1108,7 @@ I18N = {
         "ask_receive": "От [{a}] @ {ip}: файлов — {n}. Принять? [Y/n]: ",
         "session_created": "Сеанс {s} ожидает файлов: {n}", "receive_done": "Получено: {f} -> {p}",
         "receive_progress": "{f}: {p}% ({r}/{t})", "write_fail": "Ошибка записи: {e}",
-        "send_preparing": "Отправка файлов ({n}) на {d}, {s} байт", "pin_required": "Удалённая сторона требует PIN (--pin)", "pin_locked": "Попытки ввода PIN с {ip} исчерпаны: 3 ошибки подряд, этот IP временно заблокирован (как в LocalSend)", "pin_locked_peer": "Получатель заблокировал IP этого компьютера после 3 неверных PIN. Перезапустите его службу или попробуйте с другого устройства.",
+        "send_preparing": "Отправка файлов ({n}) на {d}, {s} байт", "pin_required": "Удалённая сторона требует PIN (--pin)", "pin_locked": "Попытки ввода PIN с {ip} исчерпаны: 3 ошибки подряд, этот IP временно заблокирован (как в LocalSend)", "pin_locked_peer": "Получатель заблокировал IP этого компьютера после 3 неверных PIN. Перезапустите его службу или попробуйте с другого устройства.", "cert_no_openssl": "Не найден openssl. Установите OpenSSL или Git для Windows (содержит openssl) и повторите попытку.",
         "conn_fail": "Ошибка подключения: {e}", "send_rejected": "Отклонено (HTTP {c})",
         "no_session": "Некорректный ответ: нет sessionId", "send_started": "Сеанс {s}... загрузка",
         "send_progress": "Загрузка: {p}% ({s}/{t})", "send_fail": "Ошибка загрузки {f}: {e}",
@@ -1227,7 +1227,7 @@ I18N = {
         "ask_receive": "De [{a}] @ {ip}: {n} ficheiro(s). Aceitar? [Y/n]: ",
         "session_created": "Sessão {s} à espera de {n} ficheiro(s)", "receive_done": "Recebido: {f} -> {p}",
         "receive_progress": "{f}: {p}% ({r}/{t})", "write_fail": "Falha de escrita: {e}",
-        "send_preparing": "A enviar {n} ficheiro(s) ({s} bytes) -> {d}", "pin_required": "O destino exige PIN (--pin)", "pin_locked": "Tentativas de PIN esgotadas para {ip}: 3 códigos errados seguidos, esse IP fica bloqueado por um tempo (igual ao LocalSend)", "pin_locked_peer": "O destino bloqueou o IP desta máquina após 3 PIN errados. Reinicie o serviço dele ou tente de outro dispositivo.",
+        "send_preparing": "A enviar {n} ficheiro(s) ({s} bytes) -> {d}", "pin_required": "O destino exige PIN (--pin)", "pin_locked": "Tentativas de PIN esgotadas para {ip}: 3 códigos errados seguidos, esse IP fica bloqueado por um tempo (igual ao LocalSend)", "pin_locked_peer": "O destino bloqueou o IP desta máquina após 3 PIN errados. Reinicie o serviço dele ou tente de outro dispositivo.", "cert_no_openssl": "openssl não encontrado. Instale o OpenSSL ou o Git para Windows (inclui openssl) e tente novamente.",
         "conn_fail": "Falha na ligação: {e}", "send_rejected": "Rejeitado (HTTP {c})",
         "no_session": "Resposta inválida: falta sessionId", "send_started": "Sessão {s}... a enviar",
         "send_progress": "Envio: {p}% ({s}/{t})", "send_fail": "Falha ao enviar {f}: {e}",
@@ -1503,6 +1503,47 @@ def _sha256_file(path):
         for chunk in iter(lambda: fp.read(1 << 20), b""):
             h.update(chunk)
     return h.hexdigest()
+
+def iter_request_body(headers, rfile):
+    """按字节迭代请求体，自动处理 `Transfer-Encoding: chunked`。
+
+    官方客户端用 Dart 的 HttpClient 流式上传，长度未知时走 chunked 编码，
+    实体里带着 `13\\r\\n<数据>\\r\\n…0\\r\\n\\r\\n` 的分块标记。直接把 rfile 当文件
+    内容写，会把 `13\\r\\n` 这行长度前缀一起写进去，落盘内容与对端声明的
+    sha256 必然不符（1.28.1 及之前就是这样：手机发来的 19 字节文本变成
+    `13\\r\\nhello from redm`）。这里先剥掉分块协议，再交给调用方。
+    """
+    te = (headers.get("Transfer-Encoding", "") or "").lower()
+    if "chunked" in te:
+        while True:
+            line = rfile.readline()
+            if not line: return
+            line = line.strip()
+            if not line: continue
+            try:
+                size = int(line.split(b";", 1)[0], 16)
+            except ValueError:
+                return
+            if size == 0:
+                while True:                      # 吃掉 trailer 与结尾空行
+                    trailer = rfile.readline()
+                    if not trailer or not trailer.strip(): break
+                return
+            left = size
+            while left > 0:
+                piece = rfile.read(min(65536, left))
+                if not piece: return
+                left -= len(piece)
+                yield piece
+            rfile.readline()                     # 每块后面的 CRLF
+        return
+    try: left = max(0, int(headers.get("Content-Length", "0") or 0))
+    except (TypeError, ValueError): left = 0
+    while left > 0:
+        piece = rfile.read(min(65536, left))
+        if not piece: return
+        left -= len(piece)
+        yield piece
 
 def build_self_info(port=None, protocol=None, download=False):
     """构造对外广播的本机信息；port/protocol 用于反映实际监听配置。"""
@@ -2417,8 +2458,7 @@ class LspyServer:
                 self.send_header("Connection", "close")
                 self.end_headers(); self.wfile.write(body); self.close_connection = True
             def _read_body(self):
-                length = int(self.headers.get("Content-Length", "0") or 0)
-                return self.rfile.read(length) if length > 0 else b""
+                return b"".join(iter_request_body(self.headers, self.rfile))
 
             def _pin_check(self, qs):
                 """按官方 `server/common/pin.rs` 的语义校验 PIN。
@@ -2672,14 +2712,15 @@ class LspyServer:
                     else: mode = "ab"
 
                     received = existing; last_pct = -1
+                    body_iter = iter_request_body(self.headers, self.rfile)
                     try:
                         with open(target, mode) as fp:
                             remaining = length if length > 0 else (1 << 62)
                             if expected > 0: remaining = min(remaining, expected - existing)
-                            while remaining > 0:
-                                chunk = self.rfile.read(min(65536, remaining))
-                                if not chunk: break
-                                fp.write(chunk); received += len(chunk); remaining -= len(chunk)
+                            for piece in body_iter:
+                                if remaining <= 0: break
+                                if len(piece) > remaining: piece = piece[:remaining]
+                                fp.write(piece); received += len(piece); remaining -= len(piece)
                                 if expected > 0:
                                     pct = int(received * 100 / expected)
                                     if (pct // 5 != last_pct // 5 or pct == 100) and not server.quiet_receive:
@@ -2994,7 +3035,7 @@ def cross_send(filepaths, pin=None):
     total, sent, idx = len(data), 0, 0
     while sent < total:
         piece = data[sent:sent + CROSS_CHUNK]
-        try: _ntfy_post(url, base64.b64encode(piece).encode())
+        try: _ntfy_post(url, base64.b64encode(piece))
         except Exception as e: print("\n❌ " + t("chunk_fail", i=idx, e=e)); return False
         sent += len(piece); idx += 1
         _progress_line("⬆️", t("cross_progress", s=sent, t=total, p=int(sent * 100 / total)),
@@ -3217,9 +3258,31 @@ def cmd_history(args):
         print(t("history_entry", t=e.get("time"), f=history_file_label(e.get("file")),
                 s=e.get("size"), r=e.get("receive")))
 
+def openssl_exe():
+    """定位 openssl：先查 PATH，再查常见安装位置（Git for Windows 自带一份，Windows 默认 PATH 里没有）。"""
+    exe = shutil.which("openssl")
+    if exe: return exe
+    candidates = [
+        r"C:\Program Files\Git\usr\bin\openssl.exe",
+        r"C:\Program Files\Git\bin\openssl.exe",
+        r"C:\Program Files (x86)\Git\usr\bin\openssl.exe",
+        r"C:\Program Files\OpenSSL-Win64\bin\openssl.exe",
+        r"C:\Program Files\OpenSSL\bin\openssl.exe",
+        r"C:\Program Files (x86)\OpenSSL-Win32\bin\openssl.exe",
+        "/usr/bin/openssl", "/usr/local/bin/openssl", "/opt/homebrew/bin/openssl",
+        "/opt/local/bin/openssl",
+    ]
+    for p in candidates:
+        if Path(p).is_file(): return p
+    return None
+
 def cmd_cert(args):
+    exe = openssl_exe()
+    if not exe:
+        print("❌ " + t("cert_no_openssl"))
+        return
     try:
-        subprocess.run(["openssl", "req", "-x509", "-newkey", "rsa:2048", "-keyout", str(KEY_FILE), "-out", str(CERT_FILE), "-days", "3650", "-nodes", "-subj", "/CN=lspy"], check=True, capture_output=True)
+        subprocess.run([exe, "req", "-x509", "-newkey", "rsa:2048", "-keyout", str(KEY_FILE), "-out", str(CERT_FILE), "-days", "3650", "-nodes", "-subj", "/CN=lspy"], check=True, capture_output=True)
         print(f"✅ cert: {CERT_FILE}\n✅ key : {KEY_FILE}")
     except Exception as e: print(f"❌ {e}")
 
@@ -3287,7 +3350,7 @@ def _firewall_rule_exists(name="lspy"):
     if not sys.platform.startswith("win"): return None
     try:
         r = subprocess.run(["netsh", "advfirewall", "firewall", "show", "rule", f"name={name}"],
-                           capture_output=True, text=True, timeout=10)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10)
         return r.returncode == 0 and name in (r.stdout or "")
     except (OSError, subprocess.SubprocessError):
         return None
