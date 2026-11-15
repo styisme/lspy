@@ -4,6 +4,19 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
+## [1.21.0] - 2026-11-15
+
+### 修复
+
+- 语言菜单"英文冒充其它语言"：`I18N` 里只有 `en`、`zh` 两份真实词表，其余 8 种语言被启动时的兜底循环 `I18N[lg] = dict(I18N["en"])` 静默复制成英文副本。结果是「设置 → 修改语言」只有 1–2 项正常，第 3–10 项全部显示 `English`，切换到 ja/ko/de/fr/es/ru/pt/zh_TW 后界面依旧是英文——README 声称 10 语言、CLI 实际只有 2 语言。
+- 兜底循环改为**导入时硬校验**：`SUPPORTED_LANGS` 中任一语言缺失词表即抛 `RuntimeError`，不再用英文副本掩盖缺失。
+
+### 新增
+
+- 内置完整词表：`zh_TW`（繁體中文）、`ja`（日本語）、`ko`（한국어）、`de`（Deutsch）、`fr`（Français）、`es`（Español）、`ru`（Русский）、`pt`（Português），每份 162 个键，占位符（`{p}`、`{q}`、`{n}`、`{ip}` 等）与英文逐一对应；菜单、扫描、收发、跨网、历史、设置、Web 状态页全部本地化，Windows 防火墙与端口占用等诊断句一并翻译。
+- 语言菜单现在显示各自母语名（`zh_TW — 繁體中文`、`ja — 日本語`……），10 种语言名互不重复。
+- 4 个回归测试：各语言键集合必须等于英文的 162 键且非空、非英文副本；语言名互补重复且 `zh_TW` 为 `繁體中文`；每键占位符与英文一致；切换语言后 `t()` 输出确实改变（测试总数 29 → 33）。
+
 ## [1.20.1] - 2026-11-15
 
 ### 修复
@@ -77,6 +90,7 @@
 
 - 初版：LocalSend v1/v2 收发、组播扫描、HTTP 深度扫描、ntfy.sh 跨网、多语言菜单。
 
+[1.21.0]: https://github.com/styisme/lspy/compare/v1.20.1...v1.21.0
 [1.20.1]: https://github.com/styisme/lspy/compare/v1.20.0...v1.20.1
 [1.20.0]: https://github.com/styisme/lspy/compare/v1.19.2...v1.20.0
 [1.19.2]: https://github.com/styisme/lspy/compare/v1.19.1...v1.19.2

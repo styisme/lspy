@@ -124,6 +124,50 @@ class TestConfigAndI18n(unittest.TestCase):
         self.assertEqual(lspy._normalize_lang("ja_JP.UTF-8"), "ja")
         self.assertIsNone(lspy._normalize_lang(""))
 
+    def test_every_supported_lang_has_own_catalog(self):
+        """每个受支持语言都必须有独立完整词表，不能是英文副本（回归：语言菜单曾全部显示 English）。"""
+        en = lspy.I18N["en"]
+        for lg in lspy.SUPPORTED_LANGS:
+            with self.subTest(lang=lg):
+                self.assertIn(lg, lspy.I18N)
+                cat = lspy.I18N[lg]
+                self.assertEqual(set(cat), set(en), f"{lg} 键集合与 en 不一致")
+                for k, v in cat.items():
+                    self.assertIsInstance(v, str, f"{lg}.{k} 不是字符串")
+                    self.assertTrue(v.strip(), f"{lg}.{k} 为空")
+                if lg != "en":
+                    self.assertNotEqual(cat, en, f"{lg} 仍然是英文副本")
+
+    def test_lang_names_are_native_and_unique(self):
+        names = {}
+        for lg in lspy.SUPPORTED_LANGS:
+            name = lspy.I18N[lg]["lang_name"].strip()
+            self.assertTrue(name, f"{lg} 缺少 lang_name")
+            names[lg] = name
+        self.assertEqual(len(set(names.values())), len(names), f"语言名重复：{names}")
+        self.assertNotIn("English", {names[lg] for lg in lspy.SUPPORTED_LANGS if lg != "en"})
+        self.assertEqual(names["zh_TW"], "繁體中文")
+
+    def test_placeholders_match_english(self):
+        """译文必须保留每个键原有占位符，否则运行时 format 会报错。"""
+        import re as _re
+        ph = lambda s: set(_re.findall(r"\{(\w+)\}", s))  # noqa: E731
+        for lg in lspy.SUPPORTED_LANGS:
+            for k, src in lspy.I18N["en"].items():
+                with self.subTest(lang=lg, key=k):
+                    self.assertEqual(ph(lspy.I18N[lg][k]), ph(src), f"{lg}.{k} 占位符不一致")
+
+    def test_switching_lang_changes_ui_text(self):
+        self.addCleanup(lspy.set_config, "lang", None)
+        self.addCleanup(lspy.init_lang)
+        lspy.set_config("lang", "ja")
+        lspy.init_lang()
+        self.assertEqual(lspy.t("menu_scan"), lspy.I18N["ja"]["menu_scan"])
+        self.assertNotEqual(lspy.t("menu_scan"), lspy.I18N["en"]["menu_scan"])
+        lspy.set_config("lang", "de")
+        lspy.init_lang()
+        self.assertEqual(lspy.t("menu_config"), lspy.I18N["de"]["menu_config"])
+
 
 class TestInfoAndWeb(unittest.TestCase):
     def test_info_reports_real_port(self):
