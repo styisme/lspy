@@ -23,6 +23,7 @@ import logging
 import logging.handlers
 import mimetypes
 import os
+import queue
 import random
 import shutil
 import socket
@@ -41,7 +42,7 @@ import zipfile
 from pathlib import Path
 
 # ================== 常量 ==================
-VERSION = "1.26.0"
+VERSION = "1.27.0"
 DEFAULT_PORT = 53317
 MULTICAST_GROUP = "224.0.0.167"
 V2_PREFIX = "/api/localsend/v2"
@@ -148,7 +149,7 @@ I18N = {
         "text_copied": "Copied to clipboard: {f}",
         "ipv6_not_found": "No IPv6 address found",
         "cfg_invalid_number": "{k} must be a non-negative integer",
-        "cfg_savedir_hint": "Type ? to browse folders",
+        "cfg_savedir_hint": "Type ? to browse folders", "press_enter_back": "Press Enter to go back: ", "invite_banner": "📥 Incoming files from {a} ({ip}): {n} file(s), {s} in total", "invite_prompt": "Press Enter to accept, r to reject: ", "invite_rejected": "This transfer was rejected", "invite_timeout": "No answer in time - request auto-rejected", "recv_detail_title": "Receive details", "recv_detail_state": "{done}/{total} file(s) · {r}/{t}", "recv_detail_done": "Done: {n} file(s), {s}, saved to {d}", "send_back_hint": "Send finished - press Enter to return to the menu: ",
         "cfg_dialog": "File dialog",
         "cfg_dialog_auto": "auto (tkinter → cfdialog)",
         "cfg_dialog_force": "cfdialog only (skip tkinter)",
@@ -237,7 +238,7 @@ I18N = {
         "text_copied": "已复制到剪贴板：{f}",
         "ipv6_not_found": "未找到 IPv6 地址",
         "cfg_invalid_number": "{k} 必须是非负整数",
-        "cfg_savedir_hint": "输入 ? 打开目录浏览器",
+        "cfg_savedir_hint": "输入 ? 打开目录浏览器", "press_enter_back": "按回车返回：", "invite_banner": "📥 收到来自 {a}（{ip}）的文件请求：{n} 个文件，共 {s}", "invite_prompt": "回车接受，输入 r 拒绝：", "invite_rejected": "已拒绝这次接收", "invite_timeout": "等待超时，已自动拒绝", "recv_detail_title": "接收详情", "recv_detail_state": "{done}/{total} 个文件 · {r}/{t}", "recv_detail_done": "接收完成：{n} 个文件，共 {s}，保存在 {d}", "send_back_hint": "发送结束，按回车回到菜单：",
         "cfg_dialog": "选文件方式",
         "cfg_dialog_auto": "自动（tkinter → cfdialog）",
         "cfg_dialog_force": "强制 cfdialog（跳过 tkinter）",
@@ -329,7 +330,7 @@ I18N = {
         "text_copied": "In die Zwischenablage kopiert: {f}",
         "ipv6_not_found": "Keine IPv6-Adresse gefunden",
         "cfg_invalid_number": "{k} muss eine nicht negative Ganzzahl sein",
-        "cfg_savedir_hint": "? eingeben, um Ordner zu durchsuchen",
+        "cfg_savedir_hint": "? eingeben, um Ordner zu durchsuchen", "press_enter_back": "Enter zum Zurückgehen: ", "invite_banner": "📥 Dateien von {a} ({ip}): {n} Datei(en), insgesamt {s}", "invite_prompt": "Enter = annehmen, r = ablehnen: ", "invite_rejected": "Übertragung abgelehnt", "invite_timeout": "Keine Antwort - automatisch abgelehnt", "recv_detail_title": "Empfangsdetails", "recv_detail_state": "{done}/{total} Datei(en) · {r}/{t}", "recv_detail_done": "Fertig: {n} Datei(en), {s}, gespeichert in {d}", "send_back_hint": "Senden beendet - Enter für das Menü: ",
         "cfg_dialog": "Dateidialog",
         "cfg_dialog_auto": "auto (tkinter → cfdialog)",
         "cfg_dialog_force": "nur cfdialog (tkinter überspringen)",
@@ -422,7 +423,7 @@ I18N = {
         "text_copied": "Copié dans le presse-papiers : {f}",
         "ipv6_not_found": "Aucune adresse IPv6 trouvée",
         "cfg_invalid_number": "{k} doit être un entier positif ou nul",
-        "cfg_savedir_hint": "Tapez ? pour parcourir les dossiers",
+        "cfg_savedir_hint": "Tapez ? pour parcourir les dossiers", "press_enter_back": "Entrée pour revenir : ", "invite_banner": "📥 Fichiers de {a} ({ip}) : {n} fichier(s), {s} au total", "invite_prompt": "Entrée pour accepter, r pour refuser : ", "invite_rejected": "Transfert refusé", "invite_timeout": "Pas de réponse - refus automatique", "recv_detail_title": "Détails de réception", "recv_detail_state": "{done}/{total} fichier(s) · {r}/{t}", "recv_detail_done": "Terminé : {n} fichier(s), {s}, enregistrés dans {d}", "send_back_hint": "Envoi terminé - Entrée pour le menu : ",
         "cfg_dialog": "Sélecteur de fichiers",
         "cfg_dialog_auto": "auto (tkinter → cfdialog)",
         "cfg_dialog_force": "cfdialog uniquement (sans tkinter)",
@@ -515,7 +516,7 @@ I18N = {
         "text_copied": "クリップボードにコピーしました：{f}",
         "ipv6_not_found": "IPv6 アドレスが見つかりません",
         "cfg_invalid_number": "{k} は 0 以上の整数である必要があります",
-        "cfg_savedir_hint": "? でフォルダを参照できます",
+        "cfg_savedir_hint": "? でフォルダを参照できます", "press_enter_back": "Enter で戻る：", "invite_banner": "📥 {a}（{ip}）からファイル要求：{n} 件、合計 {s}", "invite_prompt": "Enter で受け取り、r で拒否：", "invite_rejected": "受け取りを拒否しました", "invite_timeout": "応答なし — 自動的に拒否しました", "recv_detail_title": "受信の詳細", "recv_detail_state": "{done}/{total} 件 · {r}/{t}", "recv_detail_done": "受信完了：{n} 件、{s}、保存先 {d}", "send_back_hint": "送信完了 — Enter でメニューへ：",
         "cfg_dialog": "ファイル選択",
         "cfg_dialog_auto": "自動（tkinter → cfdialog）",
         "cfg_dialog_force": "cfdialog を強制（tkinter を飛ばす）",
@@ -608,7 +609,7 @@ I18N = {
         "text_copied": "클립보드에 복사했습니다: {f}",
         "ipv6_not_found": "IPv6 주소를 찾을 수 없습니다",
         "cfg_invalid_number": "{k}은(는) 0 이상의 정수여야 합니다",
-        "cfg_savedir_hint": "? 를 입력하면 폴더를 찾아볼 수 있습니다",
+        "cfg_savedir_hint": "? 를 입력하면 폴더를 찾아볼 수 있습니다", "press_enter_back": "Enter 로 돌아가기: ", "invite_banner": "📥 {a}({ip}) 에서 파일 요청: {n}개, 총 {s}", "invite_prompt": "Enter 로 수락, r 로 거절: ", "invite_rejected": "수신을 거절했습니다", "invite_timeout": "응답 없음 — 자동 거절", "recv_detail_title": "수신 상세", "recv_detail_state": "{done}/{total}개 · {r}/{t}", "recv_detail_done": "수신 완료: {n}개, {s}, 저장 위치 {d}", "send_back_hint": "전송 완료 — Enter 로 메뉴로: ",
         "cfg_dialog": "파일 선택",
         "cfg_dialog_auto": "자동(tkinter → cfdialog)",
         "cfg_dialog_force": "cfdialog 강제(tkinter 건너뜀)",
@@ -697,7 +698,7 @@ I18N = {
         "text_copied": "已複製到剪貼簿：{f}",
         "ipv6_not_found": "找不到 IPv6 位址",
         "cfg_invalid_number": "{k} 必須是非負整數",
-        "cfg_savedir_hint": "輸入 ? 開啟目錄瀏覽器",
+        "cfg_savedir_hint": "輸入 ? 開啟目錄瀏覽器", "press_enter_back": "按 Enter 返回：", "invite_banner": "📥 收到來自 {a}（{ip}）的檔案請求：{n} 個檔案，共 {s}", "invite_prompt": "按 Enter 接受，輸入 r 拒絕：", "invite_rejected": "已拒絕這次接收", "invite_timeout": "等待逾時，已自動拒絕", "recv_detail_title": "接收詳情", "recv_detail_state": "{done}/{total} 個檔案 · {r}/{t}", "recv_detail_done": "接收完成：{n} 個檔案，共 {s}，儲存在 {d}", "send_back_hint": "傳送結束，按 Enter 回到選單：",
         "cfg_dialog": "選檔方式",
         "cfg_dialog_auto": "自動（tkinter → cfdialog）",
         "cfg_dialog_force": "強制 cfdialog（略過 tkinter）",
@@ -789,7 +790,7 @@ I18N = {
         "text_copied": "Copiado al portapapeles: {f}",
         "ipv6_not_found": "No se encontró ninguna dirección IPv6",
         "cfg_invalid_number": "{k} debe ser un entero no negativo",
-        "cfg_savedir_hint": "Escribe ? para explorar carpetas",
+        "cfg_savedir_hint": "Escribe ? para explorar carpetas", "press_enter_back": "Enter para volver: ", "invite_banner": "📥 Archivos de {a} ({ip}): {n} archivo(s), {s} en total", "invite_prompt": "Enter para aceptar, r para rechazar: ", "invite_rejected": "Transferencia rechazada", "invite_timeout": "Sin respuesta - rechazo automático", "recv_detail_title": "Detalles de recepción", "recv_detail_state": "{done}/{total} archivo(s) · {r}/{t}", "recv_detail_done": "Listo: {n} archivo(s), {s}, guardados en {d}", "send_back_hint": "Envío terminado - Enter para volver al menú: ",
         "cfg_dialog": "Selector de archivos",
         "cfg_dialog_auto": "auto (tkinter → cfdialog)",
         "cfg_dialog_force": "solo cfdialog (sin tkinter)",
@@ -882,7 +883,7 @@ I18N = {
         "text_copied": "Скопировано в буфер обмена: {f}",
         "ipv6_not_found": "Адрес IPv6 не найден",
         "cfg_invalid_number": "{k} должно быть целым неотрицательным числом",
-        "cfg_savedir_hint": "Введите ? чтобы выбрать папку",
+        "cfg_savedir_hint": "Введите ? чтобы выбрать папку", "press_enter_back": "Enter — назад: ", "invite_banner": "📥 Файлы от {a} ({ip}): {n} шт., всего {s}", "invite_prompt": "Enter — принять, r — отклонить: ", "invite_rejected": "Передача отклонена", "invite_timeout": "Нет ответа — автоотклонение", "recv_detail_title": "Детали приёма", "recv_detail_state": "{done}/{total} файл(ов) · {r}/{t}", "recv_detail_done": "Готово: {n} файл(ов), {s}, сохранено в {d}", "send_back_hint": "Отправка завершена — Enter для меню: ",
         "cfg_dialog": "Выбор файлов",
         "cfg_dialog_auto": "авто (tkinter → cfdialog)",
         "cfg_dialog_force": "только cfdialog (без tkinter)",
@@ -975,7 +976,7 @@ I18N = {
         "text_copied": "Copiado para a área de transferência: {f}",
         "ipv6_not_found": "Nenhum endereço IPv6 encontrado",
         "cfg_invalid_number": "{k} deve ser um inteiro não negativo",
-        "cfg_savedir_hint": "Introduza ? para navegar pelas pastas",
+        "cfg_savedir_hint": "Introduza ? para navegar pelas pastas", "press_enter_back": "Enter para voltar: ", "invite_banner": "📥 Ficheiros de {a} ({ip}): {n} ficheiro(s), {s} no total", "invite_prompt": "Enter para aceitar, r para recusar: ", "invite_rejected": "Transferência recusada", "invite_timeout": "Sem resposta - recusa automática", "recv_detail_title": "Detalhes da receção", "recv_detail_state": "{done}/{total} ficheiro(s) · {r}/{t}", "recv_detail_done": "Concluído: {n} ficheiro(s), {s}, guardados em {d}", "send_back_hint": "Envio terminado - Enter para o menu: ",
         "cfg_dialog": "Seleção de ficheiros",
         "cfg_dialog_auto": "automático (tkinter → cfdialog)",
         "cfg_dialog_force": "só cfdialog (sem tkinter)",
@@ -1359,6 +1360,7 @@ def _progress_line(arrow, msg, pct, every=10):
         print(f"\r  {arrow}  {msg}", end="", flush=True)
     elif pct == 100 or pct % every == 0:
         print(f"  {arrow}  {msg}", flush=True)
+    if INTERACTIVE: _notify_invites()
 
 
 def _open_path(path):
@@ -1929,6 +1931,7 @@ class LspyServer:
         self.auto_accept = auto_accept if auto_accept is not None else get_config("auto_accept")
         self.pin = pin; self.verbose = verbose
         self.sessions = {}; self.lock = threading.Lock()
+        self.quiet_receive = False      # 交互菜单在画「接收详情」时置 True，避免两处进度打架
         self.httpd = None; self._mc_running = True
         self.multicast = bool(multicast)
         self.web_enable = get_config("web_enable") if web_enable is None else bool(web_enable)
@@ -1947,6 +1950,33 @@ class LspyServer:
             return False
         return ans not in ("n", "no", "non", "nein", "нет", "não", "아니오", "いいえ")
 
+    def _accept_request(self, alias, peer_ip, files, auto=False):
+        """接收前确认。返回邀请字典（接受）或 None（拒绝/超时）。
+
+        交互菜单在跑时把邀请丢给主线程弹窗（auto 打开则直接标为接受，让菜单去画接收详情）；
+        命令行 serve（没有菜单）沿用 _ask_receive 的终端确认。
+        """
+        if not INTERACTIVE:
+            if auto: return {"auto": True, "accepted": True}
+            return {"auto": False, "accepted": True} if self._ask_receive(alias, peer_ip, len(files)) else None
+
+        names = [str((files[k] or {}).get("fileName", k)) for k in files]
+        total = 0
+        for k in files:
+            try: total += int((files[k] or {}).get("size", 0) or 0)
+            except (TypeError, ValueError): pass
+        inv = {"alias": alias, "ip": peer_ip, "count": len(files), "names": names,
+               "total": total, "auto": bool(auto), "accepted": bool(auto),
+               "decision": threading.Event(), "server": self, "sid": None}
+        _INVITE_Q.put(inv)
+        if auto:
+            inv["decision"].set()
+            return inv
+        # 主线程可能正卡在某句输入上，最多等 INVITE_TIMEOUT + 10s 让它把弹窗走完
+        if inv["decision"].wait(INVITE_TIMEOUT + 10) and inv["accepted"]: return inv
+        _log.warning("incoming request from %s not answered in time", peer_ip)
+        return None
+
     def _register_files(self, files, peer_ip, alias):
         sid = self._gen_session_id(); sess = _Session(sid, peer_ip, alias)
         tokens, resume = {}, {}
@@ -1964,7 +1994,8 @@ class LspyServer:
                                "path": target, "received": 0}
             tokens[fid] = token; resume[fid] = 0
         with self.lock: self.sessions[sid] = sess
-        print(f"\n📥 {t('session_created', s=sid[:8], n=len(files))}")
+        if not self.quiet_receive:
+            print(f"\n📥 {t('session_created', s=sid[:8], n=len(files))}")
         return sid, tokens, resume
 
     def _post_process(self, target):
@@ -2230,12 +2261,14 @@ class LspyServer:
 
                     auto = server.auto_accept
                     if not auto and get_config("auto_accept_whitelist") and _is_whitelisted(fp): auto = True
-                    if not auto and not server._ask_receive(sender_alias, peer_ip, len(accepted)):
+                    inv = server._accept_request(sender_alias, peer_ip, accepted, auto=auto)
+                    if not inv:
                         self._json(403, {"error": "rejected"}); return
 
                     try: sid, tokens, resume = server._register_files(accepted, peer_ip, sender_alias)
                     except OSError as e:
                         self._json(507, {"error": str(e)}); return
+                    inv["sid"] = sid        # 让菜单那边知道要跟踪哪个会话
                     self._json(200, {"sessionId": sid, "files": tokens, "resume": resume})
                     return
 
@@ -2275,7 +2308,7 @@ class LspyServer:
                                 fp.write(chunk); received += len(chunk); remaining -= len(chunk)
                                 if expected > 0:
                                     pct = int(received * 100 / expected)
-                                    if pct // 5 != last_pct // 5 or pct == 100:
+                                    if (pct // 5 != last_pct // 5 or pct == 100) and not server.quiet_receive:
                                         msg = t("receive_progress", f=entry["fileName"], p=pct,
                                                 r=received, t=expected)
                                         _progress_line("⬇️", msg, pct)
@@ -2523,6 +2556,8 @@ def send_files(device, filepaths, pin=None, threads=3):
 
     ok = sum(1 for v in results.values() if v)
     print("✅ " + t("send_done", a=ok, b=len(file_ids)))
+    # 传输期间排队进来的接收邀请，回到交互界面时立刻补弹（CLI send 下队列是空的）
+    _serve_invites(None)
     return ok == len(file_ids)
 
 # ================== 跨网 ==================
@@ -2842,36 +2877,36 @@ def interactive_config():
             print(f" {i}. {t(k)}")
         print(f" 0. {t('cfg_menu_back')}"); print("─" * 50)
 
-        try: choice = input(t("choose_prompt", choices="0-10")).strip()
+        try: choice = _prompt(t("choose_prompt", choices="0-10")).strip()
         except (EOFError, KeyboardInterrupt): return
 
         if choice == "0": return
-        elif choice == "1": set_config("alias", input(t("cfg_prompt_alias", d=socket.gethostname())).strip() or None)
+        elif choice == "1": set_config("alias", _prompt(t("cfg_prompt_alias", d=socket.gethostname())).strip() or None)
         elif choice == "2":
-            v = input(t("cfg_prompt_port", d=port)).strip()
+            v = _prompt(t("cfg_prompt_port", d=port)).strip()
             if v.isdigit() and 1 <= int(v) <= 65535: set_config("port", int(v))
             elif v: print("⚠️ " + t("cfg_invalid_port"))
         elif choice == "3":
             # 输入 ? 时用 cfdialog 的目录浏览器挑一个，省得对着键盘敲一长串路径
             print("  " + t("cfg_savedir_hint"))
-            v = input(t("cfg_prompt_savedir", d=save_dir)).strip()
+            v = _prompt(t("cfg_prompt_savedir", d=save_dir)).strip()
             if v == "?":
                 picked = _dialog_pick_folder(save_dir)
                 if picked: set_config("save_dir", str(picked)); print("✅ " + t("cfg_savedir") + ": " + str(picked))
                 else: print("⚠️ " + t("no_file_selected"))
                 continue
             set_config("save_dir", v or None)
-        elif choice == "4": set_config("pin", input(t("cfg_prompt_pin", d=cfg.get("pin") or "")).strip() or None)
+        elif choice == "4": set_config("pin", _prompt(t("cfg_prompt_pin", d=cfg.get("pin") or "")).strip() or None)
         elif choice == "5": set_config("auto_accept", not auto)
-        elif choice == "6": set_config("ntfy_topic", input(t("cfg_prompt_topic", d=topic)).strip() or None)
+        elif choice == "6": set_config("ntfy_topic", _prompt(t("cfg_prompt_topic", d=topic)).strip() or None)
         elif choice == "7": set_config("fingerprint", _gen_fp())
         elif choice == "8":
-            if input(t("cfg_confirm_reset")).strip().lower() == "y": reset_config(); print("✅ " + t("cfg_reset_done"))
+            if _prompt(t("cfg_confirm_reset")).strip().lower() == "y": reset_config(); print("✅ " + t("cfg_reset_done"))
         elif choice == "9":
             codes = ["auto"] + SUPPORTED_LANGS
             for i, c in enumerate(codes): print(f"  {i}. {c} — {t('cfg_default') if c=='auto' else I18N.get(c, {}).get('lang_name', c)}")
             try:
-                idx = int(input(t("cfg_lang_choice", choices=f"0-{len(codes)-1}")).strip())
+                idx = int(_prompt(t("cfg_lang_choice", choices=f"0-{len(codes)-1}")).strip())
                 if 0 <= idx < len(codes): set_config("lang", codes[idx]); init_lang()
             except Exception: pass
         elif choice == "10":
@@ -2902,6 +2937,178 @@ def _is_android():
             _log.debug("android detected (%s), tkinter disabled",
                        ", ".join(k for k, v in marks.items() if v))
     return _IS_ANDROID
+
+
+# ================== 交互输入 & 任意界面接收邀请 ==================
+# 交互菜单里的每一处输入都走 _prompt()：它一边等这一行输入，一边盯着 _INVITE_Q，
+# 所以「不管在哪个界面」有设备发文件过来，都能先把接受申请弹出来，答完再回到原来那句提问。
+#
+# 为什么不是常驻的 stdin 读线程：cfdialog 的文件浏览器自己读 stdin，常驻线程会把它的
+# 按键吞掉。这里改成「每次 _prompt 只挂一个读一行的小任务」，任务一结束线程就空闲，
+# 浏览器的输入永远是它自己的。
+_EOF = object()
+_LINE_READER = concurrent.futures.ThreadPoolExecutor(max_workers=1, thread_name_prefix="stdin")
+_INVITE_Q = queue.Queue()          # 服务端线程 → 主线程的接收邀请
+INTERACTIVE = False                # 交互菜单在跑时为 True（决定邀请走弹窗还是终端确认）
+INVITE_TIMEOUT = 60.0              # 没人应答多久之后自动拒绝
+_REJECT_WORDS = ("r", "n", "no", "non", "nein", "нет", "não", "아니오", "いいえ")
+
+
+def _fmt_size(n):
+    """把字节数变成人类可读的 B/KB/MB/GB，用于邀请与详情里的总量。"""
+    try: n = float(n)
+    except (TypeError, ValueError): return str(n)
+    for unit in ("B", "KB", "MB", "GB"):
+        if n < 1024 or unit == "GB":
+            return ("%d B" % n) if unit == "B" else ("%.1f %s" % (n, unit))
+        n /= 1024.0
+    return "%.1f GB" % n
+
+
+def _read_line_task():
+    """挂一个「读一行」的任务；调用方轮询它是否完成，期间可以处理邀请。"""
+    return _LINE_READER.submit(sys.stdin.readline)
+
+
+def _line_of(fut, timeout=None):
+    """取任务读到的那一行；空字符串（EOF）返回 _EOF，超时也返回 _EOF。"""
+    try:
+        raw = fut.result(timeout=timeout) if timeout is not None else fut.result()
+    except concurrent.futures.TimeoutError:
+        return _EOF
+    except Exception as e:
+        _log.debug("stdin read failed: %s", e)
+        return _EOF
+    if raw == "": return _EOF
+    return raw.rstrip("\r\n")
+
+
+def _is_reject(ans):
+    return ans.strip().lower() in _REJECT_WORDS
+
+
+def _prompt(msg=""):
+    """读一行输入；等待期间一旦有接收邀请到来，先弹申请（接受则直接进详情）。
+
+    非终端（管道/重定向）下没有「任意界面」可言，退回普通 input() 语义。
+    """
+    if not (sys.stdin and sys.stdin.isatty()):
+        return input(msg)
+
+    print(msg, end="", flush=True)
+    fut = _read_line_task()
+    while True:
+        if not _INVITE_Q.empty():
+            print()
+            _serve_invites(fut)
+            print(msg, end="", flush=True)
+            fut = _read_line_task()
+            continue
+        if fut.done():
+            line = _line_of(fut)
+            if line is _EOF: raise EOFError
+            return line
+        time.sleep(0.1)
+
+
+def _serve_invites(fut=None):
+    """把排队的邀请逐个处理掉；fut 是当前挂着的那次读，用来回答申请。"""
+    handled = 0
+    while True:
+        try: inv = _INVITE_Q.get_nowait()
+        except queue.Empty: break
+        _show_invite(inv, fut); handled += 1
+    return handled
+
+
+def _notify_invites():
+    """传输过程中不抢键盘，只提醒还有邀请在排队（回到输入界面时会立刻弹出）。"""
+    if _INVITE_Q.qsize():
+        print("\n📥 " + t("invite_banner", a="…", ip="…", n=_INVITE_Q.qsize(), s="…"))
+
+
+def _ask_invite(fut=None, timeout=None):
+    """等用户对接收申请做决定：直接回车接受，r/n 拒绝，超时算拒绝。"""
+    timeout = INVITE_TIMEOUT if timeout is None else timeout
+    if fut is not None:
+        line = _line_of(fut, timeout=timeout)
+        if line is _EOF:
+            print("\n⏳ " + t("invite_timeout"))
+            return False
+        return not _is_reject(line)
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try: ans = _prompt(t("invite_prompt"))
+        except EOFError: return False
+        if _is_reject(ans): return False
+        if not ans.strip(): return True
+    print("\n⏳ " + t("invite_timeout"))
+    return False
+
+
+def _show_invite(inv, fut=None):
+    """弹接受申请；接受后进入接收详情，收完按回车回到之前的界面。"""
+    print("=" * 20 + " 📥 " + t("recv_detail_title") + " " + "=" * 20)
+    print("  " + t("invite_banner", a=inv["alias"], ip=inv["ip"],
+                    n=inv["count"], s=_fmt_size(inv["total"])))
+    for name in inv["names"][:10]:
+        print("    · " + name)
+    if len(inv["names"]) > 10:
+        print("    · … (+%d)" % (len(inv["names"]) - 10))
+
+    if not inv["auto"]:
+        if fut is None: print("  " + t("invite_prompt"), end="", flush=True)
+        accepted = _ask_invite(fut)
+        inv["accepted"] = accepted
+        inv["decision"].set()
+        if not accepted:
+            print("⛔ " + t("invite_rejected"))
+            return
+    try:
+        inv["server"].quiet_receive = True
+        _receive_detail(inv)
+    finally:
+        inv["server"].quiet_receive = False
+
+
+def _receive_detail(inv):
+    """接收详情：等会话建立，滚动显示进度，收完汇总并等一次回车。"""
+    server = inv["server"]
+    deadline = time.time() + 8
+    sid = None
+    while time.time() < deadline and not sid:
+        sid = inv.get("sid")
+        if not sid: time.sleep(0.05)
+    if not sid:
+        print("⚠️  " + t("invite_timeout"))
+        return
+
+    total = inv["total"]; last_rec = 0; stall = time.time(); n_files = done = rec = 0
+    while True:
+        with server.lock:
+            sess = server.sessions.get(sid)
+            if sess is None: break
+            n_files = len(sess.files); done = len(sess.done)
+            rec = sum(int(e.get("received", 0) or 0) for e in sess.files.values())
+        state = t("recv_detail_state", done=done, total=n_files,
+                  r=_fmt_size(rec), t=_fmt_size(total))
+        if sys.stdout.isatty():
+            print("\r  ⬇️  " + state + " " * 6, end="", flush=True)
+        if rec > last_rec: last_rec = rec; stall = time.time()
+        elif time.time() - stall > 120: print(); break
+        time.sleep(0.2)
+    if sys.stdout.isatty(): print()
+    with server.lock:
+        sess = server.sessions.get(sid)
+    if sess is not None:   # 还是残留，说明传输出错，别把失败说成完成
+        print("⚠️  " + t("recv_detail_state", done=done, total=n_files,
+                        r=_fmt_size(rec), t=_fmt_size(total)))
+    else:
+        # 会话被清掉说明每个文件都已落盘：轮询可能错过最后一个字节数，按声明大小补齐
+        if n_files and total > 0 and rec < total: rec = total
+        print("✅ " + t("recv_detail_done", n=n_files or done, s=_fmt_size(rec),
+                        d=server.save_dir))
+    _prompt(t("press_enter_back"))
 
 
 # cfdialog 的语言码与 lspy 的不完全一致（zh→zh_CN，de/pt 没有对应包，回退英文）
@@ -2979,11 +3186,13 @@ def pick_files():
         except Exception: pass
     picked = _dialog_pick_files()
     if picked is not None: return [str(p) for p in picked]
-    raw = input(t("prompt_files")).strip()
+    raw = _prompt(t("prompt_files")).strip()
     return [x.strip().strip('"').strip("'") for x in raw.split(",") if x.strip()]
 
 
 def interactive_menu():
+    global INTERACTIVE
+    INTERACTIVE = True      # 服务端的接收邀请改由菜单弹窗处理，不再走终端确认
     print("\n" + "=" * 20 + " " + t("menu_banner") + " " + "=" * 20)
 
     bg_server = None
@@ -3000,14 +3209,16 @@ def interactive_menu():
         print(" 4. " + t("menu_send") + "\n 5. " + t("menu_cross_send") + "\n 6. " + t("menu_cross_recv"))
         print(" 7. " + t("menu_history") + "\n 8. " + t("menu_config") + "\n 0. " + t("menu_exit"))
         try:
-            choice = input(t("choose_prompt", choices="0-8")).strip()
+            choice = _prompt(t("choose_prompt", choices="0-8")).strip()
         except (EOFError, KeyboardInterrupt):
             print("\n👋 " + t("bye"))
+            INTERACTIVE = False
             if bg_server: bg_server.stop()
             return
 
         if choice == "0":
             print("👋 " + t("bye"))
+            INTERACTIVE = False
             if bg_server: bg_server.stop()
             return
         elif choice == "1":
@@ -3032,7 +3243,7 @@ def interactive_menu():
             target = None
             try:
                 print(t("send_how"))
-                sub = input(t("send_choose")).strip()
+                sub = _prompt(t("send_choose")).strip()
                 if sub == "1":
                     if not devices:
                         print("🔍 " + t("scanning_short"))
@@ -3042,12 +3253,12 @@ def interactive_menu():
                         print(t("firewall_tip"))
                         continue
                     for i, d in enumerate(devices, 1): print(f"  {i}. {d}")
-                    idx = int(input(t("prompt_pick_device", n=len(devices))).strip()) - 1
+                    idx = int(_prompt(t("prompt_pick_device", n=len(devices))).strip()) - 1
                     if not 0 <= idx < len(devices):
                         print("⚠️ " + t("index_out_of_range")); continue
                     target = devices[idx]
                 elif sub == "2":
-                    ip = input(t("prompt_ip")).strip()
+                    ip = _prompt(t("prompt_ip")).strip()
                     if not ip: continue
                     host, port = ip, DEFAULT_PORT
                     if ":" in ip and not ip.startswith("["):
@@ -3058,17 +3269,19 @@ def interactive_menu():
                     files = pick_files()
                     if not files:
                         print("⚠️ " + t("no_file_selected")); continue
-                    pin = input(t("prompt_target_pin")).strip() or None
+                    pin = _prompt(t("prompt_target_pin")).strip() or None
                     send_files(target, files, pin=pin)
+                    # 发送成功后不要直接甩回菜单：留一行提示，按回车才回去
+                    _prompt(t("send_back_hint"))
             except (EOFError, KeyboardInterrupt):
                 pass
             except Exception as e:
                 print("⚠️ " + t("input_error", e=e))
         elif choice == "5":
             files = pick_files()
-            if files: cross_send(files, input(t("prompt_cross_pin")).strip() or None)
+            if files: cross_send(files, _prompt(t("prompt_cross_pin")).strip() or None)
         elif choice == "6":
-            pin = input(t("prompt_cross_recv_pin")).strip()
+            pin = _prompt(t("prompt_cross_recv_pin")).strip()
             if pin: cross_recv(pin)
         elif choice == "7":
             cmd_history(argparse.Namespace(n=20))

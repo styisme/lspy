@@ -40,7 +40,7 @@ cd lspy
 
 python lspy.py --help                     # run without installing
 pip install .                             # install the `lspy` command
-python -m unittest discover -s tests -v   # full suite (90 tests)
+python -m unittest discover -s tests -v   # full suite (98 tests)
 python scripts/sync_version.py --check    # version consistency with CHANGELOG
 pip install pyinstaller && python scripts/build_binary.py --clean   # standalone executable
 ```
@@ -107,6 +107,17 @@ On Android (`_is_android()` checks `sys.platform == "android"`, `TERMUX_VERSION`
 Inside `lspy.py` the sections run top-down: constants and config → logging and stdio → i18n → helpers (filename sanitising, unique paths, progress, HTTP opener) → discovery (multicast / broadcast / HTTP scan) → `LspyServer` → sender → cross-network → history and certificates → interactive menu → `main`.
 
 ---
+
+## Interactive Layer: Invites From Any Screen
+
+Every input point in the menu, settings and file picker goes through `_prompt()`. While waiting for that one line it also watches `_INVITE_Q`: when a server thread receives a transfer request it builds an `inv` via `LspyServer._accept_request` and queues it, the main thread immediately shows the accept prompt (`_show_invite`), then the receive detail (`_receive_detail`), and waits for Enter to return to the original question. With `auto_accept` on there is no prompt at all and the detail opens directly.
+
+Conventions to respect before touching this code:
+
+- **Never put a bare `input()` back in the menu**: it bypasses the invite check, which means "only receive on the main screen" again.
+- **Do not run a resident stdin reader thread**: `cfdialog`'s file browser reads stdin too, and a resident reader swallows its keystrokes (the first 1.27.0 implementation failed exactly here). Today each `_prompt` submits a single read-one-line task (`_read_line_task`), and the worker goes idle as soon as that line arrives.
+- **Draw progress in one place only**: after acceptance `server.quiet_receive = True`, so the server's own `📥 session_created` line and upload progress stay silent and do not fight the detail view's `\r` refresh.
+- **Tests**: patch `lspy._prompt` (or have `lspy._read_line_task` return a completed Future) for interactive input. **Do not** patch `builtins.input` - `_prompt` does not use it and the test will hang. A blank line is `"\n"`; `""` means EOF at the reader layer.
 
 ## Commit Convention
 

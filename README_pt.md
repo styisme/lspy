@@ -5,7 +5,7 @@
 > Uma implementação de linha de comando do protocolo LocalSend. Arquivo único, sem dependências de terceiros: LocalSend no celular, um comando no computador. Inclui retransmissão entre redes via ntfy.sh.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.26.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.27.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -32,6 +32,8 @@ Este projeto foi amplamente desenvolvido com auxílio de modelos de linguagem. R
 - **Seleção de ficheiros sem tkinter**: o [cfdialog](https://github.com/styisme/cfdialog) 0.3.0 incluído (MIT, ficheiro único) substitui a caixa tkinter por um navegador de terminal (números, `g` partições, `h` ocultos, `a`/`c`/`d` seleção múltipla); `?` na pasta de receção abre o navegador de pastas. `config --set force_cfdialog=true` força o navegador de terminal e ignora o tkinter. No Android o tkinter é ignorado (raramente inclui Tk) e o navegador arranca de imediato.
 
 ---
+- **Receber de qualquer tela**: todo ponto de entrada (menu, ajustes, selecao de arquivos) monitora a fila de transferencias recebidas e mostra o pedido de aceitacao na hora. Com `auto_accept` ligado, vai direto ao detalhe de recebimento; depois, Enter volta a tela anterior.
+- **Permanecer apos o envio**: um envio concluido nao some mais - Enter volta ao menu.
 
 ## 📱 Início rápido
 

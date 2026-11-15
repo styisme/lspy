@@ -918,13 +918,12 @@ class TestDialogPicker(unittest.TestCase):
 
     def test_pick_files_falls_back_to_typed_paths(self):
         """没有 tkinter、没有 cfdialog 时仍能手敲逗号分隔的路径。"""
-        import builtins
         from unittest import mock
         self._install(False)
         orig_tk = sys.modules.get("tkinter")
         sys.modules["tkinter"] = None          # 让 import tkinter 直接失败
         self.addCleanup(lambda: sys.modules.__setitem__("tkinter", orig_tk) if orig_tk else sys.modules.pop("tkinter", None))
-        with mock.patch.object(builtins, "input", lambda prompt="": 'a.txt, "b c.txt"'):
+        with mock.patch.object(lspy, "_prompt", lambda prompt="": 'a.txt, "b c.txt"'):
             self.assertEqual(lspy.pick_files(), ["a.txt", "b c.txt"])
 
     def test_language_map_matches_cfdialog_packs(self):
@@ -968,7 +967,6 @@ class TestDialogPicker(unittest.TestCase):
 
     def test_force_cfdialog_still_allows_typed_paths(self):
         """强制 cfdialog 不等于把用户锁死：库没了照样能手敲。"""
-        import builtins
         from unittest import mock
         self._install(False)
         orig_tk = sys.modules.get("tkinter")
@@ -976,7 +974,7 @@ class TestDialogPicker(unittest.TestCase):
         self.addCleanup(lambda: sys.modules.__setitem__("tkinter", orig_tk) if orig_tk else sys.modules.pop("tkinter", None))
         lspy.set_config("force_cfdialog", True)
         self.addCleanup(lspy.set_config, "force_cfdialog", None)
-        with mock.patch.object(builtins, "input", lambda prompt="": 'x.bin'):
+        with mock.patch.object(lspy, "_prompt", lambda prompt="": 'x.bin'):
             self.assertEqual(lspy.pick_files(), ["x.bin"])
 
     def test_force_cfdialog_is_a_real_config_key(self):
@@ -1035,13 +1033,140 @@ class TestDialogPicker(unittest.TestCase):
 
     def test_android_without_library_still_types_paths(self):
         """Android 上没有 cfdialog 时，落到手敲路径而不是崩。"""
-        import builtins
         from unittest import mock
         self._install(False)
         with mock.patch.object(lspy, "_is_android", lambda: True), \
              mock.patch.dict(sys.modules, {"tkinter": None}), \
-             mock.patch.object(builtins, "input", lambda prompt="": '/sdcard/a.txt,/sdcard/b.txt'):
+             mock.patch.object(lspy, "_prompt", lambda prompt="": '/sdcard/a.txt,/sdcard/b.txt'):
             self.assertEqual(lspy.pick_files(), ["/sdcard/a.txt", "/sdcard/b.txt"])
+
+
+class _FakeServer:
+    """只为调用 LspyServer 的接收确认逻辑，不真的开端口。"""
+
+    def __init__(self):
+        import threading
+        self.quiet_receive = False
+        self.lock = threading.Lock()
+        self.sessions = {}
+        self.save_dir = "downloads"
+
+    _accept_request = lspy.LspyServer._accept_request
+
+
+class _FakeTTY:
+    def isatty(self): return True
+    def readline(self): return ""
+
+
+class TestInteractiveInvite(unittest.TestCase):
+    """任意界面的接收申请：等输入时弹申请、接受后进详情、回车回到原问题。"""
+
+    def setUp(self):
+        import queue
+        from unittest import mock
+        self._saved = (lspy._INVITE_Q, lspy.INTERACTIVE, lspy._read_line_task)
+        lspy._INVITE_Q = queue.Queue()
+        lspy.INTERACTIVE = True
+        p = mock.patch.object(sys, "stdin", _FakeTTY())
+        p.start(); self.addCleanup(p.stop)
+        self.addCleanup(self._restore)
+
+    def _restore(self):
+        lspy._INVITE_Q, lspy.INTERACTIVE, lspy._read_line_task = self._saved
+
+    def _reader(self, lines):
+        """按顺序吐行的假 reader；用尽后返回空串（相当于 EOF）。"""
+        import concurrent.futures
+        box = list(lines)
+        def make():
+            f = concurrent.futures.Future()
+            f.set_result(box.pop(0) if box else "")
+            return f
+        return make
+
+    def _invite(self, srv, auto=False, sid="sid123"):
+        return {"alias": "phone", "ip": "192.168.1.9", "count": 2,
+                "names": ["a.txt", "b.txt"], "total": 30, "auto": auto,
+                "accepted": False, "decision": threading.Event(),
+                "server": srv, "sid": sid}
+
+    def test_human_size(self):
+        self.assertEqual(lspy._fmt_size(0), "0 B")
+        self.assertEqual(lspy._fmt_size(1536), "1.5 KB")
+        self.assertEqual(lspy._fmt_size(5 * 1024 * 1024), "5.0 MB")
+        self.assertEqual(lspy._fmt_size(2 * 1024 ** 3), "2.0 GB")
+
+    def test_enter_accepts_and_r_rejects(self):
+        from unittest import mock
+        cases = [("", True), ("r", False), ("R", False), ("no", False)]
+        with mock.patch.object(lspy, "_read_line_task", self._reader(["\n", "r", "R", "no"])):
+            self.assertTrue(lspy._ask_invite(timeout=2))
+            self.assertFalse(lspy._ask_invite(timeout=2))
+            self.assertFalse(lspy._ask_invite(timeout=2))
+            self.assertFalse(lspy._ask_invite(timeout=2))
+
+    def test_eof_counts_as_reject(self):
+        from unittest import mock
+        with mock.patch.object(lspy, "_read_line_task", self._reader([])):
+            self.assertFalse(lspy._ask_invite(timeout=2))
+
+    def test_cmdline_serve_keeps_terminal_confirmation(self):
+        """没有交互菜单（serve 子命令）时不该把申请塞进菜单队列。"""
+        lspy.INTERACTIVE = False
+        srv = _FakeServer()
+        inv = srv._accept_request("phone", "192.168.1.9",
+                                  {"a": {"fileName": "a.txt", "size": 3}}, auto=True)
+        self.assertTrue(inv["accepted"])
+        self.assertEqual(lspy._INVITE_Q.qsize(), 0)
+
+    def test_auto_accept_goes_straight_to_details(self):
+        """开了自动接收：不问就直接进详情（邀请入队，由菜单画进度）。"""
+        srv = _FakeServer()
+        inv = srv._accept_request("phone", "192.168.1.9",
+                                  {"a": {"fileName": "a.txt", "size": 3}}, auto=True)
+        self.assertTrue(inv["accepted"])
+        self.assertEqual(lspy._INVITE_Q.qsize(), 1)
+
+    def test_invite_pops_up_while_answering_another_prompt(self):
+        """正等着用户回答别的问题时，邀请先弹出来；接受后进详情，回车后回到原问题。"""
+        import contextlib
+        import io
+        from unittest import mock
+        srv = _FakeServer()
+        lspy._INVITE_Q.put(self._invite(srv))
+        # 第一次读到的行当作接受（空行），第二次供详情回车，第三次是原问题答案
+        with mock.patch.object(lspy, "_read_line_task", self._reader(["\n", "\n", "2"])):
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                self.assertEqual(lspy._prompt("choose: "), "2")
+        out = buf.getvalue()
+        self.assertIn("📥", out)
+        self.assertIn("a.txt", out)
+        self.assertIn(lspy.t("recv_detail_done").split("{")[0].strip(), out)
+
+    def test_reject_skips_details_and_returns_to_prompt(self):
+        import contextlib
+        import io
+        from unittest import mock
+        srv = _FakeServer()
+        lspy._INVITE_Q.put(self._invite(srv))
+        with mock.patch.object(lspy, "_read_line_task", self._reader(["r", "3"])):
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                self.assertEqual(lspy._prompt("choose: "), "3")
+        self.assertIn(lspy.t("invite_rejected"), buf.getvalue())
+
+    def test_non_tty_input_still_works(self):
+        """管道/重定向下退回普通 input()，不启动轮询。"""
+        import builtins
+        from unittest import mock
+        class _Piped:
+            def isatty(self): return False
+            def readline(self): return ""
+        with mock.patch.object(sys, "stdin", _Piped()), \
+             mock.patch.object(builtins, "input", lambda prompt="": "typed"):
+            self.assertEqual(lspy._prompt("q: "), "typed")
 
 
 if __name__ == "__main__":

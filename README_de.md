@@ -5,7 +5,7 @@
 > Eine Kommandozeilen-Implementierung des LocalSend-Protokolls. Eine Datei, keine Fremdabhängigkeiten: LocalSend auf dem Handy, eine Zeile auf dem Rechner. Inklusive Relay über ntfy.sh für geräteübergreifende Netze.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.26.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.27.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -32,6 +32,8 @@ Dieses Projekt wurde stark mit KI-Unterstützung entwickelt. Anforderungen, Revi
 - **Dateiauswahl ohne tkinter**: mitgeliefertes [cfdialog](https://github.com/styisme/cfdialog) 0.3.0 (MIT, eine Datei, nur Standardbibliothek) ersetzt den tkinter-Dialog durch einen Terminal-Browser (Nummern, `g` Partitionen, `h` versteckt, `a`/`c`/`d` Mehrfachauswahl); `?` beim Speicherordner öffnet den Ordner-Browser. Mit `config --set force_cfdialog=true` lässt sich der Terminal-Browser erzwingen (tkinter wird übersprungen). Unter Android wird tkinter übersprungen (dort fehlt Tk meist), der Browser startet sofort.
 
 ---
+- **Empfang von jedem Bildschirm aus**: jede Eingabestelle (Menue, Einstellungen, Dateiauswahl) ueberwacht die Warteschlange eingehender Uebertragungen und zeigt die Annahmefrage sofort an. Mit aktivem `auto_accept` geht es direkt zur Empfangsdetailansicht; danach mit Enter zurueck zum vorherigen Bildschirm.
+- **Bleiben nach dem Senden**: nach dem Senden wird nicht mehr sofort beendet - Enter fuehrt zurueck ins Menue.
 
 ## 📱 Schnellstart
 

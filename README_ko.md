@@ -5,7 +5,7 @@
 > LocalSend 프로토콜의 CLI 구현. 단일 파일, 서드파티 의존성 없음. 휴대폰은 LocalSend, PC는 명령 한 줄로 파일 송수신. ntfy.sh를 통한 크로스 네트워크 중계 지원.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.26.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.27.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -32,6 +32,8 @@
 - **tkinter 없이도 파일 선택**: 내장된 [cfdialog](https://github.com/styisme/cfdialog) 0.3.0(MIT, 단일 파일)이 tkinter 대화상자 대신 터미널 브라우저를 띄웁니다(번호 이동, `g` 파티션, `h` 숨김 파일, `a`/`c`/`d` 다중 선택). 저장 폴더 설정에서 `?`를 입력하면 폴더 탐색이 열립니다. `config --set force_cfdialog=true`로 터미널 브라우저를 강제할 수 있습니다(tkinter는 건너뜁니다). Android에서는 tkinter를 건너뛰고(Tk가 거의 없음) 바로 터미널 브라우저를 엽니다.
 
 ---
+- **어느 화면에서나 수신**: 메뉴, 설정, 파일 선택 등 모든 입력 지점이 수신 대기열을 감시해 전송이 들어오면 즉시 수락 요청을 띄웁니다. `auto_accept`가 켜져 있으면 묻지 않고 바로 수신 상세로 들어가며, 완료 후 Enter로 원래 화면으로 돌아갑니다.
+- **전송 후 대기**: 전송이 끝나도 바로 종료되지 않고 Enter를 눌러야 메뉴로 돌아갑니다.
 
 ## 📱 빠른 시작
 

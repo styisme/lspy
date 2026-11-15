@@ -5,7 +5,7 @@
 > Реализация протокола LocalSend в командной строке. Один файл, без сторонних зависимостей: LocalSend на телефоне, одна команда на компьютере. Есть ретрансляция между сетями через ntfy.sh.
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.26.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.27.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -32,6 +32,8 @@
 - **Выбор файлов без tkinter**: встроенный [cfdialog](https://github.com/styisme/cfdialog) 0.3.0 (MIT, один файл) заменяет диалог tkinter на терминальный браузер (номера, `g` разделы, `h` скрытые файлы, `a`/`c`/`d` множественный выбор); `?` в настройке папки приёма открывает обзор папок. `config --set force_cfdialog=true` принудительно включает терминальный браузер (tkinter не используется). В Android tkinter пропускается (Tk там обычно нет), браузер открывается сразу.
 
 ---
+- **Приём с любого экрана**: любая точка ввода (меню, настройки, выбор файлов) следит за очередью входящих передач и сразу показывает запрос на приём. При включённом `auto_accept` подтверждение пропускается и сразу открывается детализация приёма; после завершения Enter возвращает на прежний экран.
+- **Остаться после отправки**: завершённая отправка больше не закрывается мгновенно - Enter возвращает в меню.
 
 ## 📱 Быстрый старт
 

@@ -5,7 +5,7 @@
 > LocalSend プロトコルの CLI 実装。単一ファイル・サードパーティ依存ゼロ。スマホは LocalSend、PC はコマンド 1 本でファイル送受信。ntfy.sh 経由のクロスネットワーク中継にも対応。
 
 [![CI](https://github.com/styisme/lspy/actions/workflows/ci.yml/badge.svg)](https://github.com/styisme/lspy/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.26.0-512BD4)]()
+[![Version](https://img.shields.io/badge/version-1.27.0-512BD4)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/made%20with-AI-FF6B6B)](docs/AI_DISCLOSURE.md)
 
@@ -32,6 +32,8 @@
 - **tkinter なしでもファイル選択**: 同梱の [cfdialog](https://github.com/styisme/cfdialog) 0.3.0（MIT・単一ファイル）が tkinter の代わりに端末ブラウザを開きます（番号で移動、`g` でパーティション、`h` で隠しファイル、`a`/`c`/`d` で複数選択）。保存先の設定で `?` を入力するとフォルダ参照が開きます。 `config --set force_cfdialog=true` で端末ブラウザを強制できます（tkinter は使わない）。 Android では tkinter を飛ばして（Tk が入っていないことが多い）すぐ端末ブラウザを開きます。
 
 ---
+- **どの画面でも受信可能**：メニュー・設定・ファイル選択などすべての入力箇所が受信キューを監視し、転送が来たら即座に受諾確認を表示します。`auto_accept` が有効なら確認なしで受信詳細へ進み、完了後に Enter で元の画面へ戻ります。
+- **送信後も待機**：送信が終わってもすぐ終了せず、Enter でメニューに戻ります。
 
 ## 📱 クイックスタート
 

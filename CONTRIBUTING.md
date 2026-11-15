@@ -40,7 +40,7 @@ cd lspy
 
 python lspy.py --help                     # 免安装运行
 pip install .                             # 安装为 lspy 命令
-python -m unittest discover -s tests -v   # 全量测试（90 例）
+python -m unittest discover -s tests -v   # 全量测试（98 例）
 python scripts/sync_version.py --check    # 校验版本号与 CHANGELOG 一致
 pip install pyinstaller && python scripts/build_binary.py --clean   # 打包单文件可执行程序
 ```
@@ -108,6 +108,17 @@ Android 上（`_is_android()` 按 `sys.platform == "android"`、`TERMUX_VERSION`
 `lspy.py` 内部分区（自上而下）：常量与配置 → 日志与 stdio → i18n → 工具函数（文件名净化、唯一路径、进度条、HTTP opener）→ 发现（组播 / 广播 / HTTP 扫描）→ `LspyServer`（HTTP 处理与协商）→ 发送端 → 跨网 → 历史与证书 → 交互菜单 → `main`。
 
 ---
+
+## 交互层：任意界面的接收申请
+
+菜单、设置、选文件里的每一处输入都走 `_prompt()`。它一边等这一行输入，一边盯着 `_INVITE_Q`：服务端线程收到传输请求时通过 `LspyServer._accept_request` 组一个 `inv` 入队，主线程立刻停下来弹接受申请（`_show_invite`），接受后进入接收详情（`_receive_detail`），收完按回车回到原来那句提问。`auto_accept` 打开时不问，直接进详情。
+
+几个约定，改代码前请先读：
+
+- **不要把 `input()` 直接写回菜单**：那会绕过邀请检查，等于回到"只能在主界面接收"。
+- **不要常驻后台线程读 stdin**：`cfdialog` 的文件浏览器自己也读 stdin，常驻读者会把它的按键吞掉（1.27.0 的第一版实现就栽在这里）。现在的做法是每次 `_prompt` 只挂一个读一行的小任务（`_read_line_task`），任务结束线程就空闲。
+- **进度只画一处**：接受后 `server.quiet_receive = True`，服务端自己的 `📥 session_created` 与上传进度都会闭嘴，避免和详情页的 `\r` 刷新互相打架。
+- **测试**：交互输入一律 patch `lspy._prompt`（或 `lspy._read_line_task` 返回已完成的 Future），**不要** patch `builtins.input` —— `_prompt` 不走它，改了会挂死。空行用 `"\n"` 表示，`""` 在读取层等于 EOF。
 
 ## 提交规范
 
